@@ -1,0 +1,247 @@
+{
+ "$schema": "http://json-schema.org/draft-04/schema#",
+ "version": "4.4",
+ "title": "LER-RSType",
+ "description": "Learning and Employment Record Resume Standard",
+ "type": "object",
+ "allOf": [
+  {
+   "$ref": "../../common/json/base/NounType.json#"
+  }
+ ],
+ "required": [
+  "type"
+ ],
+ "properties": {
+  "type": {
+   "description": "The instance type to assist implementors of this standard to discover the schema and version of the instance. Recommend using the full URL to the schema and version for LER-RS you are using. Example: http://schema.hropenstandards.org/4.4/recruiting/json/ler-rs/LER-RSType.json",
+   "enum": [
+    "http://schema.hropenstandards.org/4.4/recruiting/json/ler-rs/LER-RSType.json"
+   ]
+  },
+  "narratives": {
+   "description": "Experiences, Aspirations, Interests (or any free form text elements) of a person.",
+   "type": "array",
+   "items": {
+    "$ref": "ler-rs/NarrativeType.json#"
+   }
+  },
+  "job": {
+   "description": "The related Job to this LER Resume.",
+   "$ref": "#/definitions/JobType"
+  },
+  "certifications": {
+   "description": "Documents or confirmations certifying the status or acquirements of the bearer, or his fulfillment of conditions which authorize them to act or practise in a specified way; hence, often equal to a certificate.",
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "$ref": "#/definitions/ResumeCertificationType"
+   }
+  },
+  "person": {
+   "description": "Information to identify the person, including name, communication, demographic details and other identifiers.",
+   "$ref": "ler-rs/ResumePersonBaseType.json#"
+  },
+  "educationAndLearnings": {
+   "description": "Contains details documenting a person's education and learnings, which typically consists of formal higher education (high school or higher).",
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "$ref": "#/definitions/EducationAndLearningsType"
+   }
+  },
+  "employmentHistories": {
+   "description": "The prior and current details of a person's employment, work, or relevant experience such as might be reported within a professional profile, CV, resume, employment application, or similar document. Details of a particular tenure of employment or work with an organization.",
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "$ref": "#/definitions/EmploymentHistoriesType"
+   }
+  },
+  "licenses": {
+   "description": "Authoritative permission to hold a certain status or to do certain things, e.g. to practise some trade or profession. (OED license, n. a. A formal, usually a printed or written permission from a constituted authority to do something. b. The document embodying such a permission.)",
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "$ref": "#/definitions/ResumeLicensesType"
+   }
+  },
+  "skills": {
+   "description": "Skills are proficiencies and abilities developed through training and experience. Skills are quantifiable and/or measurable. Skills may involve manipulating things, data or people, either verbally, manually or mentally to accomplish an objective. Skills can be developed with practice or appropriate training.",
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "$ref": "#/definitions/SkillType"
+   }
+  },
+  "employmentPreferences": {
+   "description": "A list of information about a person's preferences in an ideal employer or company.",
+   "type": "array",
+   "items": {
+    "$ref": "common/EmployerPreferenceType.json#"
+   }
+  },
+  "positionPreferences": {
+   "description": "A list of information about a person's preferences in an ideal position or role.",
+   "type": "array",
+   "items": {
+    "$ref": "common/PositionPreferenceType.json#"
+   }
+  },
+  "communication": {
+   "description": "Allows capture of information about a variety of communication channels (telephone, email, fax, messaging, address, etc.).",
+   "$ref": "../../common/json/communication/CommunicationType.json#"
+  },
+  "attachments": {
+   "description": "Content of an attachments, which can be embedded or an external reference.",
+   "type": "array",
+   "items": {
+    "$ref": "../../common/json/base/AttachmentType.json#"
+   }
+  }
+ },
+ "definitions": {
+  "JobType": {
+   "description": "The reference to a related job for the Resume. This can be either a JDX Job Description or an HR Open Postion Opening instance.",
+   "type": "object",
+   "properties": {
+    "JDXjobDescription": {
+     "description": "The related JDX Job Description.",
+     "$ref": "jdx/JobDescriptionType.json#"
+    },
+    "positionOpening": {
+     "description": "The related HR Open Position Opening.",
+     "$ref": "PositionOpeningType.json#"
+    }
+   },
+   "additionalProperties": false,
+   "oneOf": [
+    {
+     "required": [
+      "JDXjobDescription"
+     ]
+    },
+    {
+     "required": [
+      "positionOpening"
+     ]
+    }
+   ]
+  },
+  "HROpenEducationAttendanceInternalType": {
+   "allOf": [
+    {
+     "$ref": "../../common/json/profile/EducationAttendanceType.json#"
+    },
+    {
+     "type": "object",
+     "required": [
+      "institution"
+     ]
+    }
+   ]
+  },
+  "EducationAndLearningsType": {
+   "anyOf": [
+    {
+     "$ref": "#/definitions/HROpenEducationAttendanceInternalType"
+    },
+    {
+     "$ref": "ler-rs/VerifiableEducationAttendanceType.json#"
+    }
+   ]
+  },
+  "HROpenEmploymentHistoryInternalType": {
+   "allOf": [
+    {
+     "$ref": "../../common/json/profile/EmployerHistoryType.json#"
+    },
+    {
+     "type": "object",
+     "required": [
+      "organization"
+     ]
+    }
+   ]
+  },
+  "EmploymentHistoriesType": {
+   "anyOf": [
+    {
+     "$ref": "#/definitions/HROpenEmploymentHistoryInternalType"
+    },
+    {
+     "$ref": "ler-rs/VerifiableEmploymentHistoryType.json#"
+    }
+   ]
+  },
+  "HROpenCertificationInternalType": {
+   "allOf": [
+    {
+     "$ref": "../../common/json/profile/CertificationType.json#"
+    },
+    {
+     "type": "object",
+     "required": [
+      "issuingAuthority"
+     ]
+    }
+   ]
+  },
+  "ResumeCertificationType": {
+   "anyOf": [
+    {
+     "$ref": "#/definitions/HROpenCertificationInternalType"
+    },
+    {
+     "$ref": "ler-rs/VerifiableCertificationType.json"
+    }
+   ]
+  },
+  "HROpenLicenseInternalType": {
+   "allOf": [
+    {
+     "$ref": "../../common/json/profile/LicenseType.json#"
+    },
+    {
+     "type": "object",
+     "required": [
+      "issuingAuthority"
+     ]
+    }
+   ]
+  },
+  "ResumeLicensesType": {
+   "anyOf": [
+    {
+     "$ref": "#/definitions/HROpenLicenseInternalType"
+    },
+    {
+     "$ref": "ler-rs/VerifiableLicenseType.json#"
+    }
+   ]
+  },
+  "HROpenSkillInternalType": {
+   "allOf": [
+    {
+     "$ref": "ler-rs/SkillType.json#"
+    },
+    {
+     "type": "object",
+     "required": [
+      "name"
+     ]
+    }
+   ]
+  },
+  "SkillType": {
+   "anyOf": [
+    {
+     "$ref": "#/definitions/HROpenSkillInternalType"
+    },
+    {
+     "$ref": "ler-rs/VerifiableSkillType.json#"
+    }
+   ]
+  }
+ }
+}
