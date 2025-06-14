@@ -15,6 +15,8 @@ export default function WorkEditor() {
   const addWorkExperience = () => {
     const newWork: WorkExperience = {
       name: '',
+      location: '',
+      description: '',
       position: '',
       url: '',
       startDate: '',
@@ -101,6 +103,14 @@ export default function WorkEditor() {
                 />
               </div>
               <div>
+                <Label>Location</Label>
+                <Input
+                  value={experience.location || ''}
+                  onChange={(e) => updateWorkExperience(index, 'location', e.target.value)}
+                  placeholder="City, State"
+                />
+              </div>
+              <div>
                 <Label>Company URL</Label>
                 <Input
                   value={experience.url}
@@ -113,7 +123,7 @@ export default function WorkEditor() {
                 <Input
                   value={experience.startDate}
                   onChange={(e) => updateWorkExperience(index, 'startDate', e.target.value)}
-                  placeholder="YYYY-MM"
+                  placeholder="YYYY-MM-DD"
                 />
               </div>
               <div>
@@ -121,9 +131,19 @@ export default function WorkEditor() {
                 <Input
                   value={experience.endDate}
                   onChange={(e) => updateWorkExperience(index, 'endDate', e.target.value)}
-                  placeholder="YYYY-MM or leave blank if current"
+                  placeholder="YYYY-MM-DD or leave blank if current"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label>Company Description</Label>
+              <Textarea
+                value={experience.description || ''}
+                onChange={(e) => updateWorkExperience(index, 'description', e.target.value)}
+                placeholder="Brief description of the company..."
+                rows={2}
+              />
             </div>
 
             <div>

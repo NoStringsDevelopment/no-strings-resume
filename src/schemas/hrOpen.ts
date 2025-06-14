@@ -1,110 +1,190 @@
 
-// HR Open schema mapping utilities
+// HR Open LER-RS schema mapping utilities
 export interface HROpenResume {
-  person: {
-    name: {
-      given: string;
-      family: string;
-    };
-    communication: {
-      email: string;
-      phone: string;
-      web: string;
-    };
-    location: {
-      address: {
-        line: string;
-        city: string;
-        postalCode: string;
-        countrySubDivisions: string;
-        country: string;
-      };
+  type: string;
+  narratives?: Narrative[];
+  job?: JobType;
+  certifications?: ResumeCertification[];
+  person?: ResumePersonBase;
+  educationAndLearnings?: EducationAndLearning[];
+  employmentHistories?: EmploymentHistory[];
+  licenses?: ResumeLicense[];
+  skills?: HROpenSkill[];
+  employmentPreferences?: EmployerPreference[];
+  positionPreferences?: PositionPreference[];
+  communication?: Communication;
+  attachments?: Attachment[];
+}
+
+export interface Narrative {
+  type?: string;
+  content?: string;
+}
+
+export interface JobType {
+  JDXjobDescription?: any;
+  positionOpening?: any;
+}
+
+export interface ResumePersonBase {
+  name?: {
+    given?: string;
+    family?: string;
+    formatted?: string;
+  };
+  communication?: {
+    email?: string;
+    phone?: string;
+    web?: string;
+  };
+  location?: {
+    address?: {
+      line?: string;
+      city?: string;
+      postalCode?: string;
+      countrySubDivisions?: string;
+      country?: string;
     };
   };
-  employment: Array<{
-    organization: {
-      name: string;
-      website: string;
-    };
-    position: {
-      title: string;
-      startDate: string;
-      endDate: string;
-      description: string;
-    };
-  }>;
-  education: Array<{
-    institution: {
-      name: string;
-    };
-    program: {
-      name: string;
-      type: string;
-    };
-    dates: {
-      start: string;
-      end: string;
-    };
-  }>;
-  skills: Array<{
-    name: string;
-    proficiencyLevel: string;
-  }>;
+}
+
+export interface EducationAndLearning {
+  institution?: {
+    name?: string;
+    url?: string;
+  };
+  program?: {
+    name?: string;
+    type?: string;
+  };
+  dates?: {
+    start?: string;
+    end?: string;
+  };
+  score?: string;
+  courses?: string[];
+}
+
+export interface EmploymentHistory {
+  organization?: {
+    name?: string;
+    website?: string;
+    location?: string;
+    description?: string;
+  };
+  position?: {
+    title?: string;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+    highlights?: string[];
+  };
+}
+
+export interface ResumeCertification {
+  name?: string;
+  issuingAuthority?: string;
+  date?: string;
+  url?: string;
+}
+
+export interface ResumeLicense {
+  name?: string;
+  issuingAuthority?: string;
+  date?: string;
+  url?: string;
+}
+
+export interface HROpenSkill {
+  name?: string;
+  proficiencyLevel?: string;
+  keywords?: string[];
+}
+
+export interface EmployerPreference {
+  name?: string;
+  preference?: string;
+}
+
+export interface PositionPreference {
+  title?: string;
+  preference?: string;
+}
+
+export interface Communication {
+  email?: string;
+  phone?: string;
+  web?: string;
+}
+
+export interface Attachment {
+  content?: string;
+  filename?: string;
+  mimeType?: string;
 }
 
 export function convertHROpenToJsonResume(hrOpen: HROpenResume): any {
-  const nameParts = hrOpen.person.name.given.split(' ');
-  const firstName = nameParts[0] || '';
-  const lastName = hrOpen.person.name.family || nameParts.slice(1).join(' ') || '';
+  const person = hrOpen.person;
+  const name = person?.name?.formatted || 
+               `${person?.name?.given || ''} ${person?.name?.family || ''}`.trim();
   
   return {
     basics: {
-      name: `${firstName} ${lastName}`.trim(),
-      email: hrOpen.person.communication.email || '',
-      phone: hrOpen.person.communication.phone || '',
-      url: hrOpen.person.communication.web || '',
+      name: name || '',
+      email: person?.communication?.email || hrOpen.communication?.email || '',
+      phone: person?.communication?.phone || hrOpen.communication?.phone || '',
+      url: person?.communication?.web || hrOpen.communication?.web || '',
       location: {
-        address: hrOpen.person.location.address.line || '',
-        city: hrOpen.person.location.address.city || '',
-        postalCode: hrOpen.person.location.address.postalCode || '',
-        region: hrOpen.person.location.address.countrySubDivisions || '',
-        countryCode: hrOpen.person.location.address.country || ''
+        address: person?.location?.address?.line || '',
+        city: person?.location?.address?.city || '',
+        postalCode: person?.location?.address?.postalCode || '',
+        region: person?.location?.address?.countrySubDivisions || '',
+        countryCode: person?.location?.address?.country || ''
       },
-      summary: '',
+      summary: hrOpen.narratives?.find(n => n.type === 'summary')?.content || '',
       label: '',
       image: '',
       profiles: []
     },
-    work: hrOpen.employment?.map(emp => ({
-      name: emp.organization.name,
-      position: emp.position.title,
-      url: emp.organization.website || '',
-      startDate: emp.position.startDate,
-      endDate: emp.position.endDate,
-      summary: emp.position.description,
-      highlights: [],
+    work: hrOpen.employmentHistories?.map(emp => ({
+      name: emp.organization?.name || '',
+      location: emp.organization?.location || '',
+      description: emp.organization?.description || '',
+      position: emp.position?.title || '',
+      url: emp.organization?.website || '',
+      startDate: emp.position?.startDate || '',
+      endDate: emp.position?.endDate || '',
+      summary: emp.position?.description || '',
+      highlights: emp.position?.highlights || [],
       visible: true
     })) || [],
-    education: hrOpen.education?.map(edu => ({
-      institution: edu.institution.name,
-      area: edu.program.name,
-      studyType: edu.program.type,
-      startDate: edu.dates.start,
-      endDate: edu.dates.end,
-      url: '',
-      score: '',
-      courses: [],
+    volunteer: [],
+    education: hrOpen.educationAndLearnings?.map(edu => ({
+      institution: edu.institution?.name || '',
+      url: edu.institution?.url || '',
+      area: edu.program?.name || '',
+      studyType: edu.program?.type || '',
+      startDate: edu.dates?.start || '',
+      endDate: edu.dates?.end || '',
+      score: edu.score || '',
+      courses: edu.courses || [],
       visible: true
     })) || [],
     skills: hrOpen.skills?.map(skill => ({
-      name: skill.name,
-      level: skill.proficiencyLevel,
-      keywords: [],
+      name: skill.name || '',
+      level: skill.proficiencyLevel || '',
+      keywords: skill.keywords || [],
       visible: true
     })) || [],
     projects: [],
     awards: [],
-    certificates: [],
+    certificates: hrOpen.certifications?.map(cert => ({
+      name: cert.name || '',
+      date: cert.date || '',
+      issuer: cert.issuingAuthority || '',
+      url: cert.url || '',
+      visible: true
+    })) || [],
     publications: [],
     languages: [],
     interests: [],

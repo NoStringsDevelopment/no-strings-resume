@@ -3,6 +3,7 @@
 export interface ResumeData {
   basics: Basics;
   work: WorkExperience[];
+  volunteer: Volunteer[];
   education: Education[];
   skills: Skill[];
   projects: Project[];
@@ -12,7 +13,7 @@ export interface ResumeData {
   languages: Language[];
   interests: Interest[];
   references: Reference[];
-  volunteer: Volunteer[];
+  meta?: Meta;
   
   // Extension: section visibility toggles
   sectionVisibility: SectionVisibility;
@@ -47,6 +48,19 @@ export interface Profile {
 
 export interface WorkExperience {
   name: string;
+  location?: string;
+  description?: string;
+  position: string;
+  url: string;
+  startDate: string;
+  endDate: string;
+  summary: string;
+  highlights: string[];
+  visible?: boolean;
+}
+
+export interface Volunteer {
+  organization: string;
   position: string;
   url: string;
   startDate: string;
@@ -132,20 +146,16 @@ export interface Reference {
   visible?: boolean;
 }
 
-export interface Volunteer {
-  organization: string;
-  position: string;
-  url: string;
-  startDate: string;
-  endDate: string;
-  summary: string;
-  highlights: string[];
-  visible?: boolean;
+export interface Meta {
+  canonical?: string;
+  version?: string;
+  lastModified?: string;
 }
 
 export interface SectionVisibility {
   basics: boolean;
   work: boolean;
+  volunteer: boolean;
   education: boolean;
   skills: boolean;
   projects: boolean;
@@ -155,7 +165,6 @@ export interface SectionVisibility {
   languages: boolean;
   interests: boolean;
   references: boolean;
-  volunteer: boolean;
 }
 
 // Theme types
