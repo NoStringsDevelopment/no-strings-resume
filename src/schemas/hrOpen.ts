@@ -1,4 +1,3 @@
-
 // HR Open LER-RS schema mapping utilities
 export interface HROpenResume {
   type: string;

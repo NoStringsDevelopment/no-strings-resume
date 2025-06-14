@@ -1,319 +1,717 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { ResumeData } from '../types/resume';
-import { getDefaultResumeData } from '../utils/defaultData';
+import { createContext, useContext, useReducer, ReactNode } from 'react';
+import { ResumeData, Theme } from '@/types/resume';
+import { defaultResumeData } from '@/data/defaultResume';
+import { defaultThemes } from '@/data/themes';
 
-interface ResumeState {
+export interface ResumeState {
   resumeData: ResumeData;
+  currentTheme: Theme;
   isLoading: boolean;
-  lastSaved: Date | null;
+  isSaved: boolean;
+  history: ResumeData[];
+  historyIndex: number;
 }
 
-type ResumeAction = 
+export type ResumeAction = 
   | { type: 'SET_RESUME_DATA'; payload: ResumeData }
-  | { type: 'UPDATE_BASICS'; payload: Partial<ResumeData['basics']> }
-  | { type: 'UPDATE_SECTION_VISIBILITY'; payload: { section: keyof ResumeData['sectionVisibility']; visible: boolean } }
-  | { type: 'ADD_WORK_EXPERIENCE'; payload: ResumeData['work'][0] }
-  | { type: 'UPDATE_WORK_EXPERIENCE'; payload: { index: number; data: Partial<ResumeData['work'][0]> } }
+  | { type: 'UPDATE_BASICS'; payload: Partial<Basics> }
+  | { type: 'UPDATE_SECTION_VISIBILITY'; payload: Partial<SectionVisibility> }
+  | { type: 'ADD_WORK_EXPERIENCE'; payload: WorkExperience }
+  | { type: 'UPDATE_WORK_EXPERIENCE'; payload: { index: number; data: Partial<WorkExperience> } }
   | { type: 'REMOVE_WORK_EXPERIENCE'; payload: number }
-  | { type: 'ADD_EDUCATION'; payload: ResumeData['education'][0] }
-  | { type: 'UPDATE_EDUCATION'; payload: { index: number; data: Partial<ResumeData['education'][0]> } }
+  | { type: 'ADD_EDUCATION'; payload: Education }
+  | { type: 'UPDATE_EDUCATION'; payload: { index: number; data: Partial<Education> } }
   | { type: 'REMOVE_EDUCATION'; payload: number }
-  | { type: 'UPDATE_SKILLS'; payload: ResumeData['skills'] }
-  | { type: 'ADD_PROJECT'; payload: ResumeData['projects'][0] }
-  | { type: 'UPDATE_PROJECT'; payload: { index: number; data: Partial<ResumeData['projects'][0]> } }
+  | { type: 'ADD_SKILL'; payload: Skill }
+  | { type: 'UPDATE_SKILL'; payload: { index: number; data: Partial<Skill> } }
+  | { type: 'REMOVE_SKILL'; payload: number }
+  | { type: 'ADD_PROJECT'; payload: Project }
+  | { type: 'UPDATE_PROJECT'; payload: { index: number; data: Partial<Project> } }
   | { type: 'REMOVE_PROJECT'; payload: number }
-  | { type: 'ADD_AWARD'; payload: ResumeData['awards'][0] }
-  | { type: 'UPDATE_AWARD'; payload: { index: number; data: Partial<ResumeData['awards'][0]> } }
+  | { type: 'ADD_AWARD'; payload: Award }
+  | { type: 'UPDATE_AWARD'; payload: { index: number; data: Partial<Award> } }
   | { type: 'REMOVE_AWARD'; payload: number }
-  | { type: 'ADD_CERTIFICATE'; payload: ResumeData['certificates'][0] }
-  | { type: 'UPDATE_CERTIFICATE'; payload: { index: number; data: Partial<ResumeData['certificates'][0]> } }
-  | { type: 'REMOVE_CERTIFICATE'; payload: number }
-  | { type: 'ADD_LANGUAGE'; payload: ResumeData['languages'][0] }
-  | { type: 'UPDATE_LANGUAGE'; payload: { index: number; data: Partial<ResumeData['languages'][0]> } }
+  | { type: 'ADD_LANGUAGE'; payload: Language }
+  | { type: 'UPDATE_LANGUAGE'; payload: { index: number; data: Partial<Language> } }
   | { type: 'REMOVE_LANGUAGE'; payload: number }
+  | { type: 'ADD_CERTIFICATE'; payload: Certificate }
+  | { type: 'UPDATE_CERTIFICATE'; payload: { index: number; data: Partial<Certificate> } }
+  | { type: 'REMOVE_CERTIFICATE'; payload: number }
+  | { type: 'ADD_PUBLICATION'; payload: Publication }
+  | { type: 'UPDATE_PUBLICATION'; payload: { index: number; data: Partial<Publication> } }
+  | { type: 'REMOVE_PUBLICATION'; payload: number }
+  | { type: 'ADD_VOLUNTEER'; payload: Volunteer }
+  | { type: 'UPDATE_VOLUNTEER'; payload: { index: number; data: Partial<Volunteer> } }
+  | { type: 'REMOVE_VOLUNTEER'; payload: number }
+  | { type: 'ADD_INTEREST'; payload: Interest }
+  | { type: 'UPDATE_INTEREST'; payload: { index: number; data: Partial<Interest> } }
+  | { type: 'REMOVE_INTEREST'; payload: number }
+  | { type: 'ADD_REFERENCE'; payload: Reference }
+  | { type: 'UPDATE_REFERENCE'; payload: { index: number; data: Partial<Reference> } }
+  | { type: 'REMOVE_REFERENCE'; payload: number }
+  | { type: 'SET_THEME'; payload: Theme }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'MARK_SAVED' };
+  | { type: 'MARK_SAVED' }
+  | { type: 'UNDO' }
+  | { type: 'REDO' }
+  | { type: 'CLEAR_ALL' }
+  | { type: 'RESET_TO_DEFAULT' };
 
 const initialState: ResumeState = {
-  resumeData: getDefaultResumeData(),
+  resumeData: defaultResumeData,
+  currentTheme: defaultThemes[0],
   isLoading: false,
-  lastSaved: null,
+  isSaved: true,
+  history: [defaultResumeData],
+  historyIndex: 0,
 };
 
-function resumeReducer(state: ResumeState, action: ResumeAction): ResumeState {
+const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState => {
+  const addToHistory = (newResumeData: ResumeData) => {
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push(newResumeData);
+    // Keep history size reasonable (max 50 entries)
+    if (newHistory.length > 50) {
+      newHistory.shift();
+    }
+    return {
+      history: newHistory,
+      historyIndex: newHistory.length - 1,
+    };
+  };
+
   switch (action.type) {
     case 'SET_RESUME_DATA':
-      return { ...state, resumeData: action.payload };
-    
+      const historyUpdate = addToHistory(action.payload);
+      return {
+        ...state,
+        resumeData: action.payload,
+        isSaved: false,
+        ...historyUpdate,
+      };
+
+    case 'UNDO':
+      if (state.historyIndex > 0) {
+        const newIndex = state.historyIndex - 1;
+        return {
+          ...state,
+          resumeData: state.history[newIndex],
+          historyIndex: newIndex,
+          isSaved: false,
+        };
+      }
+      return state;
+
+    case 'REDO':
+      if (state.historyIndex < state.history.length - 1) {
+        const newIndex = state.historyIndex + 1;
+        return {
+          ...state,
+          resumeData: state.history[newIndex],
+          historyIndex: newIndex,
+          isSaved: false,
+        };
+      }
+      return state;
+
+    case 'CLEAR_ALL':
+      const clearedData = {
+        ...defaultResumeData,
+        basics: {
+          ...defaultResumeData.basics,
+          name: '',
+          email: '',
+          phone: '',
+          url: '',
+          summary: '',
+          label: '',
+          image: '',
+          location: {
+            address: '',
+            postalCode: '',
+            city: '',
+            countryCode: '',
+            region: '',
+          },
+          profiles: [],
+        },
+        work: [],
+        volunteer: [],
+        education: [],
+        skills: [],
+        projects: [],
+        awards: [],
+        certificates: [],
+        publications: [],
+        languages: [],
+        interests: [],
+        references: [],
+      };
+      const clearHistoryUpdate = addToHistory(clearedData);
+      return {
+        ...state,
+        resumeData: clearedData,
+        isSaved: false,
+        ...clearHistoryUpdate,
+      };
+
+    case 'RESET_TO_DEFAULT':
+      const resetHistoryUpdate = addToHistory(defaultResumeData);
+      return {
+        ...state,
+        resumeData: defaultResumeData,
+        isSaved: false,
+        ...resetHistoryUpdate,
+      };
+
     case 'UPDATE_BASICS':
-      return {
-        ...state,
-        resumeData: {
-          ...state.resumeData,
-          basics: { ...state.resumeData.basics, ...action.payload }
+      const updatedBasics = {
+        ...state.resumeData,
+        basics: {
+          ...state.resumeData.basics,
+          ...action.payload
         }
       };
-    
+      const basicsHistoryUpdate = addToHistory(updatedBasics);
+      return {
+        ...state,
+        resumeData: updatedBasics,
+        isSaved: false,
+        ...basicsHistoryUpdate,
+      };
+
     case 'UPDATE_SECTION_VISIBILITY':
-      return {
-        ...state,
-        resumeData: {
-          ...state.resumeData,
-          sectionVisibility: {
-            ...state.resumeData.sectionVisibility,
-            [action.payload.section]: action.payload.visible
-          }
+      const updatedVisibility = {
+        ...state.resumeData,
+        sectionVisibility: {
+          ...state.resumeData.sectionVisibility,
+          ...action.payload
         }
       };
-    
+      return {
+        ...state,
+        resumeData: updatedVisibility,
+        isSaved: false,
+      };
+
     case 'ADD_WORK_EXPERIENCE':
+      const updatedWorkExperiences = {
+        ...state.resumeData,
+        work: [...state.resumeData.work, action.payload]
+      };
+      const workHistoryUpdate = addToHistory(updatedWorkExperiences);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          work: [...state.resumeData.work, action.payload]
-        }
+        resumeData: updatedWorkExperiences,
+        isSaved: false,
+        ...workHistoryUpdate,
       };
-    
+
     case 'UPDATE_WORK_EXPERIENCE':
+      const updatedWork = state.resumeData.work.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedWorkData = {
+        ...state.resumeData,
+        work: updatedWork
+      };
+      const updateWorkHistoryUpdate = addToHistory(updatedWorkData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          work: state.resumeData.work.map((exp, index) => 
-            index === action.payload.index 
-              ? { ...exp, ...action.payload.data }
-              : exp
-          )
-        }
+        resumeData: updatedWorkData,
+        isSaved: false,
+        ...updateWorkHistoryUpdate,
       };
-    
+
     case 'REMOVE_WORK_EXPERIENCE':
+      const filteredWork = state.resumeData.work.filter((_, index) => index !== action.payload);
+      const removedWorkData = {
+        ...state.resumeData,
+        work: filteredWork
+      };
+      const removeWorkHistoryUpdate = addToHistory(removedWorkData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          work: state.resumeData.work.filter((_, index) => index !== action.payload)
-        }
+        resumeData: removedWorkData,
+        isSaved: false,
+        ...removeWorkHistoryUpdate,
       };
-    
+
     case 'ADD_EDUCATION':
+      const updatedEducation = {
+        ...state.resumeData,
+        education: [...state.resumeData.education, action.payload]
+      };
+      const educationHistoryUpdate = addToHistory(updatedEducation);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          education: [...state.resumeData.education, action.payload]
-        }
+        resumeData: updatedEducation,
+        isSaved: false,
+        ...educationHistoryUpdate,
       };
-    
+
     case 'UPDATE_EDUCATION':
+      const updatedEducationItems = state.resumeData.education.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedEducationData = {
+        ...state.resumeData,
+        education: updatedEducationItems
+      };
+      const updateEducationHistoryUpdate = addToHistory(updatedEducationData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          education: state.resumeData.education.map((edu, index) => 
-            index === action.payload.index 
-              ? { ...edu, ...action.payload.data }
-              : edu
-          )
-        }
+        resumeData: updatedEducationData,
+        isSaved: false,
+        ...updateEducationHistoryUpdate,
       };
-    
+
     case 'REMOVE_EDUCATION':
-      return {
-        ...state,
-        resumeData: {
-          ...state.resumeData,
-          education: state.resumeData.education.filter((_, index) => index !== action.payload)
-        }
+      const filteredEducation = state.resumeData.education.filter((_, index) => index !== action.payload);
+      const removedEducationData = {
+        ...state.resumeData,
+        education: filteredEducation
       };
-    
-    case 'UPDATE_SKILLS':
+      const removeEducationHistoryUpdate = addToHistory(removedEducationData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          skills: action.payload
-        }
+        resumeData: removedEducationData,
+        isSaved: false,
+        ...removeEducationHistoryUpdate,
+      };
+
+    case 'ADD_SKILL':
+      const updatedSkills = {
+        ...state.resumeData,
+        skills: [...state.resumeData.skills, action.payload]
+      };
+      const skillsHistoryUpdate = addToHistory(updatedSkills);
+      return {
+        ...state,
+        resumeData: updatedSkills,
+        isSaved: false,
+        ...skillsHistoryUpdate,
+      };
+
+    case 'UPDATE_SKILL':
+      const updatedSkillItems = state.resumeData.skills.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedSkillData = {
+        ...state.resumeData,
+        skills: updatedSkillItems
+      };
+      const updateSkillHistoryUpdate = addToHistory(updatedSkillData);
+      return {
+        ...state,
+        resumeData: updatedSkillData,
+        isSaved: false,
+        ...updateSkillHistoryUpdate,
+      };
+
+    case 'REMOVE_SKILL':
+      const filteredSkills = state.resumeData.skills.filter((_, index) => index !== action.payload);
+      const removedSkillData = {
+        ...state.resumeData,
+        skills: filteredSkills
+      };
+      const removeSkillHistoryUpdate = addToHistory(removedSkillData);
+      return {
+        ...state,
+        resumeData: removedSkillData,
+        isSaved: false,
+        ...removeSkillHistoryUpdate,
       };
 
     case 'ADD_PROJECT':
+      const updatedProjects = {
+        ...state.resumeData,
+        projects: [...state.resumeData.projects, action.payload]
+      };
+      const projectsHistoryUpdate = addToHistory(updatedProjects);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          projects: [...state.resumeData.projects, action.payload]
-        }
+        resumeData: updatedProjects,
+        isSaved: false,
+        ...projectsHistoryUpdate,
       };
 
     case 'UPDATE_PROJECT':
+      const updatedProjectItems = state.resumeData.projects.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedProjectData = {
+        ...state.resumeData,
+        projects: updatedProjectItems
+      };
+      const updateProjectHistoryUpdate = addToHistory(updatedProjectData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          projects: state.resumeData.projects.map((project, index) =>
-            index === action.payload.index
-              ? { ...project, ...action.payload.data }
-              : project
-          )
-        }
+        resumeData: updatedProjectData,
+        isSaved: false,
+        ...updateProjectHistoryUpdate,
       };
 
     case 'REMOVE_PROJECT':
+      const filteredProjects = state.resumeData.projects.filter((_, index) => index !== action.payload);
+      const removedProjectData = {
+        ...state.resumeData,
+        projects: filteredProjects
+      };
+      const removeProjectHistoryUpdate = addToHistory(removedProjectData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          projects: state.resumeData.projects.filter((_, index) => index !== action.payload)
-        }
+        resumeData: removedProjectData,
+        isSaved: false,
+        ...removeProjectHistoryUpdate,
       };
 
-      case 'ADD_AWARD':
-        return {
-          ...state,
-          resumeData: {
-            ...state.resumeData,
-            awards: [...state.resumeData.awards, action.payload]
-          }
-        };
-  
-      case 'UPDATE_AWARD':
-        return {
-          ...state,
-          resumeData: {
-            ...state.resumeData,
-            awards: state.resumeData.awards.map((award, index) =>
-              index === action.payload.index
-                ? { ...award, ...action.payload.data }
-                : award
-            )
-          }
-        };
-  
-      case 'REMOVE_AWARD':
-        return {
-          ...state,
-          resumeData: {
-            ...state.resumeData,
-            awards: state.resumeData.awards.filter((_, index) => index !== action.payload)
-          }
-        };
-
-    case 'ADD_CERTIFICATE':
+    case 'ADD_AWARD':
+      const updatedAwards = {
+        ...state.resumeData,
+        awards: [...state.resumeData.awards, action.payload]
+      };
+      const awardsHistoryUpdate = addToHistory(updatedAwards);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          certificates: [...state.resumeData.certificates, action.payload]
-        }
+        resumeData: updatedAwards,
+        isSaved: false,
+        ...awardsHistoryUpdate,
+      };
+
+    case 'UPDATE_AWARD':
+      const updatedAwardItems = state.resumeData.awards.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedAwardData = {
+        ...state.resumeData,
+        awards: updatedAwardItems
+      };
+      const updateAwardHistoryUpdate = addToHistory(updatedAwardData);
+      return {
+        ...state,
+        resumeData: updatedAwardData,
+        isSaved: false,
+        ...updateAwardHistoryUpdate,
+      };
+
+    case 'REMOVE_AWARD':
+      const filteredAwards = state.resumeData.awards.filter((_, index) => index !== action.payload);
+      const removedAwardData = {
+        ...state.resumeData,
+        awards: filteredAwards
+      };
+      const removeAwardHistoryUpdate = addToHistory(removedAwardData);
+      return {
+        ...state,
+        resumeData: removedAwardData,
+        isSaved: false,
+        ...removeAwardHistoryUpdate,
+      };
+
+    case 'ADD_LANGUAGE':
+      const updatedLanguages = {
+        ...state.resumeData,
+        languages: [...state.resumeData.languages, action.payload]
+      };
+      const languagesHistoryUpdate = addToHistory(updatedLanguages);
+      return {
+        ...state,
+        resumeData: updatedLanguages,
+        isSaved: false,
+        ...languagesHistoryUpdate,
+      };
+
+    case 'UPDATE_LANGUAGE':
+      const updatedLanguageItems = state.resumeData.languages.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedLanguageData = {
+        ...state.resumeData,
+        languages: updatedLanguageItems
+      };
+      const updateLanguageHistoryUpdate = addToHistory(updatedLanguageData);
+      return {
+        ...state,
+        resumeData: updatedLanguageData,
+        isSaved: false,
+        ...updateLanguageHistoryUpdate,
+      };
+
+    case 'REMOVE_LANGUAGE':
+      const filteredLanguages = state.resumeData.languages.filter((_, index) => index !== action.payload);
+      const removedLanguageData = {
+        ...state.resumeData,
+        languages: filteredLanguages
+      };
+      const removeLanguageHistoryUpdate = addToHistory(removedLanguageData);
+      return {
+        ...state,
+        resumeData: removedLanguageData,
+        isSaved: false,
+        ...removeLanguageHistoryUpdate,
+      };
+
+    case 'ADD_CERTIFICATE':
+      const updatedCertificates = {
+        ...state.resumeData,
+        certificates: [...state.resumeData.certificates, action.payload]
+      };
+      const certificatesHistoryUpdate = addToHistory(updatedCertificates);
+      return {
+        ...state,
+        resumeData: updatedCertificates,
+        isSaved: false,
+        ...certificatesHistoryUpdate,
       };
 
     case 'UPDATE_CERTIFICATE':
+      const updatedCertificateItems = state.resumeData.certificates.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedCertificateData = {
+        ...state.resumeData,
+        certificates: updatedCertificateItems
+      };
+      const updateCertificateHistoryUpdate = addToHistory(updatedCertificateData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          certificates: state.resumeData.certificates.map((certificate, index) =>
-            index === action.payload.index
-              ? { ...certificate, ...action.payload.data }
-              : certificate
-          )
-        }
+        resumeData: updatedCertificateData,
+        isSaved: false,
+        ...updateCertificateHistoryUpdate,
       };
 
     case 'REMOVE_CERTIFICATE':
+      const filteredCertificates = state.resumeData.certificates.filter((_, index) => index !== action.payload);
+      const removedCertificateData = {
+        ...state.resumeData,
+        certificates: filteredCertificates
+      };
+      const removeCertificateHistoryUpdate = addToHistory(removedCertificateData);
       return {
         ...state,
-        resumeData: {
-          ...state.resumeData,
-          certificates: state.resumeData.certificates.filter((_, index) => index !== action.payload)
-        }
+        resumeData: removedCertificateData,
+        isSaved: false,
+        ...removeCertificateHistoryUpdate,
       };
 
-      case 'ADD_LANGUAGE':
-        return {
-          ...state,
-          resumeData: {
-            ...state.resumeData,
-            languages: [...state.resumeData.languages, action.payload]
-          }
-        };
-  
-      case 'UPDATE_LANGUAGE':
-        return {
-          ...state,
-          resumeData: {
-            ...state.resumeData,
-            languages: state.resumeData.languages.map((language, index) =>
-              index === action.payload.index
-                ? { ...language, ...action.payload.data }
-                : language
-            )
-          }
-        };
-  
-      case 'REMOVE_LANGUAGE':
-        return {
-          ...state,
-          resumeData: {
-            ...state.resumeData,
-            languages: state.resumeData.languages.filter((_, index) => index !== action.payload)
-          }
-        };
-    
+    case 'ADD_PUBLICATION':
+      const updatedPublications = {
+        ...state.resumeData,
+        publications: [...state.resumeData.publications, action.payload]
+      };
+      const publicationsHistoryUpdate = addToHistory(updatedPublications);
+      return {
+        ...state,
+        resumeData: updatedPublications,
+        isSaved: false,
+        ...publicationsHistoryUpdate,
+      };
+
+    case 'UPDATE_PUBLICATION':
+      const updatedPublicationItems = state.resumeData.publications.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedPublicationData = {
+        ...state.resumeData,
+        publications: updatedPublicationItems
+      };
+      const updatePublicationHistoryUpdate = addToHistory(updatedPublicationData);
+      return {
+        ...state,
+        resumeData: updatedPublicationData,
+        isSaved: false,
+        ...updatePublicationHistoryUpdate,
+      };
+
+    case 'REMOVE_PUBLICATION':
+      const filteredPublications = state.resumeData.publications.filter((_, index) => index !== action.payload);
+      const removedPublicationData = {
+        ...state.resumeData,
+        publications: filteredPublications
+      };
+      const removePublicationHistoryUpdate = addToHistory(removedPublicationData);
+      return {
+        ...state,
+        resumeData: removedPublicationData,
+        isSaved: false,
+        ...removePublicationHistoryUpdate,
+      };
+
+    case 'ADD_VOLUNTEER':
+      const updatedVolunteers = {
+        ...state.resumeData,
+        volunteer: [...state.resumeData.volunteer, action.payload]
+      };
+      const volunteersHistoryUpdate = addToHistory(updatedVolunteers);
+      return {
+        ...state,
+        resumeData: updatedVolunteers,
+        isSaved: false,
+        ...volunteersHistoryUpdate,
+      };
+
+    case 'UPDATE_VOLUNTEER':
+      const updatedVolunteerItems = state.resumeData.volunteer.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedVolunteerData = {
+        ...state.resumeData,
+        volunteer: updatedVolunteerItems
+      };
+      const updateVolunteerHistoryUpdate = addToHistory(updatedVolunteerData);
+      return {
+        ...state,
+        resumeData: updatedVolunteerData,
+        isSaved: false,
+        ...updateVolunteerHistoryUpdate,
+      };
+
+    case 'REMOVE_VOLUNTEER':
+      const filteredVolunteers = state.resumeData.volunteer.filter((_, index) => index !== action.payload);
+      const removedVolunteerData = {
+        ...state.resumeData,
+        volunteer: filteredVolunteers
+      };
+      const removeVolunteerHistoryUpdate = addToHistory(removedVolunteerData);
+      return {
+        ...state,
+        resumeData: removedVolunteerData,
+        isSaved: false,
+        ...removeVolunteerHistoryUpdate,
+      };
+
+    case 'ADD_INTEREST':
+      const updatedInterests = {
+        ...state.resumeData,
+        interests: [...state.resumeData.interests, action.payload]
+      };
+      const interestsHistoryUpdate = addToHistory(updatedInterests);
+      return {
+        ...state,
+        resumeData: updatedInterests,
+        isSaved: false,
+        ...interestsHistoryUpdate,
+      };
+
+    case 'UPDATE_INTEREST':
+      const updatedInterestItems = state.resumeData.interests.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedInterestData = {
+        ...state.resumeData,
+        interests: updatedInterestItems
+      };
+      const updateInterestHistoryUpdate = addToHistory(updatedInterestData);
+      return {
+        ...state,
+        resumeData: updatedInterestData,
+        isSaved: false,
+        ...updateInterestHistoryUpdate,
+      };
+
+    case 'REMOVE_INTEREST':
+      const filteredInterests = state.resumeData.interests.filter((_, index) => index !== action.payload);
+      const removedInterestData = {
+        ...state.resumeData,
+        interests: filteredInterests
+      };
+      const removeInterestHistoryUpdate = addToHistory(removedInterestData);
+      return {
+        ...state,
+        resumeData: removedInterestData,
+        isSaved: false,
+        ...removeInterestHistoryUpdate,
+      };
+
+    case 'ADD_REFERENCE':
+      const updatedReferences = {
+        ...state.resumeData,
+        references: [...state.resumeData.references, action.payload]
+      };
+      const referencesHistoryUpdate = addToHistory(updatedReferences);
+      return {
+        ...state,
+        resumeData: updatedReferences,
+        isSaved: false,
+        ...referencesHistoryUpdate,
+      };
+
+    case 'UPDATE_REFERENCE':
+      const updatedReferenceItems = state.resumeData.references.map((item, index) => 
+        index === action.payload.index ? { ...item, ...action.payload.data } : item
+      );
+      const updatedReferenceData = {
+        ...state.resumeData,
+        references: updatedReferenceItems
+      };
+      const updateReferenceHistoryUpdate = addToHistory(updatedReferenceData);
+      return {
+        ...state,
+        resumeData: updatedReferenceData,
+        isSaved: false,
+        ...updateReferenceHistoryUpdate,
+      };
+
+    case 'REMOVE_REFERENCE':
+      const filteredReferences = state.resumeData.references.filter((_, index) => index !== action.payload);
+      const removedReferenceData = {
+        ...state.resumeData,
+        references: filteredReferences
+      };
+      const removeReferenceHistoryUpdate = addToHistory(removedReferenceData);
+      return {
+        ...state,
+        resumeData: removedReferenceData,
+        isSaved: false,
+        ...removeReferenceHistoryUpdate,
+      };
+
+    case 'SET_THEME':
+      return {
+        ...state,
+        currentTheme: action.payload,
+        isSaved: false,
+      };
+
     case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
-    
+      return {
+        ...state,
+        isLoading: action.payload,
+      };
+
     case 'MARK_SAVED':
-      return { ...state, lastSaved: new Date() };
-    
+      return {
+        ...state,
+        isSaved: true,
+      };
+
     default:
       return state;
   }
-}
+};
 
-const ResumeContext = createContext<{
+interface ResumeContextType {
   state: ResumeState;
   dispatch: React.Dispatch<ResumeAction>;
-} | null>(null);
+}
 
-export function ResumeProvider({ children }: { children: React.ReactNode }) {
+const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
+
+export const ResumeProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(resumeReducer, initialState);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const savedData = localStorage.getItem('nostrings-resume-data');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        dispatch({ type: 'SET_RESUME_DATA', payload: parsed });
-        console.log('Loaded resume data from localStorage');
-      } catch (error) {
-        console.error('Failed to parse saved resume data:', error);
-      }
-    }
-  }, []);
-
-  // Save to localStorage when data changes
-  useEffect(() => {
-    if (state.lastSaved !== null || state.resumeData !== getDefaultResumeData()) {
-      localStorage.setItem('nostrings-resume-data', JSON.stringify(state.resumeData));
-      dispatch({ type: 'MARK_SAVED' });
-      console.log('Saved resume data to localStorage');
-    }
-  }, [state.resumeData]);
 
   return (
     <ResumeContext.Provider value={{ state, dispatch }}>
       {children}
     </ResumeContext.Provider>
   );
-}
+};
 
-export function useResume() {
+export const useResume = () => {
   const context = useContext(ResumeContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useResume must be used within a ResumeProvider');
   }
   return context;
-}
+};

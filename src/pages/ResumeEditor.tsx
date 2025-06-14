@@ -1,8 +1,7 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Edit, Eye, Palette, Home, Upload, Download } from "lucide-react";
+import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useResume } from "@/context/ResumeContext";
@@ -62,55 +61,152 @@ const ResumeEditor = () => {
     });
   };
 
+  const handleUndo = () => {
+    dispatch({ type: 'UNDO' });
+    toast({
+      title: "Undone",
+      description: "Last action has been undone."
+    });
+  };
+
+  const handleRedo = () => {
+    dispatch({ type: 'REDO' });
+    toast({
+      title: "Redone",
+      description: "Action has been redone."
+    });
+  };
+
+  const handleClearAll = () => {
+    dispatch({ type: 'CLEAR_ALL' });
+    toast({
+      title: "Cleared",
+      description: "All resume data has been cleared."
+    });
+  };
+
+  const handleResetToDefault = () => {
+    dispatch({ type: 'RESET_TO_DEFAULT' });
+    toast({
+      title: "Reset",
+      description: "Resume has been reset to default template."
+    });
+  };
+
+  const canUndo = state.historyIndex > 0;
+  const canRedo = state.historyIndex < state.history.length - 1;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/')}
-                className="flex items-center space-x-2"
-              >
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Resume Editor</h1>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">NR</span>
+                </div>
+                <span className="font-semibold text-gray-900 hidden sm:block">No Strings Resume</span>
+              </div>
+              <div className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
+                Edit Mode
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
+            
+            <div className="flex items-center space-x-1">
               <Button 
-                variant="outline"
+                variant="ghost"
+                size="sm"
+                onClick={handleUndo}
+                disabled={!canUndo}
+                className="flex items-center space-x-1"
+                title="Undo"
+              >
+                <Undo className="w-4 h-4" />
+                <span className="hidden md:block">Undo</span>
+              </Button>
+              
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={handleRedo}
+                disabled={!canRedo}
+                className="flex items-center space-x-1"
+                title="Redo"
+              >
+                <Redo className="w-4 h-4" />
+                <span className="hidden md:block">Redo</span>
+              </Button>
+              
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              
+              <Button 
+                variant="ghost"
+                size="sm"
                 onClick={handleImport}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-1"
+                title="Import"
               >
                 <Upload className="w-4 h-4" />
-                <span>Import</span>
+                <span className="hidden md:block">Import</span>
               </Button>
+              
               <Button 
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 onClick={handleExportJson}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-1"
+                title="Export"
               >
                 <Download className="w-4 h-4" />
-                <span>Export JSON</span>
+                <span className="hidden md:block">Export</span>
               </Button>
+              
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAll}
+                className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                title="Clear All"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden md:block">Clear</span>
+              </Button>
+              
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={handleResetToDefault}
+                className="flex items-center space-x-1"
+                title="Reset to Default"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="hidden md:block">Reset</span>
+              </Button>
+              
+              <div className="w-px h-6 bg-gray-300 mx-1" />
+              
               <Button 
                 variant="outline"
+                size="sm"
                 onClick={() => navigate('/view')}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-1"
               >
                 <Eye className="w-4 h-4" />
-                <span>View</span>
+                <span className="hidden sm:block">View</span>
               </Button>
+              
               <Button 
                 variant="outline"
+                size="sm"
                 onClick={() => navigate('/theme')}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-1"
               >
                 <Palette className="w-4 h-4" />
-                <span>Theme</span>
+                <span className="hidden sm:block">Theme</span>
               </Button>
             </div>
           </div>
