@@ -97,8 +97,7 @@ const defaultResumeData: ResumeData = {
     publications: true,
     languages: true,
     interests: true,
-    references: true,
-    volunteer: true
+    references: true
   }
 };
 
@@ -164,12 +163,12 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
         ...state.resumeData,
         skills: action.payload
       };
-      const skillsHistoryUpdate = addToHistory(updatedSkillsData);
+      const updateSkillsHistoryUpdate = addToHistory(updatedSkillsData);
       return {
         ...state,
         resumeData: updatedSkillsData,
         isSaved: false,
-        ...skillsHistoryUpdate,
+        ...updateSkillsHistoryUpdate,
       };
 
     case 'UNDO':
@@ -367,12 +366,12 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
         ...state.resumeData,
         skills: [...state.resumeData.skills, action.payload]
       };
-      const skillsHistoryUpdate = addToHistory(updatedSkills);
+      const addSkillHistoryUpdate = addToHistory(updatedSkills);
       return {
         ...state,
         resumeData: updatedSkills,
         isSaved: false,
-        ...skillsHistoryUpdate,
+        ...addSkillHistoryUpdate,
       };
 
     case 'UPDATE_SKILL':
