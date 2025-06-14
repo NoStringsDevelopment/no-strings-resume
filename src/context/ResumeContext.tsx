@@ -1,7 +1,5 @@
 import { createContext, useContext, useReducer, ReactNode } from 'react';
-import { ResumeData, Theme } from '@/types/resume';
-import { defaultResumeData } from '@/data/defaultResume';
-import { defaultThemes } from '@/data/themes';
+import { ResumeData, Theme, Basics, SectionVisibility, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference } from '@/types/resume';
 
 export interface ResumeState {
   resumeData: ResumeData;
@@ -24,6 +22,7 @@ export type ResumeAction =
   | { type: 'REMOVE_EDUCATION'; payload: number }
   | { type: 'ADD_SKILL'; payload: Skill }
   | { type: 'UPDATE_SKILL'; payload: { index: number; data: Partial<Skill> } }
+  | { type: 'UPDATE_SKILLS'; payload: Skill[] }
   | { type: 'REMOVE_SKILL'; payload: number }
   | { type: 'ADD_PROJECT'; payload: Project }
   | { type: 'UPDATE_PROJECT'; payload: { index: number; data: Partial<Project> } }
@@ -57,6 +56,76 @@ export type ResumeAction =
   | { type: 'CLEAR_ALL' }
   | { type: 'RESET_TO_DEFAULT' };
 
+const defaultResumeData: ResumeData = {
+  basics: {
+    name: '',
+    label: '',
+    image: '',
+    email: '',
+    phone: '',
+    url: '',
+    summary: '',
+    location: {
+      address: '',
+      postalCode: '',
+      city: '',
+      countryCode: '',
+      region: ''
+    },
+    profiles: []
+  },
+  work: [],
+  volunteer: [],
+  education: [],
+  skills: [],
+  projects: [],
+  awards: [],
+  certificates: [],
+  publications: [],
+  languages: [],
+  interests: [],
+  references: [],
+  sectionVisibility: {
+    basics: true,
+    work: true,
+    volunteer: true,
+    education: true,
+    skills: true,
+    projects: true,
+    awards: true,
+    certificates: true,
+    publications: true,
+    languages: true,
+    interests: true,
+    references: true,
+    volunteer: true
+  }
+};
+
+const defaultThemes: Theme[] = [
+  {
+    id: 'modern',
+    name: 'Modern',
+    colors: {
+      primary: '#3B82F6',
+      secondary: '#6B7280',
+      accent: '#EF4444',
+      text: '#111827',
+      textSecondary: '#6B7280',
+      background: '#FFFFFF',
+      border: '#E5E7EB'
+    },
+    fonts: {
+      heading: 'Inter',
+      body: 'Inter'
+    },
+    spacing: {
+      section: '2rem',
+      item: '1rem'
+    }
+  }
+];
+
 const initialState: ResumeState = {
   resumeData: defaultResumeData,
   currentTheme: defaultThemes[0],
@@ -88,6 +157,19 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
         resumeData: action.payload,
         isSaved: false,
         ...historyUpdate,
+      };
+
+    case 'UPDATE_SKILLS':
+      const updatedSkillsData = {
+        ...state.resumeData,
+        skills: action.payload
+      };
+      const skillsHistoryUpdate = addToHistory(updatedSkillsData);
+      return {
+        ...state,
+        resumeData: updatedSkillsData,
+        isSaved: false,
+        ...skillsHistoryUpdate,
       };
 
     case 'UNDO':

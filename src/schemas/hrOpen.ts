@@ -157,7 +157,6 @@ export function convertHROpenToJsonResume(hrOpen: HROpenResume): any {
       highlights: emp.position?.highlights || [],
       visible: true
     })) || [],
-    volunteer: [],
     education: hrOpen.educationAndLearnings?.map(edu => ({
       institution: edu.institution?.name || '',
       url: edu.institution?.url || '',
