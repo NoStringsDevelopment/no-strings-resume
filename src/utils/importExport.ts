@@ -25,9 +25,30 @@ export function exportResumeAsJson(resumeData: ResumeData): string {
   return JSON.stringify(cleanData, null, 2);
 }
 
-export function exportResumeWithExtensions(resumeData: ResumeData): string {
-  // Export with all our custom fields for backup/restore
-  return JSON.stringify(resumeData, null, 2);
+function validateJsonResumeStructure(data: any): boolean {
+  // Basic validation for JSON Resume format
+  if (!data || typeof data !== 'object') return false;
+  
+  // Check if it has basics section (required in JSON Resume)
+  if (!data.basics || typeof data.basics !== 'object') return false;
+  
+  // Check if arrays are actually arrays
+  const arrayFields = ['work', 'education', 'skills', 'projects', 'awards', 'certificates', 'publications', 'languages', 'interests', 'references', 'volunteer'];
+  for (const field of arrayFields) {
+    if (data[field] && !Array.isArray(data[field])) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+function validateHROpenStructure(data: any): boolean {
+  // Basic validation for HR Open format
+  if (!data || typeof data !== 'object') return false;
+  
+  // Check for HR Open specific structure
+  return !!(data.person && data.person.name);
 }
 
 export function importResumeData(jsonString: string): ResumeData {
@@ -35,9 +56,14 @@ export function importResumeData(jsonString: string): ResumeData {
     const parsed = JSON.parse(jsonString);
     
     // Check if it's HR Open format
-    if (parsed.person && parsed.employment) {
+    if (validateHROpenStructure(parsed)) {
       console.log('Detected HR Open format, converting...');
       return convertHROpenToJsonResume(parsed as HROpenResume);
+    }
+    
+    // Validate JSON Resume structure
+    if (!validateJsonResumeStructure(parsed)) {
+      throw new Error('Invalid resume format. Expected JSON Resume v1.2.1 or HR Open format.');
     }
     
     // It's JSON Resume format, add our extensions if missing
@@ -99,7 +125,10 @@ export function importResumeData(jsonString: string): ResumeData {
     return resumeData;
   } catch (error) {
     console.error('Error importing resume data:', error);
-    throw new Error('Invalid JSON format');
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Invalid JSON format or unsupported file structure');
   }
 }
 

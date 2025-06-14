@@ -10,7 +10,11 @@ import BasicEditor from "@/components/editor/BasicEditor";
 import WorkEditor from "@/components/editor/WorkEditor";
 import EducationEditor from "@/components/editor/EducationEditor";
 import SkillsEditor from "@/components/editor/SkillsEditor";
-import { exportResumeAsJson, exportResumeWithExtensions, importResumeData, downloadFile } from "@/utils/importExport";
+import ProjectsEditor from "@/components/editor/ProjectsEditor";
+import AwardsEditor from "@/components/editor/AwardsEditor";
+import LanguagesEditor from "@/components/editor/LanguagesEditor";
+import AdditionalSectionsEditor from "@/components/editor/AdditionalSectionsEditor";
+import { exportResumeAsJson, importResumeData, downloadFile } from "@/utils/importExport";
 
 const ResumeEditor = () => {
   const navigate = useNavigate();
@@ -35,12 +39,13 @@ const ResumeEditor = () => {
         dispatch({ type: 'SET_RESUME_DATA', payload: resumeData });
         toast({
           title: "Import Successful",
-          description: "Resume data has been imported successfully."
+          description: "Resume data has been imported and validated successfully."
         });
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to import resume data. Please check the file format.";
         toast({
           title: "Import Failed",
-          description: "Failed to import resume data. Please check the file format.",
+          description: errorMessage,
           variant: "destructive"
         });
       }
@@ -54,15 +59,6 @@ const ResumeEditor = () => {
     toast({
       title: "Export Successful",
       description: "Resume exported as JSON Resume format."
-    });
-  };
-
-  const handleExportWithExtensions = () => {
-    const jsonContent = exportResumeWithExtensions(state.resumeData);
-    downloadFile(jsonContent, 'resume-backup.json', 'application/json');
-    toast({
-      title: "Backup Created",
-      description: "Full resume backup with all settings exported."
     });
   };
 
@@ -106,7 +102,7 @@ const ResumeEditor = () => {
                 className="flex items-center space-x-2"
               >
                 <Eye className="w-4 h-4" />
-                <span>Preview</span>
+                <span>View</span>
               </Button>
               <Button 
                 variant="outline"
@@ -153,33 +149,19 @@ const ResumeEditor = () => {
             </TabsContent>
 
             <TabsContent value="projects" className="space-y-6">
-              <div className="text-center py-8 text-gray-500">
-                <p>Projects editor coming soon...</p>
-              </div>
+              <ProjectsEditor />
             </TabsContent>
 
             <TabsContent value="awards" className="space-y-6">
-              <div className="text-center py-8 text-gray-500">
-                <p>Awards editor coming soon...</p>
-              </div>
+              <AwardsEditor />
             </TabsContent>
 
             <TabsContent value="languages" className="space-y-6">
-              <div className="text-center py-8 text-gray-500">
-                <p>Languages editor coming soon...</p>
-              </div>
+              <LanguagesEditor />
             </TabsContent>
 
             <TabsContent value="more" className="space-y-6">
-              <div className="text-center py-8 text-gray-500">
-                <p>Additional sections (certificates, publications, volunteer, etc.) coming soon...</p>
-                <div className="mt-4 space-x-2">
-                  <Button onClick={handleExportWithExtensions} variant="outline">
-                    <Download className="w-4 h-4 mr-2" />
-                    Backup All Data
-                  </Button>
-                </div>
-              </div>
+              <AdditionalSectionsEditor />
             </TabsContent>
           </Tabs>
         </div>
