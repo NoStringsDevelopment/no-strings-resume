@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { ResumeData } from '../types/resume';
 import { getDefaultResumeData } from '../utils/defaultData';
@@ -20,6 +19,18 @@ type ResumeAction =
   | { type: 'UPDATE_EDUCATION'; payload: { index: number; data: Partial<ResumeData['education'][0]> } }
   | { type: 'REMOVE_EDUCATION'; payload: number }
   | { type: 'UPDATE_SKILLS'; payload: ResumeData['skills'] }
+  | { type: 'ADD_PROJECT'; payload: ResumeData['projects'][0] }
+  | { type: 'UPDATE_PROJECT'; payload: { index: number; data: Partial<ResumeData['projects'][0]> } }
+  | { type: 'REMOVE_PROJECT'; payload: number }
+  | { type: 'ADD_AWARD'; payload: ResumeData['awards'][0] }
+  | { type: 'UPDATE_AWARD'; payload: { index: number; data: Partial<ResumeData['awards'][0]> } }
+  | { type: 'REMOVE_AWARD'; payload: number }
+  | { type: 'ADD_CERTIFICATE'; payload: ResumeData['certificates'][0] }
+  | { type: 'UPDATE_CERTIFICATE'; payload: { index: number; data: Partial<ResumeData['certificates'][0]> } }
+  | { type: 'REMOVE_CERTIFICATE'; payload: number }
+  | { type: 'ADD_LANGUAGE'; payload: ResumeData['languages'][0] }
+  | { type: 'UPDATE_LANGUAGE'; payload: { index: number; data: Partial<ResumeData['languages'][0]> } }
+  | { type: 'REMOVE_LANGUAGE'; payload: number }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'MARK_SAVED' };
 
@@ -125,6 +136,130 @@ function resumeReducer(state: ResumeState, action: ResumeAction): ResumeState {
           skills: action.payload
         }
       };
+
+    case 'ADD_PROJECT':
+      return {
+        ...state,
+        resumeData: {
+          ...state.resumeData,
+          projects: [...state.resumeData.projects, action.payload]
+        }
+      };
+
+    case 'UPDATE_PROJECT':
+      return {
+        ...state,
+        resumeData: {
+          ...state.resumeData,
+          projects: state.resumeData.projects.map((project, index) =>
+            index === action.payload.index
+              ? { ...project, ...action.payload.data }
+              : project
+          )
+        }
+      };
+
+    case 'REMOVE_PROJECT':
+      return {
+        ...state,
+        resumeData: {
+          ...state.resumeData,
+          projects: state.resumeData.projects.filter((_, index) => index !== action.payload)
+        }
+      };
+
+      case 'ADD_AWARD':
+        return {
+          ...state,
+          resumeData: {
+            ...state.resumeData,
+            awards: [...state.resumeData.awards, action.payload]
+          }
+        };
+  
+      case 'UPDATE_AWARD':
+        return {
+          ...state,
+          resumeData: {
+            ...state.resumeData,
+            awards: state.resumeData.awards.map((award, index) =>
+              index === action.payload.index
+                ? { ...award, ...action.payload.data }
+                : award
+            )
+          }
+        };
+  
+      case 'REMOVE_AWARD':
+        return {
+          ...state,
+          resumeData: {
+            ...state.resumeData,
+            awards: state.resumeData.awards.filter((_, index) => index !== action.payload)
+          }
+        };
+
+    case 'ADD_CERTIFICATE':
+      return {
+        ...state,
+        resumeData: {
+          ...state.resumeData,
+          certificates: [...state.resumeData.certificates, action.payload]
+        }
+      };
+
+    case 'UPDATE_CERTIFICATE':
+      return {
+        ...state,
+        resumeData: {
+          ...state.resumeData,
+          certificates: state.resumeData.certificates.map((certificate, index) =>
+            index === action.payload.index
+              ? { ...certificate, ...action.payload.data }
+              : certificate
+          )
+        }
+      };
+
+    case 'REMOVE_CERTIFICATE':
+      return {
+        ...state,
+        resumeData: {
+          ...state.resumeData,
+          certificates: state.resumeData.certificates.filter((_, index) => index !== action.payload)
+        }
+      };
+
+      case 'ADD_LANGUAGE':
+        return {
+          ...state,
+          resumeData: {
+            ...state.resumeData,
+            languages: [...state.resumeData.languages, action.payload]
+          }
+        };
+  
+      case 'UPDATE_LANGUAGE':
+        return {
+          ...state,
+          resumeData: {
+            ...state.resumeData,
+            languages: state.resumeData.languages.map((language, index) =>
+              index === action.payload.index
+                ? { ...language, ...action.payload.data }
+                : language
+            )
+          }
+        };
+  
+      case 'REMOVE_LANGUAGE':
+        return {
+          ...state,
+          resumeData: {
+            ...state.resumeData,
+            languages: state.resumeData.languages.filter((_, index) => index !== action.payload)
+          }
+        };
     
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };

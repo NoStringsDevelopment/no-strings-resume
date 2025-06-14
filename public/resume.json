@@ -1,0 +1,248 @@
+
+{
+  "basics": {
+    "name": "Alex Johnson",
+    "label": "Full Stack Developer",
+    "image": "",
+    "email": "alex.johnson@email.com",
+    "phone": "(555) 987-6543",
+    "url": "https://alexjohnson.dev",
+    "summary": "Passionate full-stack developer with 6+ years of experience building scalable web applications. Expertise in React, Node.js, and cloud technologies. Strong advocate for clean code and user-centered design.",
+    "location": {
+      "address": "456 Developer Lane",
+      "postalCode": "10001",
+      "city": "New York",
+      "countryCode": "US",
+      "region": "New York"
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "alexjohnsondev",
+        "url": "https://linkedin.com/in/alexjohnsondev"
+      },
+      {
+        "network": "GitHub",
+        "username": "alexjohnson",
+        "url": "https://github.com/alexjohnson"
+      },
+      {
+        "network": "Twitter",
+        "username": "alexjohnsondev",
+        "url": "https://twitter.com/alexjohnsondev"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "InnovateTech Solutions",
+      "position": "Senior Full Stack Developer",
+      "url": "https://innovatetech.com",
+      "startDate": "2022-01",
+      "endDate": "",
+      "summary": "Lead development of enterprise web applications serving 50K+ daily active users.",
+      "highlights": [
+        "Architected and built microservices backend reducing API response times by 35%",
+        "Led migration from monolithic to microservices architecture",
+        "Mentored 4 junior developers and established coding standards",
+        "Implemented automated testing pipeline achieving 90% code coverage"
+      ]
+    },
+    {
+      "name": "Digital Dynamics",
+      "position": "Full Stack Developer",
+      "url": "https://digitaldynamics.com",
+      "startDate": "2020-03",
+      "endDate": "2021-12",
+      "summary": "Developed and maintained multiple client-facing web applications using modern JavaScript frameworks.",
+      "highlights": [
+        "Built responsive React applications with TypeScript and Redux",
+        "Developed RESTful APIs using Node.js and Express",
+        "Integrated payment processing and third-party services",
+        "Collaborated with UX/UI designers to implement pixel-perfect designs"
+      ]
+    },
+    {
+      "name": "WebCraft Agency",
+      "position": "Frontend Developer",
+      "url": "https://webcraft.com",
+      "startDate": "2018-06",
+      "endDate": "2020-02",
+      "summary": "Specialized in creating engaging user interfaces and optimizing web performance.",
+      "highlights": [
+        "Developed 20+ responsive websites using HTML5, CSS3, and JavaScript",
+        "Improved website loading speeds by 50% through optimization techniques",
+        "Collaborated with cross-functional teams in agile environment",
+        "Maintained legacy codebases and implemented new features"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "State University of Technology",
+      "url": "https://sutech.edu",
+      "area": "Computer Science",
+      "studyType": "Bachelor of Science",
+      "startDate": "2014-09",
+      "endDate": "2018-05",
+      "score": "3.7",
+      "courses": [
+        "Data Structures and Algorithms",
+        "Web Development",
+        "Database Management Systems",
+        "Software Engineering",
+        "Computer Networks"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "Frontend Development",
+      "level": "Expert",
+      "keywords": ["React", "TypeScript", "Next.js", "Vue.js", "HTML5", "CSS3", "Sass", "Tailwind CSS"]
+    },
+    {
+      "name": "Backend Development",
+      "level": "Advanced",
+      "keywords": ["Node.js", "Express", "Python", "Django", "PostgreSQL", "MongoDB", "Redis"]
+    },
+    {
+      "name": "Cloud & DevOps",
+      "level": "Intermediate",
+      "keywords": ["AWS", "Docker", "Kubernetes", "CI/CD", "Jenkins", "Git", "Linux"]
+    },
+    {
+      "name": "Mobile Development",
+      "level": "Intermediate",
+      "keywords": ["React Native", "Flutter", "iOS", "Android"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "TaskMaster Pro",
+      "description": "A comprehensive project management application with real-time collaboration features",
+      "highlights": [
+        "Built with React, Node.js, and Socket.io for real-time updates",
+        "Implemented user authentication and role-based permissions",
+        "Integrated file sharing and commenting system",
+        "Deployed on AWS with auto-scaling capabilities"
+      ],
+      "keywords": ["React", "Node.js", "Socket.io", "MongoDB", "AWS"],
+      "startDate": "2023-01",
+      "endDate": "2023-06",
+      "url": "https://taskmaster-pro.com",
+      "roles": ["Full Stack Developer"],
+      "entity": "Personal Project",
+      "type": "Web Application"
+    },
+    {
+      "name": "EcoTracker",
+      "description": "Mobile app for tracking personal carbon footprint and environmental impact",
+      "highlights": [
+        "Developed using React Native for cross-platform compatibility",
+        "Integrated with environmental APIs for carbon calculation",
+        "Implemented gamification features to encourage sustainable behavior",
+        "Published on both iOS and Android app stores"
+      ],
+      "keywords": ["React Native", "JavaScript", "API Integration", "Mobile Development"],
+      "startDate": "2022-08",
+      "endDate": "2022-12",
+      "url": "https://github.com/alexjohnson/ecotracker",
+      "roles": ["Mobile Developer"],
+      "entity": "Open Source",
+      "type": "Mobile Application"
+    }
+  ],
+  "awards": [
+    {
+      "title": "Employee of the Year",
+      "date": "2023-12",
+      "awarder": "InnovateTech Solutions",
+      "summary": "Recognized for outstanding performance and leadership in driving technical innovation"
+    },
+    {
+      "title": "Best Hack Award",
+      "date": "2022-10",
+      "awarder": "TechCrunch Disrupt Hackathon",
+      "summary": "Won first place for developing an AI-powered accessibility tool"
+    }
+  ],
+  "certificates": [
+    {
+      "name": "AWS Certified Solutions Architect - Associate",
+      "date": "2023-03",
+      "issuer": "Amazon Web Services",
+      "url": "https://aws.amazon.com/certification/"
+    },
+    {
+      "name": "Google Cloud Professional Developer",
+      "date": "2022-11",
+      "issuer": "Google Cloud",
+      "url": "https://cloud.google.com/certification/"
+    },
+    {
+      "name": "Meta React Developer Certificate",
+      "date": "2021-08",
+      "issuer": "Meta",
+      "url": "https://developers.facebook.com/developercircles/"
+    }
+  ],
+  "publications": [
+    {
+      "name": "Building Scalable React Applications: A Modern Approach",
+      "publisher": "TechMedium",
+      "releaseDate": "2023-09",
+      "url": "https://techmedium.com/scalable-react-apps",
+      "summary": "A comprehensive guide to architecting large-scale React applications with best practices and performance optimization techniques."
+    }
+  ],
+  "languages": [
+    {
+      "language": "English",
+      "fluency": "Native"
+    },
+    {
+      "language": "Spanish",
+      "fluency": "Conversational"
+    },
+    {
+      "language": "JavaScript",
+      "fluency": "Fluent"
+    }
+  ],
+  "interests": [
+    {
+      "name": "Technology",
+      "keywords": ["Open Source", "AI/ML", "Blockchain", "IoT"]
+    },
+    {
+      "name": "Outdoor Activities",
+      "keywords": ["Hiking", "Photography", "Cycling", "Rock Climbing"]
+    },
+    {
+      "name": "Creative Arts",
+      "keywords": ["Music Production", "Digital Art", "Writing"]
+    }
+  ],
+  "references": [
+    {
+      "name": "Sarah Chen - Technical Lead at InnovateTech",
+      "reference": "Alex is an exceptional developer with strong technical skills and leadership qualities. His ability to solve complex problems and mentor junior developers makes him a valuable team member."
+    }
+  ],
+  "volunteer": [
+    {
+      "organization": "Code for Good",
+      "position": "Volunteer Developer",
+      "url": "https://codeforgood.org",
+      "startDate": "2021-01",
+      "endDate": "",
+      "summary": "Developing web applications for non-profit organizations to help them achieve their missions.",
+      "highlights": [
+        "Built donation management system for local animal shelter",
+        "Created volunteer coordination platform used by 5+ organizations",
+        "Mentored new volunteers in web development skills"
+      ]
+    }
+  ]
+}
