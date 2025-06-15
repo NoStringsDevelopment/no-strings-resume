@@ -35,15 +35,16 @@ const Contribute = () => {
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => navigate('/')} className="flex items-center space-x-2 text-blue-600 hover:text-blue-700">
+            <Button variant="ghost" onClick={() => navigate('/')} className="flex items-center space-x-2 text-blue-600 hover:text-blue-700" data-testid="back-to-home-btn">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900 hidden sm:block">No Strings Resume</span>
             </Button>
             <nav className="flex items-center space-x-4">
-              
-              
+              <Button size="lg" onClick={() => navigate('/edit')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" data-testid="start-building-btn">
+                Start Building
+              </Button>
             </nav>
           </div>
         </div>

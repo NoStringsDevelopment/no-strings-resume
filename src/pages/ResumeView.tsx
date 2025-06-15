@@ -9,7 +9,6 @@ import { useTheme } from "@/context/ThemeContext";
 import { ResumeRenderer } from "@/components/display/ResumeRenderer";
 import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF, exportAsDOCX } from "@/utils/exportUtils";
 import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const ResumeView = () => {
   const navigate = useNavigate();
@@ -20,7 +19,6 @@ const ResumeView = () => {
   const { state, dispatch } = context;
   const { themeState } = useTheme();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
 
   const handleExport = async (format: string) => {
     try {
@@ -91,7 +89,7 @@ const ResumeView = () => {
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-semibold hidden xl:block">No Strings Resume</span>
+                <span className="font-semibold text-gray-900 hidden sm:block">No Strings Resume</span>
               </Button>
             </div>
             <div className="flex items-center space-x-2">
@@ -99,7 +97,7 @@ const ResumeView = () => {
                 <DropdownMenuTrigger asChild>
                   <Button className="flex items-center space-x-2" data-testid="view-export-button">
                     <Download className="w-4 h-4" />
-                    {!isMobile && <span>Export</span>}
+                    <span className="hidden sm:inline">Export</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" data-testid="view-export-menu">
@@ -133,7 +131,7 @@ const ResumeView = () => {
                 data-testid="view-edit-button"
               >
                 <Edit className="w-4 h-4" />
-                {!isMobile && <span>Edit</span>}
+                <span className="hidden sm:inline">Edit</span>
               </Button>
             </div>
           </div>

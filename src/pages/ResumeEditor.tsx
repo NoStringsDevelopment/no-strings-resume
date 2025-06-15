@@ -173,7 +173,7 @@ const ResumeEditor = () => {
                 data-testid="undo-button"
               >
                 <Undo className="w-4 h-4" />
-                <span className="hidden 2xl:block">Undo</span>
+                <span className="hidden xl:block">Undo</span>
               </Button>
               
               <Button 
@@ -186,10 +186,10 @@ const ResumeEditor = () => {
                 data-testid="redo-button"
               >
                 <Redo className="w-4 h-4" />
-                <span className="hidden 2xl:block">Redo</span>
+                <span className="hidden xl:block">Redo</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
               
               {/* File Actions */}
               <Button 
@@ -201,7 +201,7 @@ const ResumeEditor = () => {
                 data-testid="import-button"
               >
                 <Upload className="w-4 h-4" />
-                <span className="hidden 2xl:block">Import</span>
+                <span className="hidden xl:block">Import</span>
               </Button>
               
               <Button 
@@ -213,10 +213,10 @@ const ResumeEditor = () => {
                 data-testid="backup-button"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden 2xl:block">Backup</span>
+                <span className="hidden xl:block">Backup</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
               
               {/* Data Actions */}
               <Button 
@@ -228,7 +228,7 @@ const ResumeEditor = () => {
                 data-testid="clear-button"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="hidden 2xl:block">Clear</span>
+                <span className="hidden xl:block">Clear</span>
               </Button>
               
               <Button 
@@ -240,10 +240,10 @@ const ResumeEditor = () => {
                 data-testid="reset-button"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span className="hidden 2xl:block">Reset</span>
+                <span className="hidden xl:block">Reset</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
               
               {/* Preview Toggle */}
               <div className="flex items-center space-x-2 mr-2">
@@ -261,7 +261,7 @@ const ResumeEditor = () => {
                 </label>
               </div>
               
-              <div className="w-px h-6 bg-gray-300 mr-1" />
+              <div className="w-px h-6 bg-gray-300 mr-1 hidden xl:block" />
               
               {/* Navigation Actions */}
               <Button 
@@ -302,7 +302,7 @@ const ResumeEditor = () => {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
-                  <span className="font-semibold text-gray-900">No Strings Resume</span>
+                  <span className="font-semibold text-gray-900 hidden sm:block">No Strings Resume</span>
                 </Button>
                 <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
                   Edit
@@ -314,20 +314,22 @@ const ResumeEditor = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/theme')}
-                  title="Theme"
+                  className="flex items-center space-x-1"
                   data-testid="theme-button-mobile"
                 >
                   <Palette className="w-4 h-4" />
+                  <span className="hidden sm:inline">Theme</span>
                 </Button>
                 
                 <Button 
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/view')}
-                  title="View"
+                  className="flex items-center space-x-1"
                   data-testid="view-button-mobile"
                 >
                   <Eye className="w-4 h-4" />
+                  <span className="hidden sm:inline">View</span>
                 </Button>
               </div>
             </div>
