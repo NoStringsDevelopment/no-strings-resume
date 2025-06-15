@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
-import { Education } from "@/types/resume";
+import { Education, Course } from "@/types/resume";
+import { normalizeCourse, getCourseName, isCourseVisible } from "@/utils/visibilityHelpers";
 
 export default function EducationEditor() {
   const { state, dispatch } = useResume();
@@ -20,13 +21,13 @@ export default function EducationEditor() {
       startDate: '',
       endDate: '',
       score: '',
-      courses: [''],
+      courses: [{ name: '', visible: true }],
       visible: true
     };
     dispatch({ type: 'ADD_EDUCATION', payload: newEducation });
   };
 
-  const updateEducation = (index: number, field: string, value: string | string[] | boolean) => {
+  const updateEducation = (index: number, field: string, value: string | (string | Course)[] | boolean) => {
     dispatch({
       type: 'UPDATE_EDUCATION',
       payload: { index, data: { [field]: value } }
@@ -39,15 +40,31 @@ export default function EducationEditor() {
 
   const addCourse = (eduIndex: number) => {
     const currentEdu = education[eduIndex];
-    const updatedCourses = [...currentEdu.courses, ''];
+    const updatedCourses = [...currentEdu.courses, { name: '', visible: true }];
     updateEducation(eduIndex, 'courses', updatedCourses);
   };
 
   const updateCourse = (eduIndex: number, courseIndex: number, value: string) => {
     const currentEdu = education[eduIndex];
-    const updatedCourses = currentEdu.courses.map((course, i) =>
-      i === courseIndex ? value : course
-    );
+    const updatedCourses = currentEdu.courses.map((course, i) => {
+      if (i === courseIndex) {
+        const normalized = normalizeCourse(course);
+        return { ...normalized, name: value };
+      }
+      return course;
+    });
+    updateEducation(eduIndex, 'courses', updatedCourses);
+  };
+
+  const toggleCourseVisibility = (eduIndex: number, courseIndex: number) => {
+    const currentEdu = education[eduIndex];
+    const updatedCourses = currentEdu.courses.map((course, i) => {
+      if (i === courseIndex) {
+        const normalized = normalizeCourse(course);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return course;
+    });
     updateEducation(eduIndex, 'courses', updatedCourses);
   };
 
@@ -204,27 +221,39 @@ export default function EducationEditor() {
                 </Button>
               </div>
               <div className="space-y-2">
-                {edu.courses.map((course, courseIndex) => (
-                  <div key={courseIndex} className="flex gap-2" data-testid={`education-${index}-course-${courseIndex}`}>
-                    <Input
-                      value={course}
-                      onChange={(e) => updateCourse(index, courseIndex, e.target.value)}
-                      placeholder="Course name"
-                      className="flex-1"
-                      spellCheck={true}
-                      data-testid={`education-${index}-course-${courseIndex}-input`}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeCourse(index, courseIndex)}
-                      className="text-red-600 hover:text-red-700"
-                      data-testid={`education-${index}-course-${courseIndex}-remove-button`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                {edu.courses.map((course, courseIndex) => {
+                  const normalized = normalizeCourse(course);
+                  return (
+                    <div key={courseIndex} className="flex gap-2" data-testid={`education-${index}-course-${courseIndex}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleCourseVisibility(index, courseIndex)}
+                        className="p-1"
+                        data-testid={`education-${index}-course-${courseIndex}-visibility-toggle`}
+                      >
+                        {isCourseVisible(course) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                      <Input
+                        value={getCourseName(course)}
+                        onChange={(e) => updateCourse(index, courseIndex, e.target.value)}
+                        placeholder="Course name"
+                        className="flex-1"
+                        spellCheck={true}
+                        data-testid={`education-${index}-course-${courseIndex}-input`}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeCourse(index, courseIndex)}
+                        className="text-red-600 hover:text-red-700"
+                        data-testid={`education-${index}-course-${courseIndex}-remove-button`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </CardContent>

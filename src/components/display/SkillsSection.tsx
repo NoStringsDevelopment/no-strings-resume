@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { Skill } from '@/types/resume';
 import { SectionRenderer } from './SectionRenderer';
+import { getVisibleKeywords, getKeywordName } from '@/utils/visibilityHelpers';
 
 interface SkillsSectionProps {
   skills: Skill[];
@@ -19,18 +19,22 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, isVisible 
       testId="resume-skills-section"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {visibleSkills.map((skill, index) => (
-          <div key={index} data-testid={`resume-skill-${index}`}>
-            <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
-              {skill.name} {skill.level && `(${skill.level})`}
-            </h4>
-            {skill.keywords.length > 0 && (
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                {skill.keywords.join(', ')}
-              </p>
-            )}
-          </div>
-        ))}
+        {visibleSkills.map((skill, index) => {
+          const visibleKeywords = getVisibleKeywords(skill.keywords);
+          
+          return (
+            <div key={index} data-testid={`resume-skill-${index}`}>
+              <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                {skill.name} {skill.level && `(${skill.level})`}
+              </h4>
+              {visibleKeywords.length > 0 && (
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  {visibleKeywords.map(keyword => getKeywordName(keyword)).join(', ')}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </SectionRenderer>
   );

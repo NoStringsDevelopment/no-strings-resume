@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -134,7 +133,7 @@ describe('ThemeEditor', () => {
     renderThemeEditor();
     
     expect(screen.getByTestId('home-button')).toBeInTheDocument();
-    expect(screen.getByText('No Strings Resume')).toBeInTheDocument();
+    expect(screen.getAllByText('No Strings Resume')).toHaveLength(2); // Desktop and mobile layouts
     expect(screen.getByText('Theme Mode')).toBeInTheDocument();
   });
 
@@ -192,7 +191,7 @@ describe('ThemeEditor', () => {
   it('renders enhanced preview section', () => {
     renderThemeEditor();
     
-    expect(screen.getByText('Preview')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Preview' })).toBeInTheDocument();
     expect(screen.getByTestId('theme-preview')).toBeInTheDocument();
   });
 

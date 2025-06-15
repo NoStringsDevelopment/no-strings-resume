@@ -1,11 +1,11 @@
-
 import { useResume } from "@/context/ResumeContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
-import { Skill } from "@/types/resume";
+import { Skill, Keyword } from "@/types/resume";
+import { normalizeKeyword, getKeywordName, isKeywordVisible } from "@/utils/visibilityHelpers";
 
 export default function SkillsEditor() {
   const { state, dispatch } = useResume();
@@ -15,14 +15,14 @@ export default function SkillsEditor() {
     const newSkill: Skill = {
       name: '',
       level: '',
-      keywords: [''],
+      keywords: [{ name: '', visible: true }],
       visible: true
     };
     const updatedSkills = [...skills, newSkill];
     dispatch({ type: 'UPDATE_SKILLS', payload: updatedSkills });
   };
 
-  const updateSkill = (index: number, field: string, value: string | string[] | boolean) => {
+  const updateSkill = (index: number, field: string, value: string | (string | Keyword)[] | boolean) => {
     const updatedSkills = skills.map((skill, i) =>
       i === index ? { ...skill, [field]: value } : skill
     );
@@ -36,15 +36,31 @@ export default function SkillsEditor() {
 
   const addKeyword = (skillIndex: number) => {
     const currentSkill = skills[skillIndex];
-    const updatedKeywords = [...currentSkill.keywords, ''];
+    const updatedKeywords = [...currentSkill.keywords, { name: '', visible: true }];
     updateSkill(skillIndex, 'keywords', updatedKeywords);
   };
 
   const updateKeyword = (skillIndex: number, keywordIndex: number, value: string) => {
     const currentSkill = skills[skillIndex];
-    const updatedKeywords = currentSkill.keywords.map((keyword, i) =>
-      i === keywordIndex ? value : keyword
-    );
+    const updatedKeywords = currentSkill.keywords.map((keyword, i) => {
+      if (i === keywordIndex) {
+        const normalized = normalizeKeyword(keyword);
+        return { ...normalized, name: value };
+      }
+      return keyword;
+    });
+    updateSkill(skillIndex, 'keywords', updatedKeywords);
+  };
+
+  const toggleKeywordVisibility = (skillIndex: number, keywordIndex: number) => {
+    const currentSkill = skills[skillIndex];
+    const updatedKeywords = currentSkill.keywords.map((keyword, i) => {
+      if (i === keywordIndex) {
+        const normalized = normalizeKeyword(keyword);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return keyword;
+    });
     updateSkill(skillIndex, 'keywords', updatedKeywords);
   };
 
@@ -150,27 +166,39 @@ export default function SkillsEditor() {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {skill.keywords.map((keyword, keywordIndex) => (
-                  <div key={keywordIndex} className="flex gap-2" data-testid={`skill-${index}-keyword-${keywordIndex}`}>
-                    <Input
-                      value={keyword}
-                      onChange={(e) => updateKeyword(index, keywordIndex, e.target.value)}
-                      placeholder="Technology or skill"
-                      className="flex-1"
-                      spellCheck={true}
-                      data-testid={`skill-${index}-keyword-${keywordIndex}-input`}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeKeyword(index, keywordIndex)}
-                      className="text-red-600 hover:text-red-700"
-                      data-testid={`skill-${index}-keyword-${keywordIndex}-remove-button`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                {skill.keywords.map((keyword, keywordIndex) => {
+                  const normalized = normalizeKeyword(keyword);
+                  return (
+                    <div key={keywordIndex} className="flex gap-2" data-testid={`skill-${index}-keyword-${keywordIndex}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleKeywordVisibility(index, keywordIndex)}
+                        className="p-1"
+                        data-testid={`skill-${index}-keyword-${keywordIndex}-visibility-toggle`}
+                      >
+                        {isKeywordVisible(keyword) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                      <Input
+                        value={getKeywordName(keyword)}
+                        onChange={(e) => updateKeyword(index, keywordIndex, e.target.value)}
+                        placeholder="Technology or skill"
+                        className="flex-1"
+                        spellCheck={true}
+                        data-testid={`skill-${index}-keyword-${keywordIndex}-input`}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeKeyword(index, keywordIndex)}
+                        className="text-red-600 hover:text-red-700"
+                        data-testid={`skill-${index}-keyword-${keywordIndex}-remove-button`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </CardContent>

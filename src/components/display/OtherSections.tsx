@@ -1,8 +1,15 @@
-
 import React from 'react';
 import { Project, Volunteer, Award, Certificate, Publication, Language, Interest, Reference } from '@/types/resume';
 import { formatDate } from '@/utils/formatters';
 import { SectionRenderer } from './SectionRenderer';
+import { 
+  getVisibleHighlights, 
+  getVisibleKeywords, 
+  getVisibleRoles, 
+  getHighlightContent, 
+  getKeywordName, 
+  getRoleName 
+} from '@/utils/visibilityHelpers';
 
 interface OtherSectionsProps {
   projects: Project[];
@@ -48,19 +55,40 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
         <div className="space-y-4">
           {projects
             .filter(project => project.visible !== false)
-            .map((project, index) => (
-              <div key={index} data-testid={`resume-project-${index}`}>
-                <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                  {project.name}
-                </h4>
-                <p style={{ color: 'var(--color-text)' }}>{project.description}</p>
-                {project.keywords.length > 0 && (
-                  <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
-                    Technologies: {project.keywords.join(', ')}
-                  </p>
-                )}
-              </div>
-            ))}
+            .map((project, index) => {
+              const visibleHighlights = getVisibleHighlights(project.highlights);
+              const visibleKeywords = getVisibleKeywords(project.keywords);
+              const visibleRoles = getVisibleRoles(project.roles);
+              
+              return (
+                <div key={index} data-testid={`resume-project-${index}`}>
+                  <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                    {project.name}
+                  </h4>
+                  <p style={{ color: 'var(--color-text)' }}>{project.description}</p>
+                  
+                  {visibleHighlights.length > 0 && (
+                    <ul className="list-disc list-inside space-y-1 text-sm mt-2" style={{ color: 'var(--color-text)' }}>
+                      {visibleHighlights.map((highlight, hIndex) => (
+                        <li key={hIndex}>{getHighlightContent(highlight)}</li>
+                      ))}
+                    </ul>
+                  )}
+                  
+                  {visibleKeywords.length > 0 && (
+                    <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
+                      <strong>Technologies:</strong> {visibleKeywords.map(keyword => getKeywordName(keyword)).join(', ')}
+                    </p>
+                  )}
+                  
+                  {visibleRoles.length > 0 && (
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                      <strong>Roles:</strong> {visibleRoles.map(role => getRoleName(role)).join(', ')}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </SectionRenderer>
 
@@ -74,35 +102,39 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
         <div className="space-y-4">
           {volunteer
             .filter(vol => vol.visible !== false)
-            .map((vol, index) => (
-              <div key={index} data-testid={`resume-volunteer-${index}`}>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                      {vol.position}
-                    </h4>
-                    <p className="font-medium" style={{ color: 'var(--color-accent)' }}>
-                      {vol.organization}
-                    </p>
+            .map((vol, index) => {
+              const visibleHighlights = getVisibleHighlights(vol.highlights);
+              
+              return (
+                <div key={index} data-testid={`resume-volunteer-${index}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                        {vol.position}
+                      </h4>
+                      <p className="font-medium" style={{ color: 'var(--color-accent)' }}>
+                        {vol.organization}
+                      </p>
+                    </div>
+                    <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                      {formatDate(vol.startDate)} - {vol.endDate ? formatDate(vol.endDate) : 'Present'}
+                    </span>
                   </div>
-                  <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    {formatDate(vol.startDate)} - {vol.endDate ? formatDate(vol.endDate) : 'Present'}
-                  </span>
+                  {vol.summary && (
+                    <p className="mb-2" style={{ color: 'var(--color-text)' }}>
+                      {vol.summary}
+                    </p>
+                  )}
+                  {visibleHighlights.length > 0 && (
+                    <ul className="list-disc list-inside space-y-1 text-sm" style={{ color: 'var(--color-text)' }}>
+                      {visibleHighlights.map((highlight, hIndex) => (
+                        <li key={hIndex}>{getHighlightContent(highlight)}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                {vol.summary && (
-                  <p className="mb-2" style={{ color: 'var(--color-text)' }}>
-                    {vol.summary}
-                  </p>
-                )}
-                {vol.highlights.length > 0 && (
-                  <ul className="list-disc list-inside space-y-1 text-sm" style={{ color: 'var(--color-text)' }}>
-                    {vol.highlights.map((highlight, hIndex) => (
-                      <li key={hIndex}>{highlight}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
+              );
+            })}
         </div>
       </SectionRenderer>
 
@@ -235,18 +267,22 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
         <div className="space-y-2">
           {interests
             .filter(interest => interest.visible !== false)
-            .map((interest, index) => (
-              <div key={index} data-testid={`resume-interest-${index}`}>
-                <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                  {interest.name}
-                </h4>
-                {interest.keywords.length > 0 && (
-                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    {interest.keywords.join(', ')}
-                  </p>
-                )}
-              </div>
-            ))}
+            .map((interest, index) => {
+              const visibleKeywords = getVisibleKeywords(interest.keywords);
+              
+              return (
+                <div key={index} data-testid={`resume-interest-${index}`}>
+                  <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                    {interest.name}
+                  </h4>
+                  {visibleKeywords.length > 0 && (
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                      {visibleKeywords.map(keyword => getKeywordName(keyword)).join(', ')}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </SectionRenderer>
 

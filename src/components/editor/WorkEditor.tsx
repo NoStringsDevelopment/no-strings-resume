@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
-import { WorkExperience } from "@/types/resume";
+import { WorkExperience, Highlight } from "@/types/resume";
+import { normalizeHighlight, getHighlightContent, isHighlightVisible } from "@/utils/visibilityHelpers";
 
 export default function WorkEditor() {
   const { state, dispatch } = useResume();
@@ -21,13 +22,13 @@ export default function WorkEditor() {
       startDate: '',
       endDate: '',
       summary: '',
-      highlights: [''],
+      highlights: [{ content: '', visible: true }],
       visible: true
     };
     dispatch({ type: 'ADD_WORK_EXPERIENCE', payload: newWork });
   };
 
-  const updateWorkExperience = (index: number, field: string, value: string | string[] | boolean) => {
+  const updateWorkExperience = (index: number, field: string, value: string | (string | Highlight)[] | boolean) => {
     dispatch({
       type: 'UPDATE_WORK_EXPERIENCE',
       payload: { index, data: { [field]: value } }
@@ -40,15 +41,31 @@ export default function WorkEditor() {
 
   const addHighlight = (workIndex: number) => {
     const currentWork = work[workIndex];
-    const updatedHighlights = [...currentWork.highlights, ''];
+    const updatedHighlights = [...currentWork.highlights, { content: '', visible: true }];
     updateWorkExperience(workIndex, 'highlights', updatedHighlights);
   };
 
   const updateHighlight = (workIndex: number, highlightIndex: number, value: string) => {
     const currentWork = work[workIndex];
-    const updatedHighlights = currentWork.highlights.map((highlight, i) =>
-      i === highlightIndex ? value : highlight
-    );
+    const updatedHighlights = currentWork.highlights.map((highlight, i) => {
+      if (i === highlightIndex) {
+        const normalized = normalizeHighlight(highlight);
+        return { ...normalized, content: value };
+      }
+      return highlight;
+    });
+    updateWorkExperience(workIndex, 'highlights', updatedHighlights);
+  };
+
+  const toggleHighlightVisibility = (workIndex: number, highlightIndex: number) => {
+    const currentWork = work[workIndex];
+    const updatedHighlights = currentWork.highlights.map((highlight, i) => {
+      if (i === highlightIndex) {
+        const normalized = normalizeHighlight(highlight);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return highlight;
+    });
     updateWorkExperience(workIndex, 'highlights', updatedHighlights);
   };
 
@@ -205,32 +222,47 @@ export default function WorkEditor() {
                   variant="outline"
                   size="sm"
                   onClick={() => addHighlight(index)}
+                  data-testid={`work-${index}-add-highlight-button`}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add highlight
                 </Button>
               </div>
               <div className="space-y-2">
-                {experience.highlights.map((highlight, highlightIndex) => (
-                  <div key={highlightIndex} className="flex gap-2">
-                    <Textarea
-                      value={highlight}
-                      onChange={(e) => updateHighlight(index, highlightIndex, e.target.value)}
-                      placeholder="Describe a key achievement or responsibility..."
-                      rows={2}
-                      className="flex-1"
-                      spellCheck={true}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeHighlight(index, highlightIndex)}
-                      className="text-red-600 hover:text-red-700 self-start"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                {experience.highlights.map((highlight, highlightIndex) => {
+                  const normalized = normalizeHighlight(highlight);
+                  return (
+                    <div key={highlightIndex} className="flex gap-2" data-testid={`work-${index}-highlight-${highlightIndex}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleHighlightVisibility(index, highlightIndex)}
+                        className="p-1 self-start mt-1"
+                        data-testid={`work-${index}-highlight-${highlightIndex}-visibility-toggle`}
+                      >
+                        {isHighlightVisible(highlight) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                      <Textarea
+                        value={getHighlightContent(highlight)}
+                        onChange={(e) => updateHighlight(index, highlightIndex, e.target.value)}
+                        placeholder="Describe a key achievement or responsibility..."
+                        rows={2}
+                        className="flex-1"
+                        spellCheck={true}
+                        data-testid={`work-${index}-highlight-${highlightIndex}-input`}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeHighlight(index, highlightIndex)}
+                        className="text-red-600 hover:text-red-700 self-start mt-1"
+                        data-testid={`work-${index}-highlight-${highlightIndex}-remove-button`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </CardContent>

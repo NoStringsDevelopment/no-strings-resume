@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -197,7 +196,7 @@ describe('ResumeEditor Preview Functionality', () => {
   it('displays preview heading', () => {
     renderResumeEditor();
     
-    expect(screen.getByText('Preview')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Preview' })).toBeInTheDocument();
   });
 
   it('preview has sticky positioning', () => {

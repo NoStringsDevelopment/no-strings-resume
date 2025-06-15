@@ -5,9 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Eye, EyeOff, Settings } from "lucide-react";
 import { useResume } from "@/context/ResumeContext";
-import { Certificate, Publication, Volunteer, Interest, Reference } from "@/types/resume";
+import { Certificate, Publication, Volunteer, Interest, Reference, Highlight, Keyword } from "@/types/resume";
 import NonConformingDataViewer from "@/components/NonConformingDataViewer";
 import SectionVisibilityEditor from "@/components/editor/SectionVisibilityEditor";
+import { normalizeHighlight, getHighlightContent, isHighlightVisible, normalizeKeyword, getKeywordName, isKeywordVisible } from "@/utils/visibilityHelpers";
 
 const AdditionalSectionsEditor = () => {
   const { state, dispatch } = useResume();
@@ -86,13 +87,13 @@ const AdditionalSectionsEditor = () => {
       startDate: "",
       endDate: "",
       summary: "",
-      highlights: [""],
+      highlights: [{ content: '', visible: true }],
       visible: true
     };
     dispatch({ type: 'ADD_VOLUNTEER', payload: newVolunteer });
   };
 
-  const updateVolunteer = (index: number, field: keyof Volunteer, value: string | boolean | string[]) => {
+  const updateVolunteer = (index: number, field: keyof Volunteer, value: string | boolean | (string | Highlight)[]) => {
     dispatch({ 
       type: 'UPDATE_VOLUNTEER', 
       payload: { index, data: { [field]: value } }
@@ -114,15 +115,31 @@ const AdditionalSectionsEditor = () => {
 
   const addVolunteerHighlight = (index: number) => {
     const currentVolunteer = state.resumeData.volunteer[index];
-    const updatedHighlights = [...currentVolunteer.highlights, ""];
+    const updatedHighlights = [...currentVolunteer.highlights, { content: '', visible: true }];
     updateVolunteer(index, 'highlights', updatedHighlights);
   };
 
   const updateVolunteerHighlight = (volunteerIndex: number, highlightIndex: number, value: string) => {
     const currentVolunteer = state.resumeData.volunteer[volunteerIndex];
-    const updatedHighlights = currentVolunteer.highlights.map((highlight, i) => 
-      i === highlightIndex ? value : highlight
-    );
+    const updatedHighlights = currentVolunteer.highlights.map((highlight, i) => {
+      if (i === highlightIndex) {
+        const normalized = normalizeHighlight(highlight);
+        return { ...normalized, content: value };
+      }
+      return highlight;
+    });
+    updateVolunteer(volunteerIndex, 'highlights', updatedHighlights);
+  };
+
+  const toggleVolunteerHighlightVisibility = (volunteerIndex: number, highlightIndex: number) => {
+    const currentVolunteer = state.resumeData.volunteer[volunteerIndex];
+    const updatedHighlights = currentVolunteer.highlights.map((highlight, i) => {
+      if (i === highlightIndex) {
+        const normalized = normalizeHighlight(highlight);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return highlight;
+    });
     updateVolunteer(volunteerIndex, 'highlights', updatedHighlights);
   };
 
@@ -136,13 +153,13 @@ const AdditionalSectionsEditor = () => {
   const addInterest = () => {
     const newInterest: Interest = {
       name: "",
-      keywords: [""],
+      keywords: [{ name: "", visible: true }],
       visible: true
     };
     dispatch({ type: 'ADD_INTEREST', payload: newInterest });
   };
 
-  const updateInterest = (index: number, field: keyof Interest, value: string | boolean | string[]) => {
+  const updateInterest = (index: number, field: keyof Interest, value: string | boolean | (string | Keyword)[]) => {
     dispatch({ 
       type: 'UPDATE_INTEREST', 
       payload: { index, data: { [field]: value } }
@@ -164,15 +181,31 @@ const AdditionalSectionsEditor = () => {
 
   const addInterestKeyword = (interestIndex: number) => {
     const currentInterest = state.resumeData.interests[interestIndex];
-    const updatedKeywords = [...currentInterest.keywords, ""];
+    const updatedKeywords = [...currentInterest.keywords, { name: "", visible: true }];
     updateInterest(interestIndex, 'keywords', updatedKeywords);
   };
 
   const updateInterestKeyword = (interestIndex: number, keywordIndex: number, value: string) => {
     const currentInterest = state.resumeData.interests[interestIndex];
-    const updatedKeywords = currentInterest.keywords.map((keyword, i) => 
-      i === keywordIndex ? value : keyword
-    );
+    const updatedKeywords = currentInterest.keywords.map((keyword, i) => {
+      if (i === keywordIndex) {
+        const normalized = normalizeKeyword(keyword);
+        return { ...normalized, name: value };
+      }
+      return keyword;
+    });
+    updateInterest(interestIndex, 'keywords', updatedKeywords);
+  };
+
+  const toggleInterestKeywordVisibility = (interestIndex: number, keywordIndex: number) => {
+    const currentInterest = state.resumeData.interests[interestIndex];
+    const updatedKeywords = currentInterest.keywords.map((keyword, i) => {
+      if (i === keywordIndex) {
+        const normalized = normalizeKeyword(keyword);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return keyword;
+    });
     updateInterest(interestIndex, 'keywords', updatedKeywords);
   };
 
@@ -557,30 +590,45 @@ const AdditionalSectionsEditor = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => addVolunteerHighlight(index)}
+                    data-testid={`volunteer-${index}-add-highlight-button`}
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Highlight
                   </Button>
                 </div>
                 <div className="space-y-2">
-                  {volunteer.highlights.map((highlight, highlightIndex) => (
-                    <div key={highlightIndex} className="flex gap-2">
-                      <Input
-                        value={highlight}
-                        onChange={(e) => updateVolunteerHighlight(index, highlightIndex, e.target.value)}
-                        placeholder="Key achievement or responsibility"
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeVolunteerHighlight(index, highlightIndex)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                  {volunteer.highlights.map((highlight, highlightIndex) => {
+                    const normalized = normalizeHighlight(highlight);
+                    return (
+                      <div key={highlightIndex} className="flex gap-2" data-testid={`volunteer-${index}-highlight-${highlightIndex}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleVolunteerHighlightVisibility(index, highlightIndex)}
+                          className="p-1"
+                          data-testid={`volunteer-${index}-highlight-${highlightIndex}-visibility-toggle`}
+                        >
+                          {isHighlightVisible(highlight) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        </Button>
+                        <Input
+                          value={getHighlightContent(highlight)}
+                          onChange={(e) => updateVolunteerHighlight(index, highlightIndex, e.target.value)}
+                          placeholder="Key achievement or responsibility"
+                          className="flex-1"
+                          data-testid={`volunteer-${index}-highlight-${highlightIndex}-input`}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeVolunteerHighlight(index, highlightIndex)}
+                          className="text-red-600 hover:text-red-700"
+                          data-testid={`volunteer-${index}-highlight-${highlightIndex}-remove-button`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>
@@ -666,30 +714,45 @@ const AdditionalSectionsEditor = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => addInterestKeyword(index)}
+                    data-testid={`interest-${index}-add-keyword-button`}
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Keyword
                   </Button>
                 </div>
                 <div className="space-y-2">
-                  {interest.keywords.map((keyword, keywordIndex) => (
-                    <div key={keywordIndex} className="flex gap-2">
-                      <Input
-                        value={keyword}
-                        onChange={(e) => updateInterestKeyword(index, keywordIndex, e.target.value)}
-                        placeholder="Keyword or detail"
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeInterestKeyword(index, keywordIndex)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                  {interest.keywords.map((keyword, keywordIndex) => {
+                    const normalized = normalizeKeyword(keyword);
+                    return (
+                      <div key={keywordIndex} className="flex gap-2" data-testid={`interest-${index}-keyword-${keywordIndex}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleInterestKeywordVisibility(index, keywordIndex)}
+                          className="p-1"
+                          data-testid={`interest-${index}-keyword-${keywordIndex}-visibility-toggle`}
+                        >
+                          {isKeywordVisible(keyword) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        </Button>
+                        <Input
+                          value={getKeywordName(keyword)}
+                          onChange={(e) => updateInterestKeyword(index, keywordIndex, e.target.value)}
+                          placeholder="Keyword or detail"
+                          className="flex-1"
+                          data-testid={`interest-${index}-keyword-${keywordIndex}-input`}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeInterestKeyword(index, keywordIndex)}
+                          className="text-red-600 hover:text-red-700"
+                          data-testid={`interest-${index}-keyword-${keywordIndex}-remove-button`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>

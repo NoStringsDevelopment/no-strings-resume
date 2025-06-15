@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,22 +6,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { useResume } from "@/context/ResumeContext";
-import { Project } from "@/types/resume";
+import { Project, Highlight, Keyword, Role } from "@/types/resume";
+import { 
+  normalizeHighlight, 
+  normalizeKeyword, 
+  normalizeRole,
+  getHighlightContent, 
+  getKeywordName, 
+  getRoleName,
+  isHighlightVisible, 
+  isKeywordVisible, 
+  isRoleVisible 
+} from "@/utils/visibilityHelpers";
 
 const ProjectsEditor = () => {
   const { state, dispatch } = useResume();
-  const [expandedProject, setExpandedProject] = useState<number | null>(null);
 
   const addProject = () => {
     const newProject: Project = {
       name: "",
       description: "",
-      highlights: [],
-      keywords: [],
+      highlights: [{ content: '', visible: true }],
+      keywords: [{ name: '', visible: true }],
       startDate: "",
       endDate: "",
       url: "",
-      roles: [],
+      roles: [{ name: '', visible: true }],
       entity: "",
       type: "",
       visible: true
@@ -30,7 +39,7 @@ const ProjectsEditor = () => {
     dispatch({ type: 'ADD_PROJECT', payload: newProject });
   };
 
-  const updateProject = (index: number, field: keyof Project, value: any) => {
+  const updateProject = (index: number, field: keyof Project, value: string | boolean | (string | Highlight)[] | (string | Keyword)[] | (string | Role)[]) => {
     dispatch({ 
       type: 'UPDATE_PROJECT', 
       payload: { index, data: { [field]: value } }
@@ -41,9 +50,115 @@ const ProjectsEditor = () => {
     dispatch({ type: 'REMOVE_PROJECT', payload: index });
   };
 
-  const updateArrayField = (index: number, field: 'highlights' | 'keywords' | 'roles', value: string) => {
-    const items = value.split('\n').filter(item => item.trim());
-    updateProject(index, field, items);
+  // Highlight functions
+  const addHighlight = (projectIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedHighlights = [...currentProject.highlights, { content: '', visible: true }];
+    updateProject(projectIndex, 'highlights', updatedHighlights);
+  };
+
+  const updateHighlight = (projectIndex: number, highlightIndex: number, value: string) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedHighlights = currentProject.highlights.map((highlight, i) => {
+      if (i === highlightIndex) {
+        const normalized = normalizeHighlight(highlight);
+        return { ...normalized, content: value };
+      }
+      return highlight;
+    });
+    updateProject(projectIndex, 'highlights', updatedHighlights);
+  };
+
+  const toggleHighlightVisibility = (projectIndex: number, highlightIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedHighlights = currentProject.highlights.map((highlight, i) => {
+      if (i === highlightIndex) {
+        const normalized = normalizeHighlight(highlight);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return highlight;
+    });
+    updateProject(projectIndex, 'highlights', updatedHighlights);
+  };
+
+  const removeHighlight = (projectIndex: number, highlightIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedHighlights = currentProject.highlights.filter((_, i) => i !== highlightIndex);
+    updateProject(projectIndex, 'highlights', updatedHighlights);
+  };
+
+  // Keyword functions
+  const addKeyword = (projectIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedKeywords = [...currentProject.keywords, { name: '', visible: true }];
+    updateProject(projectIndex, 'keywords', updatedKeywords);
+  };
+
+  const updateKeyword = (projectIndex: number, keywordIndex: number, value: string) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedKeywords = currentProject.keywords.map((keyword, i) => {
+      if (i === keywordIndex) {
+        const normalized = normalizeKeyword(keyword);
+        return { ...normalized, name: value };
+      }
+      return keyword;
+    });
+    updateProject(projectIndex, 'keywords', updatedKeywords);
+  };
+
+  const toggleKeywordVisibility = (projectIndex: number, keywordIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedKeywords = currentProject.keywords.map((keyword, i) => {
+      if (i === keywordIndex) {
+        const normalized = normalizeKeyword(keyword);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return keyword;
+    });
+    updateProject(projectIndex, 'keywords', updatedKeywords);
+  };
+
+  const removeKeyword = (projectIndex: number, keywordIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedKeywords = currentProject.keywords.filter((_, i) => i !== keywordIndex);
+    updateProject(projectIndex, 'keywords', updatedKeywords);
+  };
+
+  // Role functions
+  const addRole = (projectIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedRoles = [...currentProject.roles, { name: '', visible: true }];
+    updateProject(projectIndex, 'roles', updatedRoles);
+  };
+
+  const updateRole = (projectIndex: number, roleIndex: number, value: string) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedRoles = currentProject.roles.map((role, i) => {
+      if (i === roleIndex) {
+        const normalized = normalizeRole(role);
+        return { ...normalized, name: value };
+      }
+      return role;
+    });
+    updateProject(projectIndex, 'roles', updatedRoles);
+  };
+
+  const toggleRoleVisibility = (projectIndex: number, roleIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedRoles = currentProject.roles.map((role, i) => {
+      if (i === roleIndex) {
+        const normalized = normalizeRole(role);
+        return { ...normalized, visible: !normalized.visible };
+      }
+      return role;
+    });
+    updateProject(projectIndex, 'roles', updatedRoles);
+  };
+
+  const removeRole = (projectIndex: number, roleIndex: number) => {
+    const currentProject = state.resumeData.projects[projectIndex];
+    const updatedRoles = currentProject.roles.filter((_, i) => i !== roleIndex);
+    updateProject(projectIndex, 'roles', updatedRoles);
   };
 
   const sectionVisible = state.resumeData.sectionVisibility?.projects ?? true;
@@ -190,43 +305,157 @@ const ProjectsEditor = () => {
               />
             </div>
 
+            {/* Highlights Section */}
             <div>
-              <Label htmlFor={`project-highlights-${index}`}>Highlights (one per line)</Label>
-              <Textarea
-                id={`project-highlights-${index}`}
-                value={project.highlights.join('\n')}
-                onChange={(e) => updateArrayField(index, 'highlights', e.target.value)}
-                placeholder="Built responsive web application&#10;Implemented user authentication&#10;Deployed to AWS"
-                rows={3}
-                spellCheck={true}
-                data-testid={`project-${index}-highlights-input`}
-              />
+              <div className="flex items-center justify-between mb-3">
+                <Label>Highlights</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addHighlight(index)}
+                  data-testid={`project-${index}-add-highlight-button`}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Highlight
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {project.highlights.map((highlight, highlightIndex) => {
+                  const normalized = normalizeHighlight(highlight);
+                  return (
+                    <div key={highlightIndex} className="flex gap-2" data-testid={`project-${index}-highlight-${highlightIndex}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleHighlightVisibility(index, highlightIndex)}
+                        className="p-1 self-start mt-1"
+                        data-testid={`project-${index}-highlight-${highlightIndex}-visibility-toggle`}
+                      >
+                        {isHighlightVisible(highlight) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                      <Textarea
+                        value={getHighlightContent(highlight)}
+                        onChange={(e) => updateHighlight(index, highlightIndex, e.target.value)}
+                        placeholder="Describe a key achievement or feature..."
+                        rows={2}
+                        className="flex-1"
+                        spellCheck={true}
+                        data-testid={`project-${index}-highlight-${highlightIndex}-input`}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeHighlight(index, highlightIndex)}
+                        className="text-red-600 hover:text-red-700 self-start mt-1"
+                        data-testid={`project-${index}-highlight-${highlightIndex}-remove-button`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor={`project-keywords-${index}`}>Keywords (one per line)</Label>
-                <Textarea
-                  id={`project-keywords-${index}`}
-                  value={project.keywords.join('\n')}
-                  onChange={(e) => updateArrayField(index, 'keywords', e.target.value)}
-                  placeholder="React&#10;TypeScript&#10;Node.js"
-                  rows={3}
-                  spellCheck={true}
-                  data-testid={`project-${index}-keywords-input`}
-                />
+            {/* Keywords Section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <Label>Keywords & Technologies</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addKeyword(index)}
+                  data-testid={`project-${index}-add-keyword-button`}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Keyword
+                </Button>
               </div>
-              <div>
-                <Label htmlFor={`project-roles-${index}`}>Roles (one per line)</Label>
-                <Textarea
-                  id={`project-roles-${index}`}
-                  value={project.roles.join('\n')}
-                  onChange={(e) => updateArrayField(index, 'roles', e.target.value)}
-                  placeholder="Full Stack Developer&#10;Project Lead"
-                  rows={3}
-                  spellCheck={true}
-                  data-testid={`project-${index}-roles-input`}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {project.keywords.map((keyword, keywordIndex) => {
+                  const normalized = normalizeKeyword(keyword);
+                  return (
+                    <div key={keywordIndex} className="flex gap-2" data-testid={`project-${index}-keyword-${keywordIndex}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleKeywordVisibility(index, keywordIndex)}
+                        className="p-1"
+                        data-testid={`project-${index}-keyword-${keywordIndex}-visibility-toggle`}
+                      >
+                        {isKeywordVisible(keyword) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                      <Input
+                        value={getKeywordName(keyword)}
+                        onChange={(e) => updateKeyword(index, keywordIndex, e.target.value)}
+                        placeholder="Technology or keyword"
+                        className="flex-1"
+                        spellCheck={true}
+                        data-testid={`project-${index}-keyword-${keywordIndex}-input`}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeKeyword(index, keywordIndex)}
+                        className="text-red-600 hover:text-red-700"
+                        data-testid={`project-${index}-keyword-${keywordIndex}-remove-button`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Roles Section */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <Label>Roles</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addRole(index)}
+                  data-testid={`project-${index}-add-role-button`}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Role
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {project.roles.map((role, roleIndex) => {
+                  const normalized = normalizeRole(role);
+                  return (
+                    <div key={roleIndex} className="flex gap-2" data-testid={`project-${index}-role-${roleIndex}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleRoleVisibility(index, roleIndex)}
+                        className="p-1"
+                        data-testid={`project-${index}-role-${roleIndex}-visibility-toggle`}
+                      >
+                        {isRoleVisible(role) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </Button>
+                      <Input
+                        value={getRoleName(role)}
+                        onChange={(e) => updateRole(index, roleIndex, e.target.value)}
+                        placeholder="Your role in the project"
+                        className="flex-1"
+                        spellCheck={true}
+                        data-testid={`project-${index}-role-${roleIndex}-input`}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeRole(index, roleIndex)}
+                        className="text-red-600 hover:text-red-700"
+                        data-testid={`project-${index}-role-${roleIndex}-remove-button`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </CardContent>

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
@@ -75,7 +74,7 @@ const ThemeEditor = () => {
                 <button 
                   onClick={() => navigate('/')}
                   className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
-                  data-testid="home-button"
+                  data-testid="home-button-mobile"
                 >
                   <span className="text-white font-bold text-sm">NR</span>
                 </button>
@@ -86,11 +85,11 @@ const ThemeEditor = () => {
               </div>
               
               <div className="flex items-center space-x-2">
-                <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
+                <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button-mobile">
                   <Edit className="w-4 h-4" />
                   <span>Edit</span>
                 </Button>
-                <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
+                <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button-mobile">
                   <Eye className="w-4 h-4" />
                   <span>View</span>
                 </Button>
@@ -98,19 +97,21 @@ const ThemeEditor = () => {
             </div>
 
             {/* Second Row - Preview Toggle */}
-            <div className="flex items-center justify-center space-x-2">
-              <Checkbox 
-                id="theme-preview-toggle-mobile"
-                checked={isPreviewVisible}
-                onCheckedChange={togglePreview}
-                data-testid="preview-toggle"
-              />
-              <label 
-                htmlFor="theme-preview-toggle-mobile" 
-                className="text-sm font-medium cursor-pointer"
-              >
-                Preview
-              </label>
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="theme-preview-toggle-mobile"
+                  checked={isPreviewVisible}
+                  onCheckedChange={togglePreview}
+                  data-testid="preview-toggle-mobile"
+                />
+                <label 
+                  htmlFor="theme-preview-toggle-mobile" 
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  Preview
+                </label>
+              </div>
             </div>
           </div>
         </div>

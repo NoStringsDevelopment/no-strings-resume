@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -294,7 +293,7 @@ const ResumeEditor = () => {
                 <button 
                   onClick={() => navigate('/')}
                   className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
-                  data-testid="home-button"
+                  data-testid="home-button-mobile"
                 >
                   <span className="text-white font-bold text-sm">NR</span>
                 </button>
@@ -310,7 +309,7 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={() => navigate('/theme')}
                   title="Theme"
-                  data-testid="theme-button"
+                  data-testid="theme-button-mobile"
                 >
                   <Palette className="w-4 h-4" />
                 </Button>
@@ -320,7 +319,7 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={() => navigate('/view')}
                   title="View"
-                  data-testid="view-button"
+                  data-testid="view-button-mobile"
                 >
                   <Eye className="w-4 h-4" />
                 </Button>
@@ -337,7 +336,7 @@ const ResumeEditor = () => {
                   onClick={handleUndo}
                   disabled={!canUndo}
                   title="Undo"
-                  data-testid="undo-button"
+                  data-testid="undo-button-mobile"
                 >
                   <Undo className="w-4 h-4" />
                 </Button>
@@ -348,7 +347,7 @@ const ResumeEditor = () => {
                   onClick={handleRedo}
                   disabled={!canRedo}
                   title="Redo"
-                  data-testid="redo-button"
+                  data-testid="redo-button-mobile"
                 >
                   <Redo className="w-4 h-4" />
                 </Button>
@@ -361,7 +360,7 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={handleImport}
                   title="Import"
-                  data-testid="import-button"
+                  data-testid="import-button-mobile"
                 >
                   <Upload className="w-4 h-4" />
                 </Button>
@@ -371,7 +370,7 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={handleExportJson}
                   title="Backup"
-                  data-testid="backup-button"
+                  data-testid="backup-button-mobile"
                 >
                   <Download className="w-4 h-4" />
                 </Button>
@@ -385,7 +384,7 @@ const ResumeEditor = () => {
                   onClick={handleClearAll}
                   className="text-red-600 hover:text-red-700"
                   title="Clear All"
-                  data-testid="clear-button"
+                  data-testid="clear-button-mobile"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -395,19 +394,19 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={handleResetToDefault}
                   title="Reset to Default"
-                  data-testid="reset-button"
+                  data-testid="reset-button-mobile"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </Button>
               </div>
 
               {/* Preview Toggle */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
                 <Checkbox 
                   id="preview-toggle-mobile"
                   checked={isPreviewVisible}
                   onCheckedChange={togglePreview}
-                  data-testid="preview-toggle"
+                  data-testid="preview-toggle-mobile"
                 />
                 <label 
                   htmlFor="preview-toggle-mobile" 

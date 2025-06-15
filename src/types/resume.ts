@@ -25,14 +25,35 @@ export interface NonConformingData {
   rawText?: string;
   invalidFields?: InvalidField[];
   parsingErrors?: string[];
-  originalData?: any;
+  originalData?: unknown;
 }
 
 export interface InvalidField {
   section: string;
   field: string;
-  value: any;
+  value: unknown;
   reason: string;
+}
+
+// New interfaces for sub-items with visibility
+export interface Highlight {
+  content: string;
+  visible?: boolean;
+}
+
+export interface Course {
+  name: string;
+  visible?: boolean;
+}
+
+export interface Keyword {
+  name: string;
+  visible?: boolean;
+}
+
+export interface Role {
+  name: string;
+  visible?: boolean;
 }
 
 export interface Basics {
@@ -71,7 +92,7 @@ export interface WorkExperience {
   startDate: string;
   endDate: string;
   summary: string;
-  highlights: string[];
+  highlights: (string | Highlight)[];
   visible?: boolean;
 }
 
@@ -82,7 +103,7 @@ export interface Volunteer {
   startDate: string;
   endDate: string;
   summary: string;
-  highlights: string[];
+  highlights: (string | Highlight)[];
   visible?: boolean;
 }
 
@@ -94,26 +115,26 @@ export interface Education {
   startDate: string;
   endDate: string;
   score: string;
-  courses: string[];
+  courses: (string | Course)[];
   visible?: boolean;
 }
 
 export interface Skill {
   name: string;
   level: string;
-  keywords: string[];
+  keywords: (string | Keyword)[];
   visible?: boolean;
 }
 
 export interface Project {
   name: string;
   description: string;
-  highlights: string[];
-  keywords: string[];
+  highlights: (string | Highlight)[];
+  keywords: (string | Keyword)[];
   startDate: string;
   endDate: string;
   url: string;
-  roles: string[];
+  roles: (string | Role)[];
   entity: string;
   type: string;
   visible?: boolean;
@@ -152,7 +173,7 @@ export interface Language {
 
 export interface Interest {
   name: string;
-  keywords: string[];
+  keywords: (string | Keyword)[];
   visible?: boolean;
 }
 

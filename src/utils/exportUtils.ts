@@ -1,5 +1,15 @@
 import { ResumeData, Theme } from '@/types/resume';
 import { downloadFile, exportResumeAsJson } from '@/utils/importExport';
+import { 
+  getVisibleHighlights, 
+  getHighlightContent, 
+  getVisibleCourses, 
+  getCourseName,
+  getVisibleKeywords,
+  getKeywordName,
+  getVisibleRoles,
+  getRoleName 
+} from '@/utils/visibilityHelpers';
 
 // Convert JSON Resume to HR-Open format
 export function convertToHROpen(resumeData: ResumeData): Record<string, unknown> {
@@ -140,37 +150,38 @@ export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
 }
 
 function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
+  let content = '';
   const { sectionVisibility } = resumeData;
   
-  let content = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  const createParagraph = (text: string, style: 'heading1' | 'heading2' | 'heading3' | 'normal' | 'contact' = 'normal') => {
+    const styles = {
+      heading1: '<w:pStyle w:val="Heading1"/>',
+      heading2: '<w:pStyle w:val="Heading2"/>',
+      heading3: '<w:pStyle w:val="Heading3"/>',
+      normal: '',
+      contact: '<w:color w:val="666666"/><w:sz w:val="18"/>'
+    };
+    
+    return `
+    <w:p>
+      <w:pPr>
+        ${styles[style]}
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          ${styles[style]}
+        </w:rPr>
+        <w:t>${text}</w:t>
+      </w:r>
+    </w:p>`;
+  };
+
+  // Header - document structure
+  content += `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>`;
 
-  // Helper function to create a paragraph
-  const createParagraph = (text: string, style: 'heading1' | 'heading2' | 'heading3' | 'normal' | 'contact' = 'normal') => {
-    let runProperties = '';
-    
-    switch (style) {
-      case 'heading1':
-        runProperties = '<w:rPr><w:b/><w:sz w:val="48"/><w:color w:val="2563eb"/></w:rPr>';
-        break;
-      case 'heading2':
-        runProperties = '<w:rPr><w:b/><w:sz w:val="32"/><w:color w:val="64748b"/></w:rPr>';
-        break;
-      case 'heading3':
-        runProperties = '<w:rPr><w:b/><w:sz w:val="24"/><w:color w:val="2563eb"/></w:rPr>';
-        break;
-      case 'contact':
-        runProperties = '<w:rPr><w:sz w:val="18"/><w:color w:val="64748b"/></w:rPr>';
-        break;
-      default:
-        runProperties = '<w:rPr><w:sz w:val="22"/></w:rPr>';
-    }
-    
-    return `<w:p><w:r>${runProperties}<w:t>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</w:t></w:r></w:p>`;
-  };
-
-  // Header section
+  // Basics section
   if (sectionVisibility.basics) {
     content += createParagraph(resumeData.basics.name, 'heading1');
     
@@ -180,23 +191,22 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
     
     // Contact information
     const contactInfo = [
-      resumeData.basics.email && `📧 ${resumeData.basics.email}`,
-      resumeData.basics.phone && `📞 ${resumeData.basics.phone}`,
-      resumeData.basics.url && `🌐 ${resumeData.basics.url}`,
-      (resumeData.basics.location.city || resumeData.basics.location.region) && 
-        `📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}`
+      resumeData.basics.email,
+      resumeData.basics.phone,
+      resumeData.basics.url,
+      [resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')
     ].filter(Boolean);
     
     if (contactInfo.length > 0) {
-      content += createParagraph(contactInfo.join(' • '), 'contact');
+      content += createParagraph(contactInfo.join(' | '), 'contact');
     }
-
+    
     // Profiles
-    if (resumeData.basics.profiles.some(p => p.visible !== false)) {
-      const profilesInfo = resumeData.basics.profiles
-        .filter(profile => profile.visible !== false)
-        .map(profile => `${profile.network}: ${profile.username || profile.url}`)
-        .join(' • ');
+    const visibleProfiles = resumeData.basics.profiles.filter(p => p.visible !== false);
+    if (visibleProfiles.length > 0) {
+      const profilesInfo = visibleProfiles.map(profile => 
+        `${profile.network}: ${profile.username || profile.url}`
+      ).join(' | ');
       
       if (profilesInfo) {
         content += createParagraph(profilesInfo, 'contact');
@@ -211,7 +221,7 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
     }
   }
 
-  // Work Experience
+  // Work Experience with visibility filtering
   if (sectionVisibility.work && resumeData.work.some(w => w.visible !== false)) {
     content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
     content += createParagraph('WORK EXPERIENCE', 'heading3');
@@ -226,15 +236,17 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
           content += createParagraph(work.summary);
         }
         
-        work.highlights.forEach(highlight => {
-          content += createParagraph(`• ${highlight}`);
+        // Use visibility helper for highlights
+        const visibleHighlights = getVisibleHighlights(work.highlights);
+        visibleHighlights.forEach(highlight => {
+          content += createParagraph(`• ${getHighlightContent(highlight)}`);
         });
         
         content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
       });
   }
 
-  // Education
+  // Education with course visibility filtering
   if (sectionVisibility.education && resumeData.education.some(e => e.visible !== false)) {
     content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
     content += createParagraph('EDUCATION', 'heading3');
@@ -249,6 +261,13 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
         
         if (edu.score) {
           content += createParagraph(`Score: ${edu.score}`, 'contact');
+        }
+        
+        // Use visibility helper for courses
+        const visibleCourses = getVisibleCourses(edu.courses);
+        if (visibleCourses.length > 0) {
+          const courseNames = visibleCourses.map(course => getCourseName(course));
+          content += createParagraph(`Relevant Courses: ${courseNames.join(', ')}`, 'contact');
         }
         
         content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
@@ -266,8 +285,10 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
         const skillText = `${skill.name}${skill.level ? ` (${skill.level})` : ''}`;
         content += createParagraph(skillText, 'normal');
         
-        if (skill.keywords.length > 0) {
-          content += createParagraph(skill.keywords.join(', '), 'contact');
+        const visibleKeywords = getVisibleKeywords(skill.keywords);
+        if (visibleKeywords.length > 0) {
+          const keywordNames = visibleKeywords.map(keyword => getKeywordName(keyword));
+          content += createParagraph(keywordNames.join(', '), 'contact');
         }
         
         content += '<w:p><w:pPr><w:spacing w:after="80"/></w:pPr></w:p>';
@@ -285,8 +306,23 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
         content += createParagraph(project.name, 'normal');
         content += createParagraph(project.description);
         
-        if (project.keywords.length > 0) {
-          content += createParagraph(`Technologies: ${project.keywords.join(', ')}`, 'contact');
+        const visibleHighlights = getVisibleHighlights(project.highlights);
+        if (visibleHighlights.length > 0) {
+          visibleHighlights.forEach(highlight => {
+            content += createParagraph(`• ${getHighlightContent(highlight)}`);
+          });
+        }
+        
+        const visibleKeywords = getVisibleKeywords(project.keywords);
+        if (visibleKeywords.length > 0) {
+          const keywordNames = visibleKeywords.map(keyword => getKeywordName(keyword));
+          content += createParagraph(`Technologies: ${keywordNames.join(', ')}`, 'contact');
+        }
+        
+        const visibleRoles = getVisibleRoles(project.roles);
+        if (visibleRoles.length > 0) {
+          const roleNames = visibleRoles.map(role => getRoleName(role));
+          content += createParagraph(`Roles: ${roleNames.join(', ')}`, 'contact');
         }
         
         content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
@@ -504,6 +540,7 @@ function generateHTMLContent(resumeData: ResumeData): string {
     resumeData.work
       .filter(work => work.visible !== false)
       .forEach(work => {
+        const visibleHighlights = getVisibleHighlights(work.highlights);
         html += `
           <div class="item">
             <div class="item-header">
@@ -514,7 +551,7 @@ function generateHTMLContent(resumeData: ResumeData): string {
               <span class="date">${work.startDate} - ${work.endDate || 'Present'}</span>
             </div>
             ${work.summary ? `<p>${work.summary}</p>` : ''}
-            ${work.highlights.length > 0 ? `<ul>${work.highlights.map(h => `<li>${h}</li>`).join('')}</ul>` : ''}
+            ${visibleHighlights.length > 0 ? `<ul>${visibleHighlights.map(h => `<li>${getHighlightContent(h)}</li>`).join('')}</ul>` : ''}
           </div>
         `;
       });
@@ -526,6 +563,7 @@ function generateHTMLContent(resumeData: ResumeData): string {
     resumeData.education
       .filter(edu => edu.visible !== false)
       .forEach(edu => {
+        const visibleCourses = getVisibleCourses(edu.courses);
         html += `
           <div class="item">
             <div class="item-header">
@@ -536,6 +574,7 @@ function generateHTMLContent(resumeData: ResumeData): string {
               <span class="date">${edu.startDate} - ${edu.endDate || 'Present'}</span>
             </div>
             ${edu.score ? `<p>Score: ${edu.score}</p>` : ''}
+            ${visibleCourses.length > 0 ? `<p><strong>Relevant Courses:</strong> ${visibleCourses.map(c => getCourseName(c)).join(', ')}</p>` : ''}
           </div>
         `;
       });
@@ -547,10 +586,11 @@ function generateHTMLContent(resumeData: ResumeData): string {
     resumeData.skills
       .filter(skill => skill.visible !== false)
       .forEach(skill => {
+        const visibleKeywords = getVisibleKeywords(skill.keywords);
         html += `
           <div class="skill-item">
             <h4>${skill.name}${skill.level ? ` (${skill.level})` : ''}</h4>
-            ${skill.keywords.length > 0 ? `<div class="skill-keywords">${skill.keywords.join(', ')}</div>` : ''}
+            ${visibleKeywords.length > 0 ? `<div class="skill-keywords">${visibleKeywords.map(keyword => getKeywordName(keyword)).join(', ')}</div>` : ''}
           </div>
         `;
       });
@@ -563,11 +603,17 @@ function generateHTMLContent(resumeData: ResumeData): string {
     resumeData.projects
       .filter(project => project.visible !== false)
       .forEach(project => {
+        const visibleHighlights = getVisibleHighlights(project.highlights);
+        const visibleKeywords = getVisibleKeywords(project.keywords);
+        const visibleRoles = getVisibleRoles(project.roles);
+        
         html += `
           <div class="item">
             <h4 style="margin: 0 0 0.5em 0; font-size: 1.1em;">${project.name}</h4>
             <p>${project.description}</p>
-            ${project.keywords.length > 0 ? `<p class="skill-keywords">Technologies: ${project.keywords.join(', ')}</p>` : ''}
+            ${visibleHighlights.length > 0 ? `<ul>${visibleHighlights.map(h => `<li>${getHighlightContent(h)}</li>`).join('')}</ul>` : ''}
+            ${visibleKeywords.length > 0 ? `<p class="skill-keywords">Technologies: ${visibleKeywords.map(keyword => getKeywordName(keyword)).join(', ')}</p>` : ''}
+            ${visibleRoles.length > 0 ? `<p class="skill-keywords">Roles: ${visibleRoles.map(role => getRoleName(role)).join(', ')}</p>` : ''}
           </div>
         `;
       });
