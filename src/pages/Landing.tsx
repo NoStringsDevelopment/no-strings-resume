@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Shield, Download, Eye, Edit, Palette, FileText, Heart, Users, Zap, Code, Target, Lock, Briefcase } from "lucide-react";
+import { Wrench, Download, Eye, Edit, Palette, FileText, Heart, Settings, Zap, Code, Award, Lock, Search } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
   
   const features = [{
-    icon: Shield,
+    icon: Wrench,
     title: "Privacy First",
     description: "Your data never leaves your browser. No accounts, no tracking, no hidden data collection."
   }, {
@@ -33,7 +33,7 @@ const Landing = () => {
   }];
 
   const userPersonas = [{
-    icon: Users,
+    icon: Settings,
     title: "The Practical Applicant",
     description: "Practical applicants use No Strings Resume as their primary resume-building tool. Experienced enough with resume writing to appreciate simplicity, they rely on the friendly interface, seamless import/export, and straightforward backup options. Local storage keeps their work accessible across sessions without complicated setup, making it ideal for candidates like gig economy workers frequently applying for contracts or career switchers customizing applications."
   }, {
@@ -45,7 +45,7 @@ const Landing = () => {
     title: "The Tech-Savvy Candidate",
     description: "Tech-savvy job hunters may self-host No Strings Resume and expect high-quality, maintainable code. Comfortable interacting directly with JSON data, they customize templates, add new sections, and adapt the application to fit specific needs, making full use of the app's flexibility and openness."
   }, {
-    icon: Target,
+    icon: Award,
     title: "The Seasoned Job Hunter",
     description: "Seasoned candidates have extensive experience crafting and strategically tailoring resumes. They value advanced features, such as custom theme creation, personalized template modifications, and the ability to swap default DOCX templates for bespoke designs. Comfortable optimizing exports for various scenarios, these candidates approach job applications with efficiency and a clear understanding of how to effectively present their experience."
   }, {
@@ -53,7 +53,7 @@ const Landing = () => {
     title: "The Privacy-Conscious User",
     description: "Privacy-conscious users appreciate the no-backend architecture and local data storage. They value accessing the application without needing to create an account or share personal information with third parties, confident their data remains entirely under their control."
   }, {
-    icon: Briefcase,
+    icon: Search,
     title: "Recruiters and Employers",
     description: "Recruiters and employers can be sent a direct link to instantly view candidate resumes online, making it easy to review and export neatly formatted PDFs for filing or distribution. Documents are structured to be ATS-friendly and optimized for keyword searches, ensuring compatibility with standard recruitment processes."
   }];
