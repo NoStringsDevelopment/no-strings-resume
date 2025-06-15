@@ -501,9 +501,15 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                         {lang.language}
                       </span>
                       {lang.fluency && (
-                        <span className="text-sm ml-2" style={{ color: '
-
-[content continues to match JSON resume schema with all sections visible when data exists]
+                        <span className="text-sm ml-2" style={{ color: 'var(--color-text-secondary)' }}>
+                          ({lang.fluency})
+                        </span>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
 
           {/* Interests */}
           {sectionVisibility.interests && interests.some(i => i.visible !== false) && (
