@@ -18,7 +18,7 @@ By combining privacy-first architecture with inclusive design principles and pro
 - **Icons**: Lucide React for consistent iconography
 - **PDF Generation**: jsPDF and html2canvas for client-side PDF creation
 - **DOCX Generation**: docx-templates for Microsoft Word document export
-- **Testing**: Jest for unit tests, React Testing Library for component tests, Playwright for E2E testing
+- **Testing**: Vitest for unit tests, React Testing Library for component tests, Playwright for E2E testing
 
 ### Key Features
 1. **Privacy-First Architecture**: No server communication, all data processing happens client-side
@@ -134,9 +134,9 @@ Values the no-backend architecture and local data storage. Appreciates the abili
 ### Test Infrastructure
 - `src/**/*.test.ts` - Unit tests alongside source files
 - `src/components/**/*.test.tsx` - Component tests with React Testing Library
-- `src/playwright/` - End-to-end test suites
-- `src/playwright/pageObjects/` - Page object patterns for E2E tests
-- `jest.config.js` - Jest configuration with coverage targets ≥85%
+- `tests/e2e/` - End-to-end test suites
+- `tests/e2e/pageObjects/` - Page object patterns for E2E tests
+- `vitest.config.ts` - Vitest configuration with coverage targets ≥85%
 - `playwright.config.ts` - Playwright configuration for cross-browser testing
 
 ### Public Assets
@@ -311,7 +311,7 @@ Modern minimalist design with lots of white space, clean lines, and intuitive ic
 
 ## Testing Infrastructure
 
-### Unit Tests (Jest)
+### Unit Tests (Vitest)
 - **Coverage Target**: ≥85% on critical modules
 - **Test Files**: `*.test.ts` alongside source files
 - **Focus Areas**: Export functions, validation logic, data transformations
@@ -385,11 +385,18 @@ Modern minimalist design with lots of white space, clean lines, and intuitive ic
 - Theme system integration for customizable appearance
 
 ### Testing Requirements
-- All major components have data-testid attributes
-- Unit tests for all utility functions
-- Component tests for user interaction flows
-- E2E tests for critical user journeys
-- Accessibility testing in component test suites
+- **Data Test IDs**: All interactive elements use `data-testid` attributes for stable test identification
+- **Unit Tests**: Vitest for all utility functions with ≥85% coverage
+- **Component Tests**: React Testing Library for user interaction flows
+- **E2E Tests**: Playwright for critical user journeys across browsers
+- **Accessibility Testing**: WCAG 2.1 AA compliance validation in test suites
+
+### Testing Best Practices
+- Use `data-testid` attributes instead of CSS classes or IDs for element identification
+- Follow naming convention: `data-testid="section-action-element"` (e.g., `data-testid="landing-get-started-button"`)
+- Test user interactions, not implementation details
+- Include accessibility checks in all component and E2E tests
+- Use page object patterns for maintainable E2E tests
 
 ### Accessibility Standards
 - WCAG 2.1 AA compliance across all features
