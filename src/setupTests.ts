@@ -34,6 +34,13 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 });
 
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
 // Mock fetch for ResumeContext
 global.fetch = vi.fn().mockImplementation(() =>
   Promise.resolve({

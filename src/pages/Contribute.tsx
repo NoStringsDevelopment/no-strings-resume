@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -8,22 +7,36 @@ import { useEffect } from "react";
 const Contribute = () => {
   const navigate = useNavigate();
 
+  // Debug log to confirm component is mounting
+  console.log('Contribute component is mounting');
+
   useEffect(() => {
-    // Load Ko-fi widget script
+    // Load Ko-fi widget script with error handling
     const script1 = document.createElement('script');
     script1.type = 'text/javascript';
     script1.src = 'https://storage.ko-fi.com/cdn/widget/Widget_2.js';
-    document.head.appendChild(script1);
-
+    
     script1.onload = () => {
-      const script2 = document.createElement('script');
-      script2.type = 'text/javascript';
-      script2.innerHTML = `
-        kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'T6T31GH005');
-        kofiwidget2.draw();
-      `;
-      document.head.appendChild(script2);
+      try {
+        const script2 = document.createElement('script');
+        script2.type = 'text/javascript';
+        script2.innerHTML = `
+          if (typeof kofiwidget2 !== 'undefined') {
+            kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'T6T31GH005');
+            kofiwidget2.draw();
+          }
+        `;
+        document.head.appendChild(script2);
+      } catch (error) {
+        console.warn('Ko-fi widget failed to initialize:', error);
+      }
     };
+    
+    script1.onerror = () => {
+      console.warn('Ko-fi widget failed to load');
+    };
+    
+    document.head.appendChild(script1);
 
     return () => {
       // Cleanup scripts on unmount
@@ -91,8 +104,21 @@ const Contribute = () => {
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            Help Make
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"> No Strings Resume</span>
+            Help Make{' '}
+            <span 
+              className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+              style={{
+                // Fallback for browsers that don't support bg-clip-text
+                backgroundImage: 'linear-gradient(to right, #2563eb, #9333ea)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                // Fallback color
+                color: '#2563eb'
+              }}
+            >
+              No Strings Resume
+            </span>
             <br />Even Better
           </h2>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
