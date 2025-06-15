@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -108,12 +109,24 @@ const ResumeEditor = () => {
     });
   };
 
-  const handleResetToDefault = () => {
-    dispatch({ type: 'RESET_TO_DEFAULT' });
-    toast({
-      title: "Reset",
-      description: "Resume has been reset to default template."
-    });
+  const handleResetToDefault = async () => {
+    try {
+      // Fetch the default resume.json from public folder
+      const response = await fetch('/resume.json');
+      const defaultResumeData = await response.json();
+      
+      dispatch({ type: 'SET_RESUME_DATA', payload: defaultResumeData });
+      toast({
+        title: "Reset",
+        description: "Resume has been reset to default template."
+      });
+    } catch (error) {
+      toast({
+        title: "Reset Failed",
+        description: "Could not load default resume template.",
+        variant: "destructive"
+      });
+    }
   };
 
   const canUndo = state.historyIndex > 0;
@@ -127,12 +140,15 @@ const ResumeEditor = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <button 
+                  onClick={() => navigate('/')}
+                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                >
                   <span className="text-white font-bold text-sm">NR</span>
-                </div>
-                <span className="font-semibold text-gray-900 hidden sm:block">No Strings Resume</span>
+                </button>
+                <span className="font-semibold text-gray-900 hidden lg:block">No Strings Resume</span>
               </div>
-              <div className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
+              <div className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium hidden sm:block">
                 Edit Mode
               </div>
             </div>
@@ -147,7 +163,7 @@ const ResumeEditor = () => {
                 title="Undo"
               >
                 <Undo className="w-4 h-4" />
-                <span className="hidden md:block">Undo</span>
+                <span className="hidden xl:block">Undo</span>
               </Button>
               
               <Button 
@@ -159,10 +175,10 @@ const ResumeEditor = () => {
                 title="Redo"
               >
                 <Redo className="w-4 h-4" />
-                <span className="hidden md:block">Redo</span>
+                <span className="hidden xl:block">Redo</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
               <Button 
                 variant="ghost"
@@ -172,7 +188,7 @@ const ResumeEditor = () => {
                 title="Import"
               >
                 <Upload className="w-4 h-4" />
-                <span className="hidden md:block">Import</span>
+                <span className="hidden xl:block">Import</span>
               </Button>
               
               <Button 
@@ -183,10 +199,10 @@ const ResumeEditor = () => {
                 title="Export"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden md:block">Export</span>
+                <span className="hidden xl:block">Export</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
               <Button 
                 variant="ghost"
@@ -196,7 +212,7 @@ const ResumeEditor = () => {
                 title="Clear All"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="hidden md:block">Clear</span>
+                <span className="hidden xl:block">Clear</span>
               </Button>
               
               <Button 
@@ -207,10 +223,10 @@ const ResumeEditor = () => {
                 title="Reset to Default"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span className="hidden md:block">Reset</span>
+                <span className="hidden xl:block">Reset</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1" />
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
               <Button 
                 variant="outline"
@@ -219,7 +235,7 @@ const ResumeEditor = () => {
                 className="flex items-center space-x-1"
               >
                 <Eye className="w-4 h-4" />
-                <span className="hidden sm:block">View</span>
+                <span className="hidden lg:block">View</span>
               </Button>
               
               <Button 
@@ -229,7 +245,7 @@ const ResumeEditor = () => {
                 className="flex items-center space-x-1"
               >
                 <Palette className="w-4 h-4" />
-                <span className="hidden sm:block">Theme</span>
+                <span className="hidden lg:block">Theme</span>
               </Button>
             </div>
           </div>

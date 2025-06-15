@@ -1,17 +1,18 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Settings } from "lucide-react";
 import { useResume } from "@/context/ResumeContext";
 import { Certificate, Publication, Volunteer, Interest, Reference } from "@/types/resume";
+import NonConformingDataViewer from "@/components/NonConformingDataViewer";
+import SectionVisibilityEditor from "@/components/editor/SectionVisibilityEditor";
 
 const AdditionalSectionsEditor = () => {
   const { state, dispatch } = useResume();
 
-  // Certificates
+  // Certificate handlers
   const addCertificate = () => {
     const newCertificate: Certificate = {
       name: "",
@@ -34,7 +35,7 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_CERTIFICATE', payload: index });
   };
 
-  // Publications
+  // Publication handlers
   const addPublication = () => {
     const newPublication: Publication = {
       name: "",
@@ -58,7 +59,7 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_PUBLICATION', payload: index });
   };
 
-  // Volunteer
+  // Volunteer handlers
   const addVolunteer = () => {
     const newVolunteer: Volunteer = {
       organization: "",
@@ -67,7 +68,7 @@ const AdditionalSectionsEditor = () => {
       startDate: "",
       endDate: "",
       summary: "",
-      highlights: [],
+      highlights: [""],
       visible: true
     };
     dispatch({ type: 'ADD_VOLUNTEER', payload: newVolunteer });
@@ -84,11 +85,31 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_VOLUNTEER', payload: index });
   };
 
-  // Interests
+  const addVolunteerHighlight = (index: number) => {
+    const currentVolunteer = state.resumeData.volunteer[index];
+    const updatedHighlights = [...currentVolunteer.highlights, ""];
+    updateVolunteer(index, 'highlights', updatedHighlights);
+  };
+
+  const updateVolunteerHighlight = (volunteerIndex: number, highlightIndex: number, value: string) => {
+    const currentVolunteer = state.resumeData.volunteer[volunteerIndex];
+    const updatedHighlights = currentVolunteer.highlights.map((highlight, i) => 
+      i === highlightIndex ? value : highlight
+    );
+    updateVolunteer(volunteerIndex, 'highlights', updatedHighlights);
+  };
+
+  const removeVolunteerHighlight = (volunteerIndex: number, highlightIndex: number) => {
+    const currentVolunteer = state.resumeData.volunteer[volunteerIndex];
+    const updatedHighlights = currentVolunteer.highlights.filter((_, i) => i !== highlightIndex);
+    updateVolunteer(volunteerIndex, 'highlights', updatedHighlights);
+  };
+
+  // Interest handlers
   const addInterest = () => {
     const newInterest: Interest = {
       name: "",
-      keywords: [],
+      keywords: [""],
       visible: true
     };
     dispatch({ type: 'ADD_INTEREST', payload: newInterest });
@@ -105,7 +126,27 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_INTEREST', payload: index });
   };
 
-  // References
+  const addInterestKeyword = (interestIndex: number) => {
+    const currentInterest = state.resumeData.interests[interestIndex];
+    const updatedKeywords = [...currentInterest.keywords, ""];
+    updateInterest(interestIndex, 'keywords', updatedKeywords);
+  };
+
+  const updateInterestKeyword = (interestIndex: number, keywordIndex: number, value: string) => {
+    const currentInterest = state.resumeData.interests[interestIndex];
+    const updatedKeywords = currentInterest.keywords.map((keyword, i) => 
+      i === keywordIndex ? value : keyword
+    );
+    updateInterest(interestIndex, 'keywords', updatedKeywords);
+  };
+
+  const removeInterestKeyword = (interestIndex: number, keywordIndex: number) => {
+    const currentInterest = state.resumeData.interests[interestIndex];
+    const updatedKeywords = currentInterest.keywords.filter((_, i) => i !== keywordIndex);
+    updateInterest(interestIndex, 'keywords', updatedKeywords);
+  };
+
+  // Reference handlers
   const addReference = () => {
     const newReference: Reference = {
       name: "",
@@ -126,12 +167,16 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_REFERENCE', payload: index });
   };
 
-  const updateArrayField = (items: string[], value: string) => {
-    return value.split('\n').filter(item => item.trim());
-  };
-
   return (
     <div className="space-y-8">
+      {/* Section Visibility Controls */}
+      <SectionVisibilityEditor />
+
+      {/* Non-Conforming Data */}
+      {state.resumeData.nonConformingData && (
+        <NonConformingDataViewer data={state.resumeData.nonConformingData} />
+      )}
+
       {/* Certificates Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -172,32 +217,38 @@ const AdditionalSectionsEditor = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Certificate Name</Label>
+                  <Label htmlFor={`cert-name-${index}`}>Certificate Name</Label>
                   <Input
+                    id={`cert-name-${index}`}
                     value={certificate.name}
                     onChange={(e) => updateCertificate(index, 'name', e.target.value)}
                     placeholder="AWS Certified Solutions Architect"
                   />
                 </div>
                 <div>
-                  <Label>Issuer</Label>
+                  <Label htmlFor={`cert-date-${index}`}>Date Issued</Label>
                   <Input
+                    id={`cert-date-${index}`}
+                    type="date"
+                    value={certificate.date}
+                    onChange={(e) => updateCertificate(index, 'date', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`cert-issuer-${index}`}>Issuing Organization</Label>
+                  <Input
+                    id={`cert-issuer-${index}`}
                     value={certificate.issuer}
                     onChange={(e) => updateCertificate(index, 'issuer', e.target.value)}
                     placeholder="Amazon Web Services"
                   />
                 </div>
                 <div>
-                  <Label>Date Issued</Label>
+                  <Label htmlFor={`cert-url-${index}`}>Certificate URL</Label>
                   <Input
-                    type="date"
-                    value={certificate.date}
-                    onChange={(e) => updateCertificate(index, 'date', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>Certificate URL</Label>
-                  <Input
+                    id={`cert-url-${index}`}
                     value={certificate.url}
                     onChange={(e) => updateCertificate(index, 'url', e.target.value)}
                     placeholder="https://certificate-url.com"
@@ -207,6 +258,18 @@ const AdditionalSectionsEditor = () => {
             </CardContent>
           </Card>
         ))}
+
+        {state.resumeData.certificates.length === 0 && (
+          <Card className="text-center py-8">
+            <CardContent>
+              <p className="text-gray-500 mb-4">No certificates added yet</p>
+              <Button onClick={addCertificate} className="flex items-center space-x-2 mx-auto">
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Certificate</span>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Publications Section */}
@@ -247,52 +310,69 @@ const AdditionalSectionsEditor = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor={`pub-name-${index}`}>Publication Title</Label>
+                <Input
+                  id={`pub-name-${index}`}
+                  value={publication.name}
+                  onChange={(e) => updatePublication(index, 'name', e.target.value)}
+                  placeholder="Building Scalable React Applications"
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Publication Name</Label>
+                  <Label htmlFor={`pub-publisher-${index}`}>Publisher</Label>
                   <Input
-                    value={publication.name}
-                    onChange={(e) => updatePublication(index, 'name', e.target.value)}
-                    placeholder="Research Paper Title"
-                  />
-                </div>
-                <div>
-                  <Label>Publisher</Label>
-                  <Input
+                    id={`pub-publisher-${index}`}
                     value={publication.publisher}
                     onChange={(e) => updatePublication(index, 'publisher', e.target.value)}
-                    placeholder="IEEE, ACM, etc."
+                    placeholder="TechMedium"
                   />
                 </div>
                 <div>
-                  <Label>Release Date</Label>
+                  <Label htmlFor={`pub-date-${index}`}>Release Date</Label>
                   <Input
+                    id={`pub-date-${index}`}
                     type="date"
                     value={publication.releaseDate}
                     onChange={(e) => updatePublication(index, 'releaseDate', e.target.value)}
                   />
                 </div>
-                <div>
-                  <Label>URL</Label>
-                  <Input
-                    value={publication.url}
-                    onChange={(e) => updatePublication(index, 'url', e.target.value)}
-                    placeholder="https://publication-url.com"
-                  />
-                </div>
               </div>
               <div>
-                <Label>Summary</Label>
+                <Label htmlFor={`pub-url-${index}`}>Publication URL</Label>
+                <Input
+                  id={`pub-url-${index}`}
+                  value={publication.url}
+                  onChange={(e) => updatePublication(index, 'url', e.target.value)}
+                  placeholder="https://publication-url.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`pub-summary-${index}`}>Summary</Label>
                 <Textarea
+                  id={`pub-summary-${index}`}
                   value={publication.summary}
                   onChange={(e) => updatePublication(index, 'summary', e.target.value)}
-                  placeholder="Brief summary of the publication..."
+                  placeholder="Brief description of the publication..."
                   rows={3}
                 />
               </div>
             </CardContent>
           </Card>
         ))}
+
+        {state.resumeData.publications.length === 0 && (
+          <Card className="text-center py-8">
+            <CardContent>
+              <p className="text-gray-500 mb-4">No publications added yet</p>
+              <Button onClick={addPublication} className="flex items-center space-x-2 mx-auto">
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Publication</span>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Volunteer Section */}
@@ -310,7 +390,7 @@ const AdditionalSectionsEditor = () => {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
-                  {volunteer.organization || `Volunteer ${index + 1}`}
+                  {volunteer.organization || `Volunteer Experience ${index + 1}`}
                 </CardTitle>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -325,7 +405,7 @@ const AdditionalSectionsEditor = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeVolunteer(index)}
-                    className="text-red-600 hover:text-re-700"
+                    className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -335,67 +415,112 @@ const AdditionalSectionsEditor = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Organization</Label>
+                  <Label htmlFor={`volunteer-org-${index}`}>Organization</Label>
                   <Input
+                    id={`volunteer-org-${index}`}
                     value={volunteer.organization}
                     onChange={(e) => updateVolunteer(index, 'organization', e.target.value)}
-                    placeholder="Red Cross, Local Food Bank, etc."
+                    placeholder="Organization name"
                   />
                 </div>
                 <div>
-                  <Label>Position</Label>
+                  <Label htmlFor={`volunteer-position-${index}`}>Position</Label>
                   <Input
+                    id={`volunteer-position-${index}`}
                     value={volunteer.position}
                     onChange={(e) => updateVolunteer(index, 'position', e.target.value)}
-                    placeholder="Volunteer Coordinator"
+                    placeholder="Your role"
                   />
                 </div>
+              </div>
+              <div>
+                <Label htmlFor={`volunteer-url-${index}`}>Website</Label>
+                <Input
+                  id={`volunteer-url-${index}`}
+                  value={volunteer.url}
+                  onChange={(e) => updateVolunteer(index, 'url', e.target.value)}
+                  placeholder="https://organization-website.org"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>URL</Label>
+                  <Label htmlFor={`volunteer-start-${index}`}>Start Date</Label>
                   <Input
-                    value={volunteer.url}
-                    onChange={(e) => updateVolunteer(index, 'url', e.target.value)}
-                    placeholder="https://organization.org"
-                  />
-                </div>
-                <div>
-                  <Label>Start Date</Label>
-                  <Input
+                    id={`volunteer-start-${index}`}
                     type="date"
                     value={volunteer.startDate}
                     onChange={(e) => updateVolunteer(index, 'startDate', e.target.value)}
                   />
                 </div>
                 <div>
-                  <Label>End Date</Label>
+                  <Label htmlFor={`volunteer-end-${index}`}>End Date</Label>
                   <Input
+                    id={`volunteer-end-${index}`}
                     type="date"
                     value={volunteer.endDate}
                     onChange={(e) => updateVolunteer(index, 'endDate', e.target.value)}
+                    placeholder="Leave blank if current"
                   />
                 </div>
               </div>
               <div>
-                <Label>Summary</Label>
+                <Label htmlFor={`volunteer-summary-${index}`}>Summary</Label>
                 <Textarea
+                  id={`volunteer-summary-${index}`}
                   value={volunteer.summary}
                   onChange={(e) => updateVolunteer(index, 'summary', e.target.value)}
-                  placeholder="Description of volunteer work..."
+                  placeholder="Brief description of your volunteer work..."
                   rows={3}
                 />
               </div>
               <div>
-                <Label>Highlights (one per line)</Label>
-                <Textarea
-                  value={volunteer.highlights.join('\n')}
-                  onChange={(e) => updateVolunteer(index, 'highlights', updateArrayField(volunteer.highlights, e.target.value))}
-                  placeholder="Key achievements in volunteer role..."
-                  rows={3}
-                />
+                <div className="flex items-center justify-between mb-3">
+                  <Label>Highlights</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addVolunteerHighlight(index)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Highlight
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {volunteer.highlights.map((highlight, highlightIndex) => (
+                    <div key={highlightIndex} className="flex gap-2">
+                      <Input
+                        value={highlight}
+                        onChange={(e) => updateVolunteerHighlight(index, highlightIndex, e.target.value)}
+                        placeholder="Key achievement or responsibility"
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeVolunteerHighlight(index, highlightIndex)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
         ))}
+
+        {state.resumeData.volunteer.length === 0 && (
+          <Card className="text-center py-8">
+            <CardContent>
+              <p className="text-gray-500 mb-4">No volunteer experience added yet</p>
+              <Button onClick={addVolunteer} className="flex items-center space-x-2 mx-auto">
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Volunteer Experience</span>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Interests Section */}
@@ -437,25 +562,62 @@ const AdditionalSectionsEditor = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Interest Name</Label>
+                <Label htmlFor={`interest-name-${index}`}>Interest Name</Label>
                 <Input
+                  id={`interest-name-${index}`}
                   value={interest.name}
                   onChange={(e) => updateInterest(index, 'name', e.target.value)}
-                  placeholder="Photography, Travel, etc."
+                  placeholder="Technology, Sports, Arts, etc."
                 />
               </div>
               <div>
-                <Label>Keywords (one per line)</Label>
-                <Textarea
-                  value={interest.keywords.join('\n')}
-                  onChange={(e) => updateInterest(index, 'keywords', updateArrayField(interest.keywords, e.target.value))}
-                  placeholder="Digital Photography&#10;Landscape&#10;Portrait"
-                  rows={3}
-                />
+                <div className="flex items-center justify-between mb-3">
+                  <Label>Keywords</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addInterestKeyword(index)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Keyword
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {interest.keywords.map((keyword, keywordIndex) => (
+                    <div key={keywordIndex} className="flex gap-2">
+                      <Input
+                        value={keyword}
+                        onChange={(e) => updateInterestKeyword(index, keywordIndex, e.target.value)}
+                        placeholder="Specific interest"
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeInterestKeyword(index, keywordIndex)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
         ))}
+
+        {state.resumeData.interests.length === 0 && (
+          <Card className="text-center py-8">
+            <CardContent>
+              <p className="text-gray-500 mb-4">No interests added yet</p>
+              <Button onClick={addInterest} className="flex items-center space-x-2 mx-auto">
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Interest</span>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* References Section */}
@@ -497,25 +659,39 @@ const AdditionalSectionsEditor = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Reference Name</Label>
+                <Label htmlFor={`reference-name-${index}`}>Reference Name & Title</Label>
                 <Input
+                  id={`reference-name-${index}`}
                   value={reference.name}
                   onChange={(e) => updateReference(index, 'name', e.target.value)}
-                  placeholder="John Doe"
+                  placeholder="John Doe - CEO at Company"
                 />
               </div>
               <div>
-                <Label>Reference Statement</Label>
+                <Label htmlFor={`reference-text-${index}`}>Reference Text</Label>
                 <Textarea
+                  id={`reference-text-${index}`}
                   value={reference.reference}
                   onChange={(e) => updateReference(index, 'reference', e.target.value)}
-                  placeholder="Testimonial or reference statement..."
+                  placeholder="What they said about you..."
                   rows={4}
                 />
               </div>
             </CardContent>
           </Card>
         ))}
+
+        {state.resumeData.references.length === 0 && (
+          <Card className="text-center py-8">
+            <CardContent>
+              <p className="text-gray-500 mb-4">No references added yet</p>
+              <Button onClick={addReference} className="flex items-center space-x-2 mx-auto">
+                <Plus className="w-4 h-4" />
+                <span>Add Your First Reference</span>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
