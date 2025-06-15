@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 
 export default function BasicEditor() {
   const { state, dispatch } = useResume();
@@ -55,8 +55,30 @@ export default function BasicEditor() {
     });
   };
 
+  const sectionVisible = state.resumeData.sectionVisibility.basics;
+  const toggleSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { ...state.resumeData.sectionVisibility, basics: !sectionVisible }
+    });
+  };
+
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSectionVisibility}
+            className="p-1"
+          >
+            {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <h2 className="text-2xl font-bold">basics</h2>
+        </div>
+      </div>
+      
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
@@ -64,25 +86,27 @@ export default function BasicEditor() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">name</Label>
               <Input
                 id="name"
                 value={basics.name}
                 onChange={(e) => updateBasics('name', e.target.value)}
                 placeholder="Your full name"
+                spellCheck={true}
               />
             </div>
             <div>
-              <Label htmlFor="label">Professional Title</Label>
+              <Label htmlFor="label">label</Label>
               <Input
                 id="label"
                 value={basics.label}
                 onChange={(e) => updateBasics('label', e.target.value)}
                 placeholder="e.g., Senior Software Engineer"
+                spellCheck={true}
               />
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">email</Label>
               <Input
                 id="email"
                 type="email"
@@ -92,7 +116,7 @@ export default function BasicEditor() {
               />
             </div>
             <div>
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">phone</Label>
               <Input
                 id="phone"
                 value={basics.phone}
@@ -101,7 +125,7 @@ export default function BasicEditor() {
               />
             </div>
             <div>
-              <Label htmlFor="url">Website/Portfolio</Label>
+              <Label htmlFor="url">url</Label>
               <Input
                 id="url"
                 value={basics.url}
@@ -112,13 +136,14 @@ export default function BasicEditor() {
           </div>
           
           <div>
-            <Label htmlFor="summary">Professional Summary</Label>
+            <Label htmlFor="summary">summary</Label>
             <Textarea
               id="summary"
               value={basics.summary}
               onChange={(e) => updateBasics('summary', e.target.value)}
               placeholder="Brief professional summary..."
               rows={4}
+              spellCheck={true}
             />
           </div>
         </CardContent>
@@ -126,39 +151,42 @@ export default function BasicEditor() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Location</CardTitle>
+          <CardTitle>location</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address">address</Label>
               <Input
                 id="address"
                 value={basics.location.address}
                 onChange={(e) => updateLocation('address', e.target.value)}
                 placeholder="Street address"
+                spellCheck={true}
               />
             </div>
             <div>
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="city">city</Label>
               <Input
                 id="city"
                 value={basics.location.city}
                 onChange={(e) => updateLocation('city', e.target.value)}
                 placeholder="City"
+                spellCheck={true}
               />
             </div>
             <div>
-              <Label htmlFor="region">State/Region</Label>
+              <Label htmlFor="region">region</Label>
               <Input
                 id="region"
                 value={basics.location.region}
                 onChange={(e) => updateLocation('region', e.target.value)}
                 placeholder="State or Region"
+                spellCheck={true}
               />
             </div>
             <div>
-              <Label htmlFor="postalCode">Postal Code</Label>
+              <Label htmlFor="postalCode">postalCode</Label>
               <Input
                 id="postalCode"
                 value={basics.location.postalCode}
@@ -167,7 +195,7 @@ export default function BasicEditor() {
               />
             </div>
             <div>
-              <Label htmlFor="countryCode">Country Code</Label>
+              <Label htmlFor="countryCode">countryCode</Label>
               <Input
                 id="countryCode"
                 value={basics.location.countryCode}
@@ -182,7 +210,7 @@ export default function BasicEditor() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            Social Profiles
+            profiles
             <Button onClick={addProfile} size="sm">
               <Plus className="w-4 h-4 mr-2" />
               Add Profile
@@ -193,16 +221,27 @@ export default function BasicEditor() {
           <div className="space-y-4">
             {basics.profiles.map((profile, index) => (
               <div key={index} className="flex gap-4 items-end">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateProfile(index, 'visible', !profile.visible)}
+                    className="p-1"
+                  >
+                    {profile.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </Button>
+                </div>
                 <div className="flex-1">
-                  <Label>Network</Label>
+                  <Label>network</Label>
                   <Input
                     value={profile.network}
                     onChange={(e) => updateProfile(index, 'network', e.target.value)}
                     placeholder="LinkedIn, GitHub, etc."
+                    spellCheck={true}
                   />
                 </div>
                 <div className="flex-1">
-                  <Label>Username</Label>
+                  <Label>username</Label>
                   <Input
                     value={profile.username}
                     onChange={(e) => updateProfile(index, 'username', e.target.value)}
@@ -210,7 +249,7 @@ export default function BasicEditor() {
                   />
                 </div>
                 <div className="flex-1">
-                  <Label>URL</Label>
+                  <Label>url</Label>
                   <Input
                     value={profile.url}
                     onChange={(e) => updateProfile(index, 'url', e.target.value)}

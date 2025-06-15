@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { WorkExperience } from "@/types/resume";
 
 export default function WorkEditor() {
@@ -28,7 +28,7 @@ export default function WorkEditor() {
     dispatch({ type: 'ADD_WORK_EXPERIENCE', payload: newWork });
   };
 
-  const updateWorkExperience = (index: number, field: string, value: string | string[]) => {
+  const updateWorkExperience = (index: number, field: string, value: string | string[] | boolean) => {
     dispatch({
       type: 'UPDATE_WORK_EXPERIENCE',
       payload: { index, data: { [field]: value } }
@@ -59,13 +59,31 @@ export default function WorkEditor() {
     updateWorkExperience(workIndex, 'highlights', updatedHighlights);
   };
 
+  const sectionVisible = state.resumeData.sectionVisibility.work;
+  const toggleSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { ...state.resumeData.sectionVisibility, work: !sectionVisible }
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Work Experience</h2>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSectionVisibility}
+            className="p-1"
+          >
+            {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <h2 className="text-2xl font-bold">work</h2>
+        </div>
         <Button onClick={addWorkExperience}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Experience
+          Add work
         </Button>
       </div>
 
@@ -73,7 +91,17 @@ export default function WorkEditor() {
         <Card key={index}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Experience #{index + 1}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateWorkExperience(index, 'visible', !experience.visible)}
+                  className="p-1"
+                >
+                  {experience.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </Button>
+                <span>work #{index + 1}</span>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -87,48 +115,57 @@ export default function WorkEditor() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Company Name</Label>
+                <Label htmlFor={`name-${index}`}>name</Label>
                 <Input
+                  id={`name-${index}`}
                   value={experience.name}
                   onChange={(e) => updateWorkExperience(index, 'name', e.target.value)}
                   placeholder="Company name"
+                  spellCheck={true}
                 />
               </div>
               <div>
-                <Label>Position</Label>
+                <Label htmlFor={`position-${index}`}>position</Label>
                 <Input
+                  id={`position-${index}`}
                   value={experience.position}
                   onChange={(e) => updateWorkExperience(index, 'position', e.target.value)}
                   placeholder="Job title"
+                  spellCheck={true}
                 />
               </div>
               <div>
-                <Label>Location</Label>
+                <Label htmlFor={`location-${index}`}>location</Label>
                 <Input
+                  id={`location-${index}`}
                   value={experience.location || ''}
                   onChange={(e) => updateWorkExperience(index, 'location', e.target.value)}
                   placeholder="City, State"
+                  spellCheck={true}
                 />
               </div>
               <div>
-                <Label>Company URL</Label>
+                <Label htmlFor={`url-${index}`}>url</Label>
                 <Input
+                  id={`url-${index}`}
                   value={experience.url}
                   onChange={(e) => updateWorkExperience(index, 'url', e.target.value)}
                   placeholder="https://company.com"
                 />
               </div>
               <div>
-                <Label>Start Date</Label>
+                <Label htmlFor={`startDate-${index}`}>startDate</Label>
                 <Input
+                  id={`startDate-${index}`}
                   value={experience.startDate}
                   onChange={(e) => updateWorkExperience(index, 'startDate', e.target.value)}
                   placeholder="YYYY-MM-DD"
                 />
               </div>
               <div>
-                <Label>End Date</Label>
+                <Label htmlFor={`endDate-${index}`}>endDate</Label>
                 <Input
+                  id={`endDate-${index}`}
                   value={experience.endDate}
                   onChange={(e) => updateWorkExperience(index, 'endDate', e.target.value)}
                   placeholder="YYYY-MM-DD or leave blank if current"
@@ -137,35 +174,39 @@ export default function WorkEditor() {
             </div>
 
             <div>
-              <Label>Company Description</Label>
+              <Label htmlFor={`description-${index}`}>description</Label>
               <Textarea
+                id={`description-${index}`}
                 value={experience.description || ''}
                 onChange={(e) => updateWorkExperience(index, 'description', e.target.value)}
                 placeholder="Brief description of the company..."
                 rows={2}
+                spellCheck={true}
               />
             </div>
 
             <div>
-              <Label>Summary</Label>
+              <Label htmlFor={`summary-${index}`}>summary</Label>
               <Textarea
+                id={`summary-${index}`}
                 value={experience.summary}
                 onChange={(e) => updateWorkExperience(index, 'summary', e.target.value)}
                 placeholder="Brief summary of your role and responsibilities..."
                 rows={3}
+                spellCheck={true}
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <Label>Key Achievements</Label>
+                <Label>highlights</Label>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => addHighlight(index)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Achievement
+                  Add highlight
                 </Button>
               </div>
               <div className="space-y-2">
@@ -177,6 +218,7 @@ export default function WorkEditor() {
                       placeholder="Describe a key achievement or responsibility..."
                       rows={2}
                       className="flex-1"
+                      spellCheck={true}
                     />
                     <Button
                       variant="outline"
@@ -196,9 +238,9 @@ export default function WorkEditor() {
 
       {work.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          <p>No work experience added yet.</p>
+          <p>No work entries added yet.</p>
           <Button onClick={addWorkExperience} className="mt-2">
-            Add Your First Experience
+            Add Your First work Entry
           </Button>
         </div>
       )}

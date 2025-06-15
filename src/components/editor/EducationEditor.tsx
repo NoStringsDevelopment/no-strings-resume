@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { Education } from "@/types/resume";
 
 export default function EducationEditor() {
@@ -27,7 +27,7 @@ export default function EducationEditor() {
     dispatch({ type: 'ADD_EDUCATION', payload: newEducation });
   };
 
-  const updateEducation = (index: number, field: string, value: string | string[]) => {
+  const updateEducation = (index: number, field: string, value: string | string[] | boolean) => {
     dispatch({
       type: 'UPDATE_EDUCATION',
       payload: { index, data: { [field]: value } }
@@ -58,13 +58,31 @@ export default function EducationEditor() {
     updateEducation(eduIndex, 'courses', updatedCourses);
   };
 
+  const sectionVisible = state.resumeData.sectionVisibility.education;
+  const toggleSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { ...state.resumeData.sectionVisibility, education: !sectionVisible }
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Education</h2>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSectionVisibility}
+            className="p-1"
+          >
+            {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <h2 className="text-2xl font-bold">education</h2>
+        </div>
         <Button onClick={addEducation}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Education
+          Add education
         </Button>
       </div>
 
@@ -72,7 +90,17 @@ export default function EducationEditor() {
         <Card key={index}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Education #{index + 1}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateEducation(index, 'visible', !edu.visible)}
+                  className="p-1"
+                >
+                  {edu.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </Button>
+                <span>education #{index + 1}</span>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -86,56 +114,66 @@ export default function EducationEditor() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Institution</Label>
+                <Label htmlFor={`institution-${index}`}>institution</Label>
                 <Input
+                  id={`institution-${index}`}
                   value={edu.institution}
                   onChange={(e) => updateEducation(index, 'institution', e.target.value)}
                   placeholder="University name"
+                  spellCheck={true}
                 />
               </div>
               <div>
-                <Label>Institution URL</Label>
+                <Label htmlFor={`url-${index}`}>url</Label>
                 <Input
+                  id={`url-${index}`}
                   value={edu.url}
                   onChange={(e) => updateEducation(index, 'url', e.target.value)}
                   placeholder="https://university.edu"
                 />
               </div>
               <div>
-                <Label>Field of Study</Label>
+                <Label htmlFor={`area-${index}`}>area</Label>
                 <Input
+                  id={`area-${index}`}
                   value={edu.area}
                   onChange={(e) => updateEducation(index, 'area', e.target.value)}
                   placeholder="Computer Science"
+                  spellCheck={true}
                 />
               </div>
               <div>
-                <Label>Degree Type</Label>
+                <Label htmlFor={`studyType-${index}`}>studyType</Label>
                 <Input
+                  id={`studyType-${index}`}
                   value={edu.studyType}
                   onChange={(e) => updateEducation(index, 'studyType', e.target.value)}
                   placeholder="Bachelor of Science"
+                  spellCheck={true}
                 />
               </div>
               <div>
-                <Label>Start Date</Label>
+                <Label htmlFor={`startDate-${index}`}>startDate</Label>
                 <Input
+                  id={`startDate-${index}`}
                   value={edu.startDate}
                   onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
                   placeholder="YYYY-MM"
                 />
               </div>
               <div>
-                <Label>End Date</Label>
+                <Label htmlFor={`endDate-${index}`}>endDate</Label>
                 <Input
+                  id={`endDate-${index}`}
                   value={edu.endDate}
                   onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
                   placeholder="YYYY-MM"
                 />
               </div>
               <div>
-                <Label>GPA/Score</Label>
+                <Label htmlFor={`score-${index}`}>score</Label>
                 <Input
+                  id={`score-${index}`}
                   value={edu.score}
                   onChange={(e) => updateEducation(index, 'score', e.target.value)}
                   placeholder="3.8"
@@ -145,14 +183,14 @@ export default function EducationEditor() {
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <Label>Relevant Courses</Label>
+                <Label>courses</Label>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => addCourse(index)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Course
+                  Add course
                 </Button>
               </div>
               <div className="space-y-2">
@@ -163,6 +201,7 @@ export default function EducationEditor() {
                       onChange={(e) => updateCourse(index, courseIndex, e.target.value)}
                       placeholder="Course name"
                       className="flex-1"
+                      spellCheck={true}
                     />
                     <Button
                       variant="outline"
@@ -184,7 +223,7 @@ export default function EducationEditor() {
         <div className="text-center py-8 text-gray-500">
           <p>No education entries added yet.</p>
           <Button onClick={addEducation} className="mt-2">
-            Add Your First Education
+            Add Your First education Entry
           </Button>
         </div>
       )}

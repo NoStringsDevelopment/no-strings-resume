@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { Skill } from "@/types/resume";
 
 export default function SkillsEditor() {
@@ -22,7 +22,7 @@ export default function SkillsEditor() {
     dispatch({ type: 'UPDATE_SKILLS', payload: updatedSkills });
   };
 
-  const updateSkill = (index: number, field: string, value: string | string[]) => {
+  const updateSkill = (index: number, field: string, value: string | string[] | boolean) => {
     const updatedSkills = skills.map((skill, i) =>
       i === index ? { ...skill, [field]: value } : skill
     );
@@ -50,17 +50,35 @@ export default function SkillsEditor() {
 
   const removeKeyword = (skillIndex: number, keywordIndex: number) => {
     const currentSkill = skills[skillIndex];
-    const updatedKeywords = currentSkill.keywords.filter((_, i) => i !== keywordIndex);
+    const updatedKeywords = currentSkill.keywords.filter((_,  i) => i !== keywordIndex);
     updateSkill(skillIndex, 'keywords', updatedKeywords);
+  };
+
+  const sectionVisible = state.resumeData.sectionVisibility.skills;
+  const toggleSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { ...state.resumeData.sectionVisibility, skills: !sectionVisible }
+    });
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Skills</h2>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSectionVisibility}
+            className="p-1"
+          >
+            {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <h2 className="text-2xl font-bold">skills</h2>
+        </div>
         <Button onClick={addSkill}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Skill Category
+          Add skill
         </Button>
       </div>
 
@@ -68,7 +86,17 @@ export default function SkillsEditor() {
         <Card key={index}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Skill Category #{index + 1}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateSkill(index, 'visible', !skill.visible)}
+                  className="p-1"
+                >
+                  {skill.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </Button>
+                <span>skill #{index + 1}</span>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -82,33 +110,37 @@ export default function SkillsEditor() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Skill Name/Category</Label>
+                <Label htmlFor={`name-${index}`}>name</Label>
                 <Input
+                  id={`name-${index}`}
                   value={skill.name}
                   onChange={(e) => updateSkill(index, 'name', e.target.value)}
                   placeholder="e.g., Programming Languages"
+                  spellCheck={true}
                 />
               </div>
               <div>
-                <Label>Proficiency Level</Label>
+                <Label htmlFor={`level-${index}`}>level</Label>
                 <Input
+                  id={`level-${index}`}
                   value={skill.level}
                   onChange={(e) => updateSkill(index, 'level', e.target.value)}
                   placeholder="e.g., Expert, Advanced, Intermediate"
+                  spellCheck={true}
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <Label>Skills/Technologies</Label>
+                <Label>keywords</Label>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => addKeyword(index)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Skill
+                  Add keyword
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -119,6 +151,7 @@ export default function SkillsEditor() {
                       onChange={(e) => updateKeyword(index, keywordIndex, e.target.value)}
                       placeholder="Technology or skill"
                       className="flex-1"
+                      spellCheck={true}
                     />
                     <Button
                       variant="outline"
@@ -140,7 +173,7 @@ export default function SkillsEditor() {
         <div className="text-center py-8 text-gray-500">
           <p>No skills added yet.</p>
           <Button onClick={addSkill} className="mt-2">
-            Add Your First Skill Category
+            Add Your First skill
           </Button>
         </div>
       )}
