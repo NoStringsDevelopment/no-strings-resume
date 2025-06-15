@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Theme } from '../types/resume';
 import { getDefaultThemes } from '../utils/defaultThemes';
 
@@ -20,7 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     availableThemes
   });
 
-  // Load theme from localStorage
+  // Load theme from localStorage on mount only
   useEffect(() => {
     const savedThemeId = localStorage.getItem('nostrings-resume-theme');
     if (savedThemeId) {
@@ -29,12 +29,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setThemeState(prev => ({ ...prev, currentTheme: savedTheme }));
       }
     }
-  }, [availableThemes]);
+  }, []); // Empty dependency array to run only once
 
-  const setTheme = (theme: Theme) => {
+  // Memoize setTheme to prevent unnecessary re-renders
+  const setTheme = useCallback((theme: Theme) => {
     setThemeState(prev => ({ ...prev, currentTheme: theme }));
     localStorage.setItem('nostrings-resume-theme', theme.id);
-  };
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ themeState, setTheme }}>

@@ -4,10 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/context/ThemeContext";
 import { Theme, ThemeColors, ThemeTypography } from "@/types/resume";
-import { useEffect } from "react";
+import { useCallback } from "react";
 
 interface ColorPickerProps {
   color: string;
@@ -33,33 +32,35 @@ const ColorPicker = ({ color, onChange, label }: ColorPickerProps) => (
 export const ThemeCustomizer = () => {
   const { themeState, setTheme } = useTheme();
 
-  const updateTheme = (updates: Partial<Theme>) => {
+  const updateTheme = useCallback((updates: Partial<Theme>) => {
     const updatedTheme = { ...themeState.currentTheme, ...updates };
     setTheme(updatedTheme);
-  };
+  }, [themeState.currentTheme, setTheme]);
 
-  const updateThemeColors = (colors: Partial<ThemeColors>) => {
+  const updateThemeColors = useCallback((colors: Partial<ThemeColors>) => {
     updateTheme({
       colors: { ...themeState.currentTheme.colors, ...colors }
     });
-  };
+  }, [themeState.currentTheme.colors, updateTheme]);
 
-  const updateThemeTypography = (typography: Partial<ThemeTypography>) => {
+  const updateThemeTypography = useCallback((typography: Partial<ThemeTypography>) => {
     updateTheme({
       typography: { ...themeState.currentTheme.typography, ...typography }
     });
-  };
+  }, [themeState.currentTheme.typography, updateTheme]);
 
-  const updateThemeSpacing = (spacing: Partial<typeof themeState.currentTheme.spacing>) => {
+  const updateThemeSpacing = useCallback((spacing: Partial<typeof themeState.currentTheme.spacing>) => {
     updateTheme({
       spacing: { ...themeState.currentTheme.spacing, ...spacing }
     });
-  };
+  }, [themeState.currentTheme.spacing, updateTheme]);
 
-  const resetToDefaults = () => {
+  const resetToDefaults = useCallback(() => {
     const defaultTheme = themeState.availableThemes[0];
-    setTheme(defaultTheme);
-  };
+    if (defaultTheme) {
+      setTheme(defaultTheme);
+    }
+  }, [themeState.availableThemes, setTheme]);
 
   return (
     <div className="space-y-6">
