@@ -1,7 +1,8 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle, PanelRightOpen, PanelRightClose } from "lucide-react";
+import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useResume } from "@/context/ResumeContext";
@@ -25,7 +26,6 @@ const ResumeEditor = () => {
   const { themeState } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("basics");
-  const [showPreview, setShowPreview] = useState(false);
   const [importValidation, setImportValidation] = useState<{
     hasErrors: boolean;
     errors: string[];
@@ -239,18 +239,6 @@ const ResumeEditor = () => {
               <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
               <Button 
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPreview(!showPreview)}
-                className="flex items-center space-x-1"
-                title="Toggle Preview"
-                data-testid="preview-button"
-              >
-                {showPreview ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
-                <span className="hidden xl:block">Preview</span>
-              </Button>
-              
-              <Button 
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/view')}
@@ -278,7 +266,7 @@ const ResumeEditor = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8" data-testid="editor-main">
-        <div className={`${showPreview ? 'grid lg:grid-cols-2 gap-8' : 'max-w-4xl mx-auto'}`}>
+        <div className="grid lg:grid-cols-2 gap-8">
           {/* Editor Content */}
           <div>
             {/* Import Validation Alert */}
@@ -357,19 +345,17 @@ const ResumeEditor = () => {
             </Tabs>
           </div>
 
-          {/* Live Preview - Consistent with ThemeEditor */}
-          {showPreview && (
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
-              <div className="sticky top-8">
-                <EnhancedPreview 
-                  resumeData={state.resumeData} 
-                  theme={themeState.currentTheme}
-                  data-testid="editor-preview"
-                />
-              </div>
+          {/* Live Preview - Always visible, consistent with ThemeEditor */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
+            <div className="sticky top-8">
+              <EnhancedPreview 
+                resumeData={state.resumeData} 
+                theme={themeState.currentTheme}
+                data-testid="editor-preview"
+              />
             </div>
-          )}
+          </div>
         </div>
       </main>
 
