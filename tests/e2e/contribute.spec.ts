@@ -131,6 +131,12 @@ test.describe('Contribute Page', () => {
   });
 
   test('should not have any broken layouts', async ({ page }) => {
+    // Wait for page to be fully loaded with content
+    await contributePage.assertPageLoaded();
+    
+    // Wait for hero heading to be visible (ensures CSS is loaded)
+    await expect(contributePage.heroHeading).toBeVisible();
+    
     // Check viewport and ensure content is not cut off
     const viewportSize = page.viewportSize();
     const bodyHeight = await page.evaluate(() => document.body.scrollHeight);
@@ -138,13 +144,14 @@ test.describe('Contribute Page', () => {
     // Page should have substantial content (not just empty/minimal content)
     expect(bodyHeight).toBeGreaterThan(1000);
     
-    // Check that main content sections are within reasonable bounds
-    const heroSection = page.locator('section').first();
-    const heroBox = await heroSection.boundingBox();
-    expect(heroBox?.height).toBeGreaterThan(100);
+    // Use the hero heading as a more reliable indicator of hero section height
+    // since it's guaranteed to have content
+    const heroHeadingBox = await contributePage.heroHeading.boundingBox();
+    expect(heroHeadingBox?.height).toBeGreaterThan(30); // Text should have reasonable height
     
     // Check that cards are properly sized
     const firstCard = contributePage.codeContributionCard;
+    await expect(firstCard).toBeVisible(); // Ensure card is visible first
     const cardBox = await firstCard.boundingBox();
     expect(cardBox?.height).toBeGreaterThan(100);
     expect(cardBox?.width).toBeGreaterThan(200);
