@@ -39,18 +39,37 @@ const LanguagesEditor = () => {
     dispatch({ type: 'REMOVE_LANGUAGE', payload: index });
   };
 
+  const sectionVisible = state.resumeData.sectionVisibility?.languages ?? true;
+  const toggleSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { languages: !sectionVisible }
+    });
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="languages-editor">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Languages</h2>
-        <Button onClick={addLanguage} className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSectionVisibility}
+            className="p-1"
+            data-testid="languages-visibility-toggle"
+          >
+            {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <h2 className="text-2xl font-bold">Languages</h2>
+        </div>
+        <Button onClick={addLanguage} className="flex items-center space-x-2" data-testid="add-language-button">
           <Plus className="w-4 h-4" />
           <span>Add Language</span>
         </Button>
       </div>
 
       {state.resumeData.languages.map((language, index) => (
-        <Card key={index} className="relative">
+        <Card key={index} className="relative" data-testid={`language-${index}-card`}>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
@@ -62,6 +81,7 @@ const LanguagesEditor = () => {
                   size="sm"
                   onClick={() => updateLanguage(index, 'visible', !language.visible)}
                   className="flex items-center space-x-1"
+                  data-testid={`language-${index}-visibility-toggle`}
                 >
                   {language.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
@@ -70,6 +90,7 @@ const LanguagesEditor = () => {
                   size="sm"
                   onClick={() => removeLanguage(index)}
                   className="text-red-600 hover:text-red-700"
+                  data-testid={`language-${index}-remove-button`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -85,6 +106,8 @@ const LanguagesEditor = () => {
                   value={language.language}
                   onChange={(e) => updateLanguage(index, 'language', e.target.value)}
                   placeholder="Spanish, French, German..."
+                  spellCheck={true}
+                  data-testid={`language-${index}-name-input`}
                 />
               </div>
               <div>
@@ -93,12 +116,12 @@ const LanguagesEditor = () => {
                   value={language.fluency} 
                   onValueChange={(value) => updateLanguage(index, 'fluency', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid={`language-${index}-fluency-select`}>
                     <SelectValue placeholder="Select fluency level" />
                   </SelectTrigger>
                   <SelectContent>
                     {fluencyLevels.map((level) => (
-                      <SelectItem key={level} value={level}>
+                      <SelectItem key={level} value={level} data-testid={`language-${index}-fluency-${level.replace(/\s+/g, '-').toLowerCase()}`}>
                         {level}
                       </SelectItem>
                     ))}
@@ -111,10 +134,10 @@ const LanguagesEditor = () => {
       ))}
 
       {state.resumeData.languages.length === 0 && (
-        <Card className="text-center py-8">
+        <Card className="text-center py-8" data-testid="no-languages-message">
           <CardContent>
             <p className="text-gray-500 mb-4">No languages added yet</p>
-            <Button onClick={addLanguage} className="flex items-center space-x-2 mx-auto">
+            <Button onClick={addLanguage} className="flex items-center space-x-2 mx-auto" data-testid="add-first-language-button">
               <Plus className="w-4 h-4" />
               <span>Add Your First Language</span>
             </Button>

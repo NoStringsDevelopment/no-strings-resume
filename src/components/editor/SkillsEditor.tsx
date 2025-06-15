@@ -63,7 +63,7 @@ export default function SkillsEditor() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="skills-editor">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Button
@@ -71,19 +71,20 @@ export default function SkillsEditor() {
             size="sm"
             onClick={toggleSectionVisibility}
             className="p-1"
+            data-testid="skills-visibility-toggle"
           >
             {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
-          <h2 className="text-2xl font-bold">skills</h2>
+          <h2 className="text-2xl font-bold">Skills</h2>
         </div>
-        <Button onClick={addSkill}>
+        <Button onClick={addSkill} data-testid="add-skill-button">
           <Plus className="w-4 h-4 mr-2" />
           Add skill
         </Button>
       </div>
 
       {skills.map((skill, index) => (
-        <Card key={index}>
+        <Card key={index} data-testid={`skill-${index}-card`}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -92,6 +93,7 @@ export default function SkillsEditor() {
                   size="sm"
                   onClick={() => updateSkill(index, 'visible', !skill.visible)}
                   className="p-1"
+                  data-testid={`skill-${index}-visibility-toggle`}
                 >
                   {skill.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
@@ -102,6 +104,7 @@ export default function SkillsEditor() {
                 size="sm"
                 onClick={() => removeSkill(index)}
                 className="text-red-600 hover:text-red-700"
+                data-testid={`skill-${index}-remove-button`}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -117,6 +120,7 @@ export default function SkillsEditor() {
                   onChange={(e) => updateSkill(index, 'name', e.target.value)}
                   placeholder="e.g., Programming Languages"
                   spellCheck={true}
+                  data-testid={`skill-${index}-name-input`}
                 />
               </div>
               <div>
@@ -127,6 +131,7 @@ export default function SkillsEditor() {
                   onChange={(e) => updateSkill(index, 'level', e.target.value)}
                   placeholder="e.g., Expert, Advanced, Intermediate"
                   spellCheck={true}
+                  data-testid={`skill-${index}-level-input`}
                 />
               </div>
             </div>
@@ -138,6 +143,7 @@ export default function SkillsEditor() {
                   variant="outline"
                   size="sm"
                   onClick={() => addKeyword(index)}
+                  data-testid={`skill-${index}-add-keyword-button`}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add keyword
@@ -145,19 +151,21 @@ export default function SkillsEditor() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {skill.keywords.map((keyword, keywordIndex) => (
-                  <div key={keywordIndex} className="flex gap-2">
+                  <div key={keywordIndex} className="flex gap-2" data-testid={`skill-${index}-keyword-${keywordIndex}`}>
                     <Input
                       value={keyword}
                       onChange={(e) => updateKeyword(index, keywordIndex, e.target.value)}
                       placeholder="Technology or skill"
                       className="flex-1"
                       spellCheck={true}
+                      data-testid={`skill-${index}-keyword-${keywordIndex}-input`}
                     />
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => removeKeyword(index, keywordIndex)}
                       className="text-red-600 hover:text-red-700"
+                      data-testid={`skill-${index}-keyword-${keywordIndex}-remove-button`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -170,9 +178,9 @@ export default function SkillsEditor() {
       ))}
 
       {skills.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500" data-testid="no-skills-message">
           <p>No skills added yet.</p>
-          <Button onClick={addSkill} className="mt-2">
+          <Button onClick={addSkill} className="mt-2" data-testid="add-first-skill-button">
             Add Your First skill
           </Button>
         </div>

@@ -80,7 +80,7 @@ const ResumeEditor = () => {
     const jsonContent = exportResumeAsJson(state.resumeData);
     downloadFile(jsonContent, 'resume.json', 'application/json');
     toast({
-      title: "Export Successful",
+      title: "Backup Successful",
       description: "Resume exported as JSON Resume format."
     });
   };
@@ -133,9 +133,9 @@ const ResumeEditor = () => {
   const canRedo = state.historyIndex < state.history.length - 1;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="resume-editor">
       {/* Header */}
-      <header className="bg-white border-b shadow-sm sticky top-0 z-10">
+      <header className="bg-white border-b shadow-sm sticky top-0 z-10" data-testid="editor-header">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -143,6 +143,7 @@ const ResumeEditor = () => {
                 <button 
                   onClick={() => navigate('/')}
                   className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  data-testid="home-button"
                 >
                   <span className="text-white font-bold text-sm">NR</span>
                 </button>
@@ -161,6 +162,7 @@ const ResumeEditor = () => {
                 disabled={!canUndo}
                 className="flex items-center space-x-1"
                 title="Undo"
+                data-testid="undo-button"
               >
                 <Undo className="w-4 h-4" />
                 <span className="hidden xl:block">Undo</span>
@@ -173,6 +175,7 @@ const ResumeEditor = () => {
                 disabled={!canRedo}
                 className="flex items-center space-x-1"
                 title="Redo"
+                data-testid="redo-button"
               >
                 <Redo className="w-4 h-4" />
                 <span className="hidden xl:block">Redo</span>
@@ -186,6 +189,7 @@ const ResumeEditor = () => {
                 onClick={handleImport}
                 className="flex items-center space-x-1"
                 title="Import"
+                data-testid="import-button"
               >
                 <Upload className="w-4 h-4" />
                 <span className="hidden xl:block">Import</span>
@@ -196,10 +200,11 @@ const ResumeEditor = () => {
                 size="sm"
                 onClick={handleExportJson}
                 className="flex items-center space-x-1"
-                title="Export"
+                title="Backup"
+                data-testid="backup-button"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden xl:block">Export</span>
+                <span className="hidden xl:block">Backup</span>
               </Button>
               
               <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
@@ -210,6 +215,7 @@ const ResumeEditor = () => {
                 onClick={handleClearAll}
                 className="flex items-center space-x-1 text-red-600 hover:text-red-700"
                 title="Clear All"
+                data-testid="clear-button"
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="hidden xl:block">Clear</span>
@@ -221,6 +227,7 @@ const ResumeEditor = () => {
                 onClick={handleResetToDefault}
                 className="flex items-center space-x-1"
                 title="Reset to Default"
+                data-testid="reset-button"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span className="hidden xl:block">Reset</span>
@@ -233,6 +240,7 @@ const ResumeEditor = () => {
                 size="sm"
                 onClick={() => navigate('/view')}
                 className="flex items-center space-x-1"
+                data-testid="view-button"
               >
                 <Eye className="w-4 h-4" />
                 <span className="hidden lg:block">View</span>
@@ -243,6 +251,7 @@ const ResumeEditor = () => {
                 size="sm"
                 onClick={() => navigate('/theme')}
                 className="flex items-center space-x-1"
+                data-testid="theme-button"
               >
                 <Palette className="w-4 h-4" />
                 <span className="hidden lg:block">Theme</span>
@@ -253,11 +262,11 @@ const ResumeEditor = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8" data-testid="editor-main">
         <div className="max-w-4xl mx-auto">
           {/* Import Validation Alert */}
           {importValidation && importValidation.hasErrors && (
-            <Alert className="mb-6 border-amber-200 bg-amber-50">
+            <Alert className="mb-6 border-amber-200 bg-amber-50" data-testid="import-validation-alert">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <AlertTitle className="text-amber-800">Import completed with validation issues</AlertTitle>
               <AlertDescription className="text-amber-700">
@@ -280,16 +289,16 @@ const ResumeEditor = () => {
             </Alert>
           )}
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-              <TabsTrigger value="basics">Basics</TabsTrigger>
-              <TabsTrigger value="work">Work</TabsTrigger>
-              <TabsTrigger value="education">Education</TabsTrigger>
-              <TabsTrigger value="skills">Skills</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="awards">Awards</TabsTrigger>
-              <TabsTrigger value="languages">Languages</TabsTrigger>
-              <TabsTrigger value="more" className="relative">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" data-testid="editor-tabs">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8" data-testid="editor-tabs-list">
+              <TabsTrigger value="basics" data-testid="basics-tab">Basics</TabsTrigger>
+              <TabsTrigger value="work" data-testid="work-tab">Work</TabsTrigger>
+              <TabsTrigger value="education" data-testid="education-tab">Education</TabsTrigger>
+              <TabsTrigger value="skills" data-testid="skills-tab">Skills</TabsTrigger>
+              <TabsTrigger value="projects" data-testid="projects-tab">Projects</TabsTrigger>
+              <TabsTrigger value="awards" data-testid="awards-tab">Awards</TabsTrigger>
+              <TabsTrigger value="languages" data-testid="languages-tab">Languages</TabsTrigger>
+              <TabsTrigger value="more" className="relative" data-testid="more-tab">
                 More
                 {state.resumeData.nonConformingData && (
                   <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full" title="Contains non-conforming data" />
@@ -297,35 +306,35 @@ const ResumeEditor = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basics" className="space-y-6">
+            <TabsContent value="basics" className="space-y-6" data-testid="basics-content">
               <BasicEditor />
             </TabsContent>
 
-            <TabsContent value="work" className="space-y-6">
+            <TabsContent value="work" className="space-y-6" data-testid="work-content">
               <WorkEditor />
             </TabsContent>
 
-            <TabsContent value="education" className="space-y-6">
+            <TabsContent value="education" className="space-y-6" data-testid="education-content">
               <EducationEditor />
             </TabsContent>
 
-            <TabsContent value="skills" className="space-y-6">
+            <TabsContent value="skills" className="space-y-6" data-testid="skills-content">
               <SkillsEditor />
             </TabsContent>
 
-            <TabsContent value="projects" className="space-y-6">
+            <TabsContent value="projects" className="space-y-6" data-testid="projects-content">
               <ProjectsEditor />
             </TabsContent>
 
-            <TabsContent value="awards" className="space-y-6">
+            <TabsContent value="awards" className="space-y-6" data-testid="awards-content">
               <AwardsEditor />
             </TabsContent>
 
-            <TabsContent value="languages" className="space-y-6">
+            <TabsContent value="languages" className="space-y-6" data-testid="languages-content">
               <LanguagesEditor />
             </TabsContent>
 
-            <TabsContent value="more" className="space-y-6">
+            <TabsContent value="more" className="space-y-6" data-testid="more-content">
               <AdditionalSectionsEditor />
             </TabsContent>
           </Tabs>
@@ -339,6 +348,7 @@ const ResumeEditor = () => {
         accept=".json"
         onChange={handleFileChange}
         className="hidden"
+        data-testid="file-input"
       />
     </div>
   );

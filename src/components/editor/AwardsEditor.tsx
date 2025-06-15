@@ -33,18 +33,37 @@ const AwardsEditor = () => {
     dispatch({ type: 'REMOVE_AWARD', payload: index });
   };
 
+  const sectionVisible = state.resumeData.sectionVisibility?.awards ?? true;
+  const toggleSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { awards: !sectionVisible }
+    });
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="awards-editor">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Awards & Honors</h2>
-        <Button onClick={addAward} className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSectionVisibility}
+            className="p-1"
+            data-testid="awards-visibility-toggle"
+          >
+            {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <h2 className="text-2xl font-bold">Awards</h2>
+        </div>
+        <Button onClick={addAward} className="flex items-center space-x-2" data-testid="add-award-button">
           <Plus className="w-4 h-4" />
           <span>Add Award</span>
         </Button>
       </div>
 
       {state.resumeData.awards.map((award, index) => (
-        <Card key={index} className="relative">
+        <Card key={index} className="relative" data-testid={`award-${index}-card`}>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
@@ -56,6 +75,7 @@ const AwardsEditor = () => {
                   size="sm"
                   onClick={() => updateAward(index, 'visible', !award.visible)}
                   className="flex items-center space-x-1"
+                  data-testid={`award-${index}-visibility-toggle`}
                 >
                   {award.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
@@ -64,6 +84,7 @@ const AwardsEditor = () => {
                   size="sm"
                   onClick={() => removeAward(index)}
                   className="text-red-600 hover:text-red-700"
+                  data-testid={`award-${index}-remove-button`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -79,6 +100,8 @@ const AwardsEditor = () => {
                   value={award.title}
                   onChange={(e) => updateAward(index, 'title', e.target.value)}
                   placeholder="Employee of the Year"
+                  spellCheck={true}
+                  data-testid={`award-${index}-title-input`}
                 />
               </div>
               <div>
@@ -88,6 +111,7 @@ const AwardsEditor = () => {
                   type="date"
                   value={award.date}
                   onChange={(e) => updateAward(index, 'date', e.target.value)}
+                  data-testid={`award-${index}-date-input`}
                 />
               </div>
             </div>
@@ -99,6 +123,8 @@ const AwardsEditor = () => {
                 value={award.awarder}
                 onChange={(e) => updateAward(index, 'awarder', e.target.value)}
                 placeholder="Company Name or Organization"
+                spellCheck={true}
+                data-testid={`award-${index}-awarder-input`}
               />
             </div>
 
@@ -110,6 +136,8 @@ const AwardsEditor = () => {
                 onChange={(e) => updateAward(index, 'summary', e.target.value)}
                 placeholder="Brief description of the award and why it was received..."
                 rows={3}
+                spellCheck={true}
+                data-testid={`award-${index}-summary-input`}
               />
             </div>
           </CardContent>
@@ -117,10 +145,10 @@ const AwardsEditor = () => {
       ))}
 
       {state.resumeData.awards.length === 0 && (
-        <Card className="text-center py-8">
+        <Card className="text-center py-8" data-testid="no-awards-message">
           <CardContent>
             <p className="text-gray-500 mb-4">No awards added yet</p>
-            <Button onClick={addAward} className="flex items-center space-x-2 mx-auto">
+            <Button onClick={addAward} className="flex items-center space-x-2 mx-auto" data-testid="add-first-award-button">
               <Plus className="w-4 h-4" />
               <span>Add Your First Award</span>
             </Button>

@@ -65,7 +65,7 @@ export default function BasicEditor() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="basic-editor">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <Button
@@ -73,14 +73,15 @@ export default function BasicEditor() {
             size="sm"
             onClick={toggleSectionVisibility}
             className="p-1"
+            data-testid="basics-visibility-toggle"
           >
             {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
-          <h2 className="text-2xl font-bold">basics</h2>
+          <h2 className="text-2xl font-bold">Basics</h2>
         </div>
       </div>
       
-      <Card>
+      <Card data-testid="personal-info-card">
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
         </CardHeader>
@@ -94,6 +95,7 @@ export default function BasicEditor() {
                 onChange={(e) => updateBasics('name', e.target.value)}
                 placeholder="Your full name"
                 spellCheck={true}
+                data-testid="name-input"
               />
             </div>
             <div>
@@ -104,6 +106,7 @@ export default function BasicEditor() {
                 onChange={(e) => updateBasics('label', e.target.value)}
                 placeholder="e.g., Senior Software Engineer"
                 spellCheck={true}
+                data-testid="label-input"
               />
             </div>
             <div>
@@ -114,6 +117,7 @@ export default function BasicEditor() {
                 value={basics.email}
                 onChange={(e) => updateBasics('email', e.target.value)}
                 placeholder="your.email@example.com"
+                data-testid="email-input"
               />
             </div>
             <div>
@@ -123,6 +127,7 @@ export default function BasicEditor() {
                 value={basics.phone}
                 onChange={(e) => updateBasics('phone', e.target.value)}
                 placeholder="(555) 123-4567"
+                data-testid="phone-input"
               />
             </div>
             <div>
@@ -132,6 +137,7 @@ export default function BasicEditor() {
                 value={basics.url}
                 onChange={(e) => updateBasics('url', e.target.value)}
                 placeholder="https://yourwebsite.com"
+                data-testid="url-input"
               />
             </div>
           </div>
@@ -145,12 +151,13 @@ export default function BasicEditor() {
               placeholder="Brief professional summary..."
               rows={4}
               spellCheck={true}
+              data-testid="summary-input"
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card data-testid="location-card">
         <CardHeader>
           <CardTitle>location</CardTitle>
         </CardHeader>
@@ -164,6 +171,7 @@ export default function BasicEditor() {
                 onChange={(e) => updateLocation('address', e.target.value)}
                 placeholder="Street address"
                 spellCheck={true}
+                data-testid="address-input"
               />
             </div>
             <div>
@@ -174,6 +182,7 @@ export default function BasicEditor() {
                 onChange={(e) => updateLocation('city', e.target.value)}
                 placeholder="City"
                 spellCheck={true}
+                data-testid="city-input"
               />
             </div>
             <div>
@@ -184,6 +193,7 @@ export default function BasicEditor() {
                 onChange={(e) => updateLocation('region', e.target.value)}
                 placeholder="State or Region"
                 spellCheck={true}
+                data-testid="region-input"
               />
             </div>
             <div>
@@ -193,6 +203,7 @@ export default function BasicEditor() {
                 value={basics.location.postalCode}
                 onChange={(e) => updateLocation('postalCode', e.target.value)}
                 placeholder="Postal code"
+                data-testid="postal-code-input"
               />
             </div>
             <div>
@@ -202,17 +213,18 @@ export default function BasicEditor() {
                 value={basics.location.countryCode}
                 onChange={(e) => updateLocation('countryCode', e.target.value)}
                 placeholder="US"
+                data-testid="country-code-input"
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card data-testid="profiles-card">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             profiles
-            <Button onClick={addProfile} size="sm">
+            <Button onClick={addProfile} size="sm" data-testid="add-profile-button">
               <Plus className="w-4 h-4 mr-2" />
               Add Profile
             </Button>
@@ -221,13 +233,14 @@ export default function BasicEditor() {
         <CardContent>
           <div className="space-y-4">
             {basics.profiles.map((profile, index) => (
-              <div key={index} className="flex gap-4 items-end">
+              <div key={index} className="flex gap-4 items-end" data-testid={`profile-${index}`}>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => updateProfile(index, 'visible', !profile.visible)}
                     className="p-1"
+                    data-testid={`profile-${index}-visibility-toggle`}
                   >
                     {profile.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
@@ -239,6 +252,7 @@ export default function BasicEditor() {
                     onChange={(e) => updateProfile(index, 'network', e.target.value)}
                     placeholder="LinkedIn, GitHub, etc."
                     spellCheck={true}
+                    data-testid={`profile-${index}-network-input`}
                   />
                 </div>
                 <div className="flex-1">
@@ -247,6 +261,7 @@ export default function BasicEditor() {
                     value={profile.username}
                     onChange={(e) => updateProfile(index, 'username', e.target.value)}
                     placeholder="Your username"
+                    data-testid={`profile-${index}-username-input`}
                   />
                 </div>
                 <div className="flex-1">
@@ -255,6 +270,7 @@ export default function BasicEditor() {
                     value={profile.url}
                     onChange={(e) => updateProfile(index, 'url', e.target.value)}
                     placeholder="Profile URL"
+                    data-testid={`profile-${index}-url-input`}
                   />
                 </div>
                 <Button
@@ -262,6 +278,7 @@ export default function BasicEditor() {
                   size="sm"
                   onClick={() => removeProfile(index)}
                   className="text-red-600 hover:text-red-700"
+                  data-testid={`profile-${index}-remove-button`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

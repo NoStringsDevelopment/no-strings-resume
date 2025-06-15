@@ -67,7 +67,7 @@ export default function EducationEditor() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="education-editor">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Button
@@ -75,19 +75,20 @@ export default function EducationEditor() {
             size="sm"
             onClick={toggleSectionVisibility}
             className="p-1"
+            data-testid="education-visibility-toggle"
           >
             {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
-          <h2 className="text-2xl font-bold">education</h2>
+          <h2 className="text-2xl font-bold">Education</h2>
         </div>
-        <Button onClick={addEducation}>
+        <Button onClick={addEducation} data-testid="add-education-button">
           <Plus className="w-4 h-4 mr-2" />
           Add education
         </Button>
       </div>
 
       {education.map((edu, index) => (
-        <Card key={index}>
+        <Card key={index} data-testid={`education-${index}-card`}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -96,6 +97,7 @@ export default function EducationEditor() {
                   size="sm"
                   onClick={() => updateEducation(index, 'visible', !edu.visible)}
                   className="p-1"
+                  data-testid={`education-${index}-visibility-toggle`}
                 >
                   {edu.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
@@ -106,6 +108,7 @@ export default function EducationEditor() {
                 size="sm"
                 onClick={() => removeEducation(index)}
                 className="text-red-600 hover:text-red-700"
+                data-testid={`education-${index}-remove-button`}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -121,6 +124,7 @@ export default function EducationEditor() {
                   onChange={(e) => updateEducation(index, 'institution', e.target.value)}
                   placeholder="University name"
                   spellCheck={true}
+                  data-testid={`education-${index}-institution-input`}
                 />
               </div>
               <div>
@@ -130,6 +134,7 @@ export default function EducationEditor() {
                   value={edu.url}
                   onChange={(e) => updateEducation(index, 'url', e.target.value)}
                   placeholder="https://university.edu"
+                  data-testid={`education-${index}-url-input`}
                 />
               </div>
               <div>
@@ -140,6 +145,7 @@ export default function EducationEditor() {
                   onChange={(e) => updateEducation(index, 'area', e.target.value)}
                   placeholder="Computer Science"
                   spellCheck={true}
+                  data-testid={`education-${index}-area-input`}
                 />
               </div>
               <div>
@@ -150,6 +156,7 @@ export default function EducationEditor() {
                   onChange={(e) => updateEducation(index, 'studyType', e.target.value)}
                   placeholder="Bachelor of Science"
                   spellCheck={true}
+                  data-testid={`education-${index}-study-type-input`}
                 />
               </div>
               <div>
@@ -159,6 +166,7 @@ export default function EducationEditor() {
                   value={edu.startDate}
                   onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
                   placeholder="YYYY-MM"
+                  data-testid={`education-${index}-start-date-input`}
                 />
               </div>
               <div>
@@ -168,6 +176,7 @@ export default function EducationEditor() {
                   value={edu.endDate}
                   onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
                   placeholder="YYYY-MM"
+                  data-testid={`education-${index}-end-date-input`}
                 />
               </div>
               <div>
@@ -177,6 +186,7 @@ export default function EducationEditor() {
                   value={edu.score}
                   onChange={(e) => updateEducation(index, 'score', e.target.value)}
                   placeholder="3.8"
+                  data-testid={`education-${index}-score-input`}
                 />
               </div>
             </div>
@@ -188,6 +198,7 @@ export default function EducationEditor() {
                   variant="outline"
                   size="sm"
                   onClick={() => addCourse(index)}
+                  data-testid={`education-${index}-add-course-button`}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add course
@@ -195,19 +206,21 @@ export default function EducationEditor() {
               </div>
               <div className="space-y-2">
                 {edu.courses.map((course, courseIndex) => (
-                  <div key={courseIndex} className="flex gap-2">
+                  <div key={courseIndex} className="flex gap-2" data-testid={`education-${index}-course-${courseIndex}`}>
                     <Input
                       value={course}
                       onChange={(e) => updateCourse(index, courseIndex, e.target.value)}
                       placeholder="Course name"
                       className="flex-1"
                       spellCheck={true}
+                      data-testid={`education-${index}-course-${courseIndex}-input`}
                     />
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => removeCourse(index, courseIndex)}
                       className="text-red-600 hover:text-red-700"
+                      data-testid={`education-${index}-course-${courseIndex}-remove-button`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -220,9 +233,9 @@ export default function EducationEditor() {
       ))}
 
       {education.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500" data-testid="no-education-message">
           <p>No education entries added yet.</p>
-          <Button onClick={addEducation} className="mt-2">
+          <Button onClick={addEducation} className="mt-2" data-testid="add-first-education-button">
             Add Your First education Entry
           </Button>
         </div>

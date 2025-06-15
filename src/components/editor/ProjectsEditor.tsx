@@ -46,18 +46,37 @@ const ProjectsEditor = () => {
     updateProject(index, field, items);
   };
 
+  const sectionVisible = state.resumeData.sectionVisibility?.projects ?? true;
+  const toggleSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { projects: !sectionVisible }
+    });
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="projects-editor">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Projects</h2>
-        <Button onClick={addProject} className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSectionVisibility}
+            className="p-1"
+            data-testid="projects-visibility-toggle"
+          >
+            {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </Button>
+          <h2 className="text-2xl font-bold">Projects</h2>
+        </div>
+        <Button onClick={addProject} className="flex items-center space-x-2" data-testid="add-project-button">
           <Plus className="w-4 h-4" />
           <span>Add Project</span>
         </Button>
       </div>
 
       {state.resumeData.projects.map((project, index) => (
-        <Card key={index} className="relative">
+        <Card key={index} className="relative" data-testid={`project-${index}-card`}>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
@@ -69,6 +88,7 @@ const ProjectsEditor = () => {
                   size="sm"
                   onClick={() => updateProject(index, 'visible', !project.visible)}
                   className="flex items-center space-x-1"
+                  data-testid={`project-${index}-visibility-toggle`}
                 >
                   {project.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
@@ -77,6 +97,7 @@ const ProjectsEditor = () => {
                   size="sm"
                   onClick={() => removeProject(index)}
                   className="text-red-600 hover:text-red-700"
+                  data-testid={`project-${index}-remove-button`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -92,6 +113,8 @@ const ProjectsEditor = () => {
                   value={project.name}
                   onChange={(e) => updateProject(index, 'name', e.target.value)}
                   placeholder="My Awesome Project"
+                  spellCheck={true}
+                  data-testid={`project-${index}-name-input`}
                 />
               </div>
               <div>
@@ -101,6 +124,7 @@ const ProjectsEditor = () => {
                   value={project.url}
                   onChange={(e) => updateProject(index, 'url', e.target.value)}
                   placeholder="https://github.com/user/project"
+                  data-testid={`project-${index}-url-input`}
                 />
               </div>
             </div>
@@ -113,6 +137,8 @@ const ProjectsEditor = () => {
                   value={project.entity}
                   onChange={(e) => updateProject(index, 'entity', e.target.value)}
                   placeholder="Company or Organization"
+                  spellCheck={true}
+                  data-testid={`project-${index}-entity-input`}
                 />
               </div>
               <div>
@@ -122,6 +148,8 @@ const ProjectsEditor = () => {
                   value={project.type}
                   onChange={(e) => updateProject(index, 'type', e.target.value)}
                   placeholder="Web Application, Mobile App, etc."
+                  spellCheck={true}
+                  data-testid={`project-${index}-type-input`}
                 />
               </div>
             </div>
@@ -134,6 +162,7 @@ const ProjectsEditor = () => {
                   type="date"
                   value={project.startDate}
                   onChange={(e) => updateProject(index, 'startDate', e.target.value)}
+                  data-testid={`project-${index}-start-date-input`}
                 />
               </div>
               <div>
@@ -143,6 +172,7 @@ const ProjectsEditor = () => {
                   type="date"
                   value={project.endDate}
                   onChange={(e) => updateProject(index, 'endDate', e.target.value)}
+                  data-testid={`project-${index}-end-date-input`}
                 />
               </div>
             </div>
@@ -155,6 +185,8 @@ const ProjectsEditor = () => {
                 onChange={(e) => updateProject(index, 'description', e.target.value)}
                 placeholder="Brief description of the project..."
                 rows={3}
+                spellCheck={true}
+                data-testid={`project-${index}-description-input`}
               />
             </div>
 
@@ -166,6 +198,8 @@ const ProjectsEditor = () => {
                 onChange={(e) => updateArrayField(index, 'highlights', e.target.value)}
                 placeholder="Built responsive web application&#10;Implemented user authentication&#10;Deployed to AWS"
                 rows={3}
+                spellCheck={true}
+                data-testid={`project-${index}-highlights-input`}
               />
             </div>
 
@@ -178,6 +212,8 @@ const ProjectsEditor = () => {
                   onChange={(e) => updateArrayField(index, 'keywords', e.target.value)}
                   placeholder="React&#10;TypeScript&#10;Node.js"
                   rows={3}
+                  spellCheck={true}
+                  data-testid={`project-${index}-keywords-input`}
                 />
               </div>
               <div>
@@ -188,6 +224,8 @@ const ProjectsEditor = () => {
                   onChange={(e) => updateArrayField(index, 'roles', e.target.value)}
                   placeholder="Full Stack Developer&#10;Project Lead"
                   rows={3}
+                  spellCheck={true}
+                  data-testid={`project-${index}-roles-input`}
                 />
               </div>
             </div>
@@ -196,10 +234,10 @@ const ProjectsEditor = () => {
       ))}
 
       {state.resumeData.projects.length === 0 && (
-        <Card className="text-center py-8">
+        <Card className="text-center py-8" data-testid="no-projects-message">
           <CardContent>
             <p className="text-gray-500 mb-4">No projects added yet</p>
-            <Button onClick={addProject} className="flex items-center space-x-2 mx-auto">
+            <Button onClick={addProject} className="flex items-center space-x-2 mx-auto" data-testid="add-first-project-button">
               <Plus className="w-4 h-4" />
               <span>Add Your First Project</span>
             </Button>
