@@ -35,27 +35,27 @@ const Landing = () => {
   const userPersonas = [{
     icon: Users,
     title: "The Practical Applicant",
-    description: "Uses No Strings Resume as their primary tool, appreciating simplicity and seamless import/export. Perfect for gig workers and career switchers who need reliable, accessible resume building."
+    description: "Practical applicants use No Strings Resume as their primary resume-building tool. Experienced enough with resume writing to appreciate simplicity, they rely on the friendly interface, seamless import/export, and straightforward backup options. Local storage keeps their work accessible across sessions without complicated setup, making it ideal for candidates like gig economy workers frequently applying for contracts or career switchers customizing applications."
   }, {
     icon: Zap,
     title: "The Spontaneous Job Seeker",
-    description: "Needs fast, straightforward solutions for imminent deadlines or first-time resume creation. Start building immediately with zero commitment or setup required."
+    description: "Whether facing an imminent deadline for a dream job, creating a resume for the first time after graduation, or returning to the workforce after a break, spontaneous job seekers need a fast, straightforward solution. No Strings Resume allows them to begin quickly building a resume with zero commitment. They can immediately preview, edit, and export resumes with no account, setup, or prior experience required."
   }, {
     icon: Code,
     title: "The Tech-Savvy Candidate",
-    description: "Self-hosts the application, interacts with JSON data directly, and customizes templates. Values high-quality, maintainable code and full flexibility."
+    description: "Tech-savvy job hunters may self-host No Strings Resume and expect high-quality, maintainable code. Comfortable interacting directly with JSON data, they customize templates, add new sections, and adapt the application to fit specific needs, making full use of the app's flexibility and openness."
   }, {
     icon: Target,
     title: "The Seasoned Job Hunter",
-    description: "Leverages advanced features like custom themes, template modifications, and strategic export optimization. Approaches applications with efficiency and expertise."
+    description: "Seasoned candidates have extensive experience crafting and strategically tailoring resumes. They value advanced features, such as custom theme creation, personalized template modifications, and the ability to swap default DOCX templates for bespoke designs. Comfortable optimizing exports for various scenarios, these candidates approach job applications with efficiency and a clear understanding of how to effectively present their experience."
   }, {
     icon: Lock,
     title: "The Privacy-Conscious User",
-    description: "Appreciates no-backend architecture and local data storage. Values complete control over their personal information without third-party sharing."
+    description: "Privacy-conscious users appreciate the no-backend architecture and local data storage. They value accessing the application without needing to create an account or share personal information with third parties, confident their data remains entirely under their control."
   }, {
     icon: Briefcase,
     title: "Recruiters and Employers",
-    description: "Receives direct links to view candidate resumes online. Easy review and export of ATS-friendly, keyword-optimized documents for recruitment processes."
+    description: "Recruiters and employers can be sent a direct link to instantly view candidate resumes online, making it easy to review and export neatly formatted PDFs for filing or distribution. Documents are structured to be ATS-friendly and optimized for keyword searches, ensuring compatibility with standard recruitment processes."
   }];
   
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
