@@ -1,74 +1,49 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Github, MessageSquare, Heart, Code, Bug, FileText, Check } from "lucide-react";
-
 const Contribute = () => {
   const navigate = useNavigate();
-
-  const contributionWays = [
-    {
-      icon: Code,
-      title: "Code Contributions",
-      description: "Help improve the codebase by submitting pull requests for new features, bug fixes, or improvements.",
-      action: "View Repository",
-      link: "https://github.com/NoStringsDevelopment/no-strings-resume"
-    },
-    {
-      icon: Bug,
-      title: "Report Issues",
-      description: "Found a bug or have a feature request? Let us know by creating an issue on GitHub.",
-      action: "Report Issue",
-      link: "https://github.com/NoStringsDevelopment/no-strings-resume/issues"
-    },
-    {
-      icon: FileText,
-      title: "Documentation",
-      description: "Help improve documentation, write tutorials, or contribute to the project's knowledge base.",
-      action: "Contribute Docs",
-      link: "https://github.com/NoStringsDevelopment/no-strings-resume"
-    },
-    {
-      icon: MessageSquare,
-      title: "Community Support",
-      description: "Help other users by answering questions and providing support in discussions.",
-      action: "Join Discussions",
-      link: "https://github.com/NoStringsDevelopment/no-strings-resume/discussions"
-    }
-  ];
-
-  const supportFeatures = [
-    "Support ongoing development and maintenance",
-    "Help cover hosting and infrastructure costs",
-    "Enable new features and improvements"
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  const contributionWays = [{
+    icon: Code,
+    title: "Code Contributions",
+    description: "Help improve the codebase by submitting pull requests for new features, bug fixes, or improvements.",
+    action: "View Repository",
+    link: "https://github.com/NoStringsDevelopment/no-strings-resume"
+  }, {
+    icon: Bug,
+    title: "Report Issues",
+    description: "Found a bug or have a feature request? Let us know by creating an issue on GitHub.",
+    action: "Report Issue",
+    link: "https://github.com/NoStringsDevelopment/no-strings-resume/issues"
+  }, {
+    icon: FileText,
+    title: "Documentation",
+    description: "Help improve documentation, write tutorials, or contribute to the project's knowledge base.",
+    action: "Contribute Docs",
+    link: "https://github.com/NoStringsDevelopment/no-strings-resume"
+  }, {
+    icon: MessageSquare,
+    title: "Community Support",
+    description: "Help other users by answering questions and providing support in discussions.",
+    action: "Join Discussions",
+    link: "https://github.com/NoStringsDevelopment/no-strings-resume/discussions"
+  }];
+  const supportFeatures = ["Support ongoing development and maintenance", "Help cover hosting and infrastructure costs", "Enable new features and improvements"];
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button 
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
-            >
+            <Button variant="ghost" onClick={() => navigate('/')} className="flex items-center space-x-2 text-blue-600 hover:text-blue-700">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900 hidden sm:block">No Strings Resume</span>
             </Button>
             <nav className="flex items-center space-x-4">
-              <Button variant="outline" onClick={() => navigate('/')} data-testid="back-to-home-btn">
-                <span className="hidden sm:inline">Back to Home</span>
-                <span className="sm:hidden">Home</span>
-              </Button>
-              <Button onClick={() => navigate('/edit')} data-testid="start-building-btn">
-                <span className="hidden sm:inline">Start Building</span>
-                <span className="sm:hidden">Start</span>
-              </Button>
+              
+              
             </nav>
           </div>
         </div>
@@ -79,10 +54,7 @@ const Contribute = () => {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Help Make{' '}
-            <span 
-              className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-              data-testid="gradient-text"
-            >
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600" data-testid="gradient-text">
               No Strings Resume
             </span>
             <br />Even Better
@@ -108,14 +80,12 @@ const Contribute = () => {
                   consider making a donation. Every contribution helps keep the project running and growing.
                 </p>
                 <div className="space-y-4">
-                  {supportFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start space-x-3 text-left">
+                  {supportFeatures.map((feature, index) => <div key={index} className="flex items-start space-x-3 text-left">
                       <div className="flex-shrink-0 mt-1">
                         <Check className="w-5 h-5 text-green-500" />
                       </div>
                       <p className="text-gray-700 leading-relaxed">{feature}</p>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </div>
             </div>
@@ -123,18 +93,10 @@ const Contribute = () => {
             {/* Right Column - Ko-fi Widget with improved sizing */}
             <div className="flex justify-center lg:justify-end">
               <div className="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden">
-                <iframe 
-                  id='kofiframe' 
-                  src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' 
-                  className="border-none w-full"
-                  height="750" 
-                  title="Support on Ko-fi"
-                  style={{ 
-                    minHeight: '700px',
-                    maxHeight: '800px'
-                  }}
-                  scrolling="auto"
-                />
+                <iframe id='kofiframe' src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' className="border-none w-full" height="750" title="Support on Ko-fi" style={{
+                minHeight: '700px',
+                maxHeight: '800px'
+              }} scrolling="auto" />
               </div>
             </div>
           </div>
@@ -152,12 +114,7 @@ const Contribute = () => {
         </div>
         
         <div className="grid md:grid-cols-2 gap-6 mb-12">
-          {contributionWays.map((way, index) => (
-            <Card 
-              key={index} 
-              className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white"
-              data-testid={`contribution-card-${way.title.toLowerCase().replace(/\s+/g, '-')}`}
-            >
+          {contributionWays.map((way, index) => <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white" data-testid={`contribution-card-${way.title.toLowerCase().replace(/\s+/g, '-')}`}>
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <way.icon className="w-6 h-6 text-blue-600" />
@@ -168,18 +125,12 @@ const Contribute = () => {
                 <CardDescription className="text-gray-600 leading-relaxed mb-4">
                   {way.description}
                 </CardDescription>
-                <Button 
-                  variant="outline" 
-                  onClick={() => window.open(way.link, '_blank')}
-                  className="w-full"
-                  data-testid={`contribution-button-${way.title.toLowerCase().replace(/\s+/g, '-')}`}
-                >
+                <Button variant="outline" onClick={() => window.open(way.link, '_blank')} className="w-full" data-testid={`contribution-button-${way.title.toLowerCase().replace(/\s+/g, '-')}`}>
                   <Github className="w-4 h-4 mr-2" />
                   {way.action}
                 </Button>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </section>
 
@@ -198,8 +149,6 @@ const Contribute = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Contribute;
