@@ -11,7 +11,6 @@ import ResumeView from "./pages/ResumeView";
 import ThemeEditor from "./pages/ThemeEditor";
 import Contribute from "./pages/Contribute";
 import NotFound from "./pages/NotFound";
-import ContributeDebug from "./debug/ContributeDebug";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +29,6 @@ const App = () => (
                 <Route path="/view" element={<ResumeView />} />
                 <Route path="/theme" element={<ThemeEditor />} />
                 <Route path="/contribute" element={<Contribute />} />
-                <Route path="/debug" element={<ContributeDebug />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>

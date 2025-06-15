@@ -2,48 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Github, MessageSquare, Heart, Code, Bug, FileText } from "lucide-react";
-import { useEffect } from "react";
 
 const Contribute = () => {
   const navigate = useNavigate();
-
-  // Debug log to confirm component is mounting
-  console.log('Contribute component is mounting');
-
-  useEffect(() => {
-    // Load Ko-fi widget script with error handling
-    const script1 = document.createElement('script');
-    script1.type = 'text/javascript';
-    script1.src = 'https://storage.ko-fi.com/cdn/widget/Widget_2.js';
-    
-    script1.onload = () => {
-      try {
-        const script2 = document.createElement('script');
-        script2.type = 'text/javascript';
-        script2.innerHTML = `
-          if (typeof kofiwidget2 !== 'undefined') {
-            kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'T6T31GH005');
-            kofiwidget2.draw();
-          }
-        `;
-        document.head.appendChild(script2);
-      } catch (error) {
-        console.warn('Ko-fi widget failed to initialize:', error);
-      }
-    };
-    
-    script1.onerror = () => {
-      console.warn('Ko-fi widget failed to load');
-    };
-    
-    document.head.appendChild(script1);
-
-    return () => {
-      // Cleanup scripts on unmount
-      const scripts = document.querySelectorAll('script[src*="ko-fi"]');
-      scripts.forEach(script => script.remove());
-    };
-  }, []);
 
   const contributionWays = [
     {
@@ -107,15 +68,7 @@ const Contribute = () => {
             Help Make{' '}
             <span 
               className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-              style={{
-                // Fallback for browsers that don't support bg-clip-text
-                backgroundImage: 'linear-gradient(to right, #2563eb, #9333ea)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                // Fallback color
-                color: '#2563eb'
-              }}
+              data-testid="gradient-text"
             >
               No Strings Resume
             </span>
@@ -125,6 +78,32 @@ const Contribute = () => {
             No Strings Resume is an open-source project built by the community, for the community. 
             Your contributions help make privacy-first resume building accessible to everyone.
           </p>
+        </div>
+      </section>
+
+      {/* Support Section - Moved to top */}
+      <section className="bg-gray-50 py-16">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-3xl mx-auto">
+            <Heart className="w-16 h-16 text-red-500 mx-auto mb-6" />
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h3>
+            <p className="text-lg text-gray-600 mb-8">
+              If you find No Strings Resume helpful and want to support its development, 
+              consider making a donation. Every contribution helps keep the project running and growing.
+            </p>
+            <div className="flex justify-center">
+              <div className="w-full max-w-lg">
+                <iframe 
+                  id='kofiframe' 
+                  src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' 
+                  className="border-none w-full bg-gray-100 rounded-lg"
+                  height="320" 
+                  title="Support on Ko-fi"
+                  style={{ overflow: 'hidden' }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -140,7 +119,11 @@ const Contribute = () => {
         
         <div className="grid md:grid-cols-2 gap-6 mb-12">
           {contributionWays.map((way, index) => (
-            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <Card 
+              key={index} 
+              className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white"
+              data-testid={`contribution-card-${way.title.toLowerCase().replace(/\s+/g, '-')}`}
+            >
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <way.icon className="w-6 h-6 text-blue-600" />
@@ -155,6 +138,7 @@ const Contribute = () => {
                   variant="outline" 
                   onClick={() => window.open(way.link, '_blank')}
                   className="w-full"
+                  data-testid={`contribution-button-${way.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <Github className="w-4 h-4 mr-2" />
                   {way.action}
@@ -162,23 +146,6 @@ const Contribute = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
-      </section>
-
-      {/* Support Section */}
-      <section className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-2xl mx-auto">
-            <Heart className="w-16 h-16 text-red-500 mx-auto mb-6" />
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h3>
-            <p className="text-lg text-gray-600 mb-8">
-              If you find No Strings Resume helpful and want to support its development, 
-              consider making a donation. Every contribution helps keep the project running and growing.
-            </p>
-            <div id="kofi-widget-container" className="flex justify-center">
-              {/* Ko-fi widget will be inserted here */}
-            </div>
-          </div>
         </div>
       </section>
 
