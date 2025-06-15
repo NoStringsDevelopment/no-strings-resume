@@ -13,7 +13,57 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
   theme, 
   className = '' 
 }) => {
-  const { sectionVisibility } = resumeData;
+  // Safely destructure sectionVisibility with fallback
+  const sectionVisibility = resumeData?.sectionVisibility || {
+    basics: true,
+    work: true,
+    education: true,
+    skills: true,
+    projects: true,
+    awards: true,
+    certificates: true,
+    publications: true,
+    languages: true,
+    interests: true,
+    references: true,
+    volunteer: true
+  };
+
+  // Early return if resumeData is not available
+  if (!resumeData) {
+    return <div>Loading...</div>;
+  }
+
+  // Ensure basics exists
+  const basics = resumeData.basics || {
+    name: '',
+    label: '',
+    email: '',
+    phone: '',
+    url: '',
+    summary: '',
+    location: {
+      address: '',
+      postalCode: '',
+      city: '',
+      countryCode: '',
+      region: ''
+    },
+    profiles: []
+  };
+
+  // Ensure arrays exist
+  const work = resumeData.work || [];
+  const education = resumeData.education || [];
+  const skills = resumeData.skills || [];
+  const projects = resumeData.projects || [];
+  const awards = resumeData.awards || [];
+  const certificates = resumeData.certificates || [];
+  const publications = resumeData.publications || [];
+  const languages = resumeData.languages || [];
+  const interests = resumeData.interests || [];
+  const references = resumeData.references || [];
+  const volunteer = resumeData.volunteer || [];
 
   const themeStyles = {
     '--color-primary': theme.colors.primary,
@@ -44,38 +94,38 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
               style={{ color: 'var(--color-primary)', fontFamily: 'var(--font-heading)' }}
               data-testid="resume-name"
             >
-              {resumeData.basics.name}
+              {basics.name}
             </h1>
-            {resumeData.basics.label && (
+            {basics.label && (
               <h2 
                 className="text-xl mb-4" 
                 style={{ color: 'var(--color-secondary)' }}
                 data-testid="resume-label"
               >
-                {resumeData.basics.label}
+                {basics.label}
               </h2>
             )}
             
             {/* Contact Information - Split for test ids */}
             <div className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              {resumeData.basics.email && (
-                <span data-testid="resume-email">📧 {resumeData.basics.email}</span>
+              {basics.email && (
+                <span data-testid="resume-email">📧 {basics.email}</span>
               )}
-              {resumeData.basics.phone && (
-                <span data-testid="resume-phone">{resumeData.basics.email && ' • '}📞 {resumeData.basics.phone}</span>
+              {basics.phone && (
+                <span data-testid="resume-phone">{basics.email && ' • '}📞 {basics.phone}</span>
               )}
-              {resumeData.basics.url && (
-                <span data-testid="resume-url">{(resumeData.basics.email || resumeData.basics.phone) && ' • '}🌐 {resumeData.basics.url}</span>
+              {basics.url && (
+                <span data-testid="resume-url">{(basics.email || basics.phone) && ' • '}🌐 {basics.url}</span>
               )}
-              {(resumeData.basics.location.city || resumeData.basics.location.region) && (
-                <span data-testid="resume-location">{(resumeData.basics.email || resumeData.basics.phone || resumeData.basics.url) && ' • '}📍 {[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}</span>
+              {(basics.location.city || basics.location.region) && (
+                <span data-testid="resume-location">{(basics.email || basics.phone || basics.url) && ' • '}�� {[basics.location.city, basics.location.region].filter(Boolean).join(', ')}</span>
               )}
             </div>
 
             {/* Social Profiles - Also compressed */}
-            {resumeData.basics.profiles.some(p => p.visible !== false) && (
+            {basics.profiles.some(p => p.visible !== false) && (
               <div className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-                {resumeData.basics.profiles
+                {basics.profiles
                   .filter(profile => profile.visible !== false)
                   .map(profile => `${profile.network}: ${profile.username || profile.url}`)
                   .join(' • ')}
@@ -83,13 +133,13 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
             )}
 
             {/* Summary */}
-            {resumeData.basics.summary && (
+            {basics.summary && (
               <p 
                 className="mt-4 text-base leading-relaxed" 
                 style={{ color: 'var(--color-text)' }}
                 data-testid="resume-summary"
               >
-                {resumeData.basics.summary}
+                {basics.summary}
               </p>
             )}
           </header>
@@ -97,7 +147,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
 
         <div className="p-8 space-y-8">
           {/* Work Experience */}
-          {sectionVisibility.work && resumeData.work.some(w => w.visible !== false) && (
+          {sectionVisibility.work && work.some(w => w.visible !== false) && (
             <section data-testid="resume-work-section">
               <h3 
                 className="text-2xl font-bold mb-4 pb-2 border-b" 
@@ -110,7 +160,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                 Work Experience
               </h3>
               <div className="space-y-6">
-                {resumeData.work
+                {work
                   .filter(work => work.visible !== false)
                   .map((work, index) => (
                     <div key={index} data-testid={`resume-work-${index}`}>
@@ -146,7 +196,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
           )}
 
           {/* Education */}
-          {sectionVisibility.education && resumeData.education.some(e => e.visible !== false) && (
+          {sectionVisibility.education && education.some(e => e.visible !== false) && (
             <section data-testid="resume-education-section">
               <h3 
                 className="text-2xl font-bold mb-4 pb-2 border-b" 
@@ -159,7 +209,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                 Education
               </h3>
               <div className="space-y-4">
-                {resumeData.education
+                {education
                   .filter(edu => edu.visible !== false)
                   .map((edu, index) => (
                     <div key={index} data-testid={`resume-education-${index}`}>
@@ -188,7 +238,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
           )}
 
           {/* Skills */}
-          {sectionVisibility.skills && resumeData.skills.some(s => s.visible !== false) && (
+          {sectionVisibility.skills && skills.some(s => s.visible !== false) && (
             <section data-testid="resume-skills-section">
               <h3 
                 className="text-2xl font-bold mb-4 pb-2 border-b" 
@@ -201,7 +251,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                 Skills
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {resumeData.skills
+                {skills
                   .filter(skill => skill.visible !== false)
                   .map((skill, index) => (
                     <div key={index} data-testid={`resume-skill-${index}`}>
@@ -220,7 +270,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
           )}
 
           {/* Projects */}
-          {sectionVisibility.projects && resumeData.projects.some(p => p.visible !== false) && (
+          {sectionVisibility.projects && projects.some(p => p.visible !== false) && (
             <section data-testid="resume-projects-section">
               <h3 
                 className="text-2xl font-bold mb-4 pb-2 border-b" 
@@ -233,7 +283,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                 Projects
               </h3>
               <div className="space-y-4">
-                {resumeData.projects
+                {projects
                   .filter(project => project.visible !== false)
                   .map((project, index) => (
                     <div key={index} data-testid={`resume-project-${index}`}>
@@ -253,7 +303,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
           )}
 
           {/* Awards */}
-          {sectionVisibility.awards && resumeData.awards.some(a => a.visible !== false) && (
+          {sectionVisibility.awards && awards.some(a => a.visible !== false) && (
             <section data-testid="resume-awards-section">
               <h3 
                 className="text-2xl font-bold mb-4 pb-2 border-b" 
@@ -266,7 +316,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                 Awards
               </h3>
               <div className="space-y-3">
-                {resumeData.awards
+                {awards
                   .filter(award => award.visible !== false)
                   .map((award, index) => (
                     <div key={index} data-testid={`resume-award-${index}`}>
@@ -293,7 +343,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
           )}
 
           {/* Languages */}
-          {sectionVisibility.languages && resumeData.languages.some(l => l.visible !== false) && (
+          {sectionVisibility.languages && languages.some(l => l.visible !== false) && (
             <section data-testid="resume-languages-section">
               <h3 
                 className="text-2xl font-bold mb-4 pb-2 border-b" 
@@ -306,7 +356,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                 Languages
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {resumeData.languages
+                {languages
                   .filter(lang => lang.visible !== false)
                   .map((lang, index) => (
                     <div key={index} data-testid={`resume-language-${index}`}>

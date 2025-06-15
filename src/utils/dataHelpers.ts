@@ -1,0 +1,171 @@
+import { ResumeData, SectionVisibility } from '@/types/resume';
+
+/**
+ * Default section visibility configuration
+ */
+const DEFAULT_SECTION_VISIBILITY: SectionVisibility = {
+  basics: true,
+  work: true,
+  education: true,
+  skills: true,
+  projects: true,
+  awards: true,
+  certificates: true,
+  publications: true,
+  languages: true,
+  interests: true,
+  references: true,
+  volunteer: true
+};
+
+/**
+ * Ensures all array items have a 'visible' property, defaults to true if missing
+ */
+function ensureItemsHaveVisibility<T extends Record<string, any>>(items: T[]): Array<T & { visible: boolean }> {
+  return items.map(item => ({
+    ...item,
+    visible: item.visible !== false // defaults to true unless explicitly false
+  }));
+}
+
+/**
+ * Ensures all required arrays exist and are properly typed
+ */
+function ensureArraysExist(data: any): ResumeData {
+  return {
+    ...data,
+    work: Array.isArray(data.work) ? data.work : [],
+    education: Array.isArray(data.education) ? data.education : [],
+    skills: Array.isArray(data.skills) ? data.skills : [],
+    projects: Array.isArray(data.projects) ? data.projects : [],
+    awards: Array.isArray(data.awards) ? data.awards : [],
+    certificates: Array.isArray(data.certificates) ? data.certificates : [],
+    publications: Array.isArray(data.publications) ? data.publications : [],
+    languages: Array.isArray(data.languages) ? data.languages : [],
+    interests: Array.isArray(data.interests) ? data.interests : [],
+    references: Array.isArray(data.references) ? data.references : [],
+    volunteer: Array.isArray(data.volunteer) ? data.volunteer : []
+  };
+}
+
+/**
+ * Ensures basics object exists with all required properties
+ */
+function ensureBasicsExist(data: any): ResumeData {
+  const basics = data.basics || {};
+  const location = basics.location || {};
+  
+  return {
+    ...data,
+    basics: {
+      name: basics.name || '',
+      label: basics.label || '',
+      image: basics.image || '',
+      email: basics.email || '',
+      phone: basics.phone || '',
+      url: basics.url || '',
+      summary: basics.summary || '',
+      location: {
+        address: location.address || '',
+        postalCode: location.postalCode || '',
+        city: location.city || '',
+        countryCode: location.countryCode || '',
+        region: location.region || ''
+      },
+      profiles: Array.isArray(basics.profiles) ? 
+        ensureItemsHaveVisibility(basics.profiles) : []
+    }
+  };
+}
+
+/**
+ * Normalizes resume data to ensure all required properties exist and are properly typed
+ * This is the central function that should be called whenever data is loaded from any source
+ */
+export function normalizeResumeData(data: any): ResumeData {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid resume data: expected object');
+  }
+
+  // Start with ensuring basic structure exists
+  let normalized = ensureBasicsExist(data);
+  normalized = ensureArraysExist(normalized);
+
+  // Normalize all arrays to ensure visibility properties
+  const normalizedData: ResumeData = {
+    ...normalized,
+    work: ensureItemsHaveVisibility(normalized.work),
+    education: ensureItemsHaveVisibility(normalized.education),
+    skills: ensureItemsHaveVisibility(normalized.skills),
+    projects: ensureItemsHaveVisibility(normalized.projects),
+    awards: ensureItemsHaveVisibility(normalized.awards),
+    certificates: ensureItemsHaveVisibility(normalized.certificates),
+    publications: ensureItemsHaveVisibility(normalized.publications),
+    languages: ensureItemsHaveVisibility(normalized.languages),
+    interests: ensureItemsHaveVisibility(normalized.interests),
+    references: ensureItemsHaveVisibility(normalized.references),
+    volunteer: ensureItemsHaveVisibility(normalized.volunteer),
+    
+    // Ensure sectionVisibility exists with all required properties
+    sectionVisibility: {
+      ...DEFAULT_SECTION_VISIBILITY,
+      ...(data.sectionVisibility || {})
+    },
+    
+    // Preserve non-conforming data if it exists
+    nonConformingData: data.nonConformingData,
+    meta: data.meta
+  };
+
+  return normalizedData;
+}
+
+/**
+ * Validates that the data structure is compatible with our resume format
+ */
+export function validateResumeData(data: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!data || typeof data !== 'object') {
+    errors.push('Resume data must be an object');
+    return { isValid: false, errors };
+  }
+
+  // Check if basics exists
+  if (!data.basics || typeof data.basics !== 'object') {
+    errors.push('basics section is required and must be an object');
+  }
+
+  // Check array fields
+  const arrayFields = ['work', 'education', 'skills', 'projects', 'awards', 'certificates', 'publications', 'languages', 'interests', 'references', 'volunteer'];
+  for (const field of arrayFields) {
+    if (data[field] && !Array.isArray(data[field])) {
+      errors.push(`${field} must be an array if present`);
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+/**
+ * Safe function to normalize data from localStorage
+ */
+export function normalizeStoredData(jsonString: string): ResumeData | null {
+  try {
+    const parsed = JSON.parse(jsonString);
+    const validation = validateResumeData(parsed);
+    
+    if (!validation.isValid) {
+      console.warn('Stored data validation failed:', validation.errors);
+      return null;
+    }
+    
+    return normalizeResumeData(parsed);
+  } catch (error) {
+    console.error('Failed to parse stored data:', error);
+    return null;
+  }
+} 
