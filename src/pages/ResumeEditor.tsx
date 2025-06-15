@@ -357,18 +357,16 @@ const ResumeEditor = () => {
             </Tabs>
           </div>
 
-          {/* Live Preview */}
+          {/* Live Preview - Now using the same EnhancedPreview as ThemeEditor */}
           {showPreview && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
               <div className="sticky top-8">
-                <div className="max-h-[80vh] overflow-y-auto">
-                  <EnhancedPreview 
-                    resumeData={state.resumeData} 
-                    theme={themeState.currentTheme}
-                    className="scale-75 origin-top"
-                  />
-                </div>
+                <EnhancedPreview 
+                  resumeData={state.resumeData} 
+                  theme={themeState.currentTheme}
+                  data-testid="editor-preview"
+                />
               </div>
             </div>
           )}
