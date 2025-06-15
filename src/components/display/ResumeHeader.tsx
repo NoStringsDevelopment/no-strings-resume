@@ -47,7 +47,13 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({ basics, isVisible })
 
       {/* Social Profiles */}
       {basics.profiles.some(p => p.visible !== false) && (
-        <div className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+        <div 
+          className="text-sm mb-4 pb-4" 
+          style={{ 
+            color: 'var(--color-text-secondary)',
+            borderBottom: '1px solid var(--color-border)'
+          }}
+        >
           {basics.profiles
             .filter(profile => profile.visible !== false)
             .map(profile => `${profile.network}: ${profile.username || profile.url}`)
