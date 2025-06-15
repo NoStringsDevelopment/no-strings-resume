@@ -1,4 +1,5 @@
 
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -82,30 +83,48 @@ const Contribute = () => {
         </div>
       </section>
 
-      {/* Support Section - Moved to top */}
+      {/* Support Section - Redesigned with two columns */}
       <section className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto">
-            <Heart className="w-16 h-16 text-red-500 mx-auto mb-6" />
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h3>
-            <p className="text-lg text-gray-600 mb-8">
-              If you find No Strings Resume helpful and want to support its development, 
-              consider making a donation. Every contribution helps keep the project running and growing.
-            </p>
-            <div className="flex justify-center">
-              <div className="w-full max-w-lg">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-start max-w-7xl mx-auto">
+            {/* Left Column - Content */}
+            <div className="text-center lg:text-left">
+              <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h3>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                If you find No Strings Resume helpful and want to support its development, 
+                consider making a donation. Every contribution helps keep the project running and growing.
+              </p>
+              <div className="space-y-4 text-left">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-600">Support ongoing development and maintenance</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-600">Help cover hosting and infrastructure costs</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-600">Enable new features and improvements</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Column - Ko-fi Widget */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
                 <iframe 
                   id='kofiframe' 
                   src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' 
-                  className="border-none w-full bg-transparent rounded-lg"
-                  height="500" 
+                  className="border-none w-full"
+                  height="600" 
                   title="Support on Ko-fi"
                   style={{ 
-                    overflow: 'hidden',
-                    minHeight: '500px',
-                    maxHeight: '600px'
+                    minHeight: '600px',
+                    maxHeight: '700px'
                   }}
-                  scrolling="no"
+                  scrolling="auto"
                 />
               </div>
             </div>
@@ -175,3 +194,4 @@ const Contribute = () => {
 };
 
 export default Contribute;
+
