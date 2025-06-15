@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { FileText, Edit, Download, Home, Undo } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useResumeContext } from "@/context/ResumeContext";
+import { ResumeContext } from "@/context/ResumeContext";
 import { useTheme } from "@/context/ThemeContext";
 import { ResumeRenderer } from "@/components/display/ResumeRenderer";
 import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF } from "@/utils/exportUtils";
@@ -12,7 +12,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const ResumeView = () => {
   const navigate = useNavigate();
-  const { state, dispatch } = useResumeContext();
+  const context = useContext(ResumeContext);
+  
+  if (!context) {
+    throw new Error('ResumeView must be used within a ResumeProvider');
+  }
+  
+  const { state, dispatch } = context;
   const { themeState } = useTheme();
   const { toast } = useToast();
 
@@ -168,11 +174,12 @@ const ResumeView = () => {
           </p>
         </div>
         
-        <ResumeRenderer 
-          resumeData={state.resumeData} 
-          theme={themeState.currentTheme}
-          data-testid="resume-display"
-        />
+        <div data-testid="resume-display">
+          <ResumeRenderer 
+            resumeData={state.resumeData} 
+            theme={themeState.currentTheme}
+          />
+        </div>
       </main>
     </div>
   );

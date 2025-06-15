@@ -1,3 +1,5 @@
+
+import { describe, it, expect } from 'vitest';
 import { exportResumeAsJson, importResumeData } from './importExport';
 import { ResumeData } from '@/types/resume';
 
@@ -73,55 +75,55 @@ describe('importExport utils', () => {
     });
   });
 
-     describe('importResumeData', () => {
-     it('should successfully import valid JSON Resume data', () => {
-       const validJson = JSON.stringify({
-         basics: {
-           name: 'Jane Smith',
-           email: 'jane@example.com'
-         },
-         work: [
-           {
-             name: 'Company A',
-             position: 'Developer',
-             startDate: '2020-01-01'
-           }
-         ]
-       });
+  describe('importResumeData', () => {
+    it('should successfully import valid JSON Resume data', () => {
+      const validJson = JSON.stringify({
+        basics: {
+          name: 'Jane Smith',
+          email: 'jane@example.com'
+        },
+        work: [
+          {
+            name: 'Company A',
+            position: 'Developer',
+            startDate: '2020-01-01'
+          }
+        ]
+      });
 
-       const result = importResumeData(validJson);
-       
-       expect(result.hasErrors).toBe(false);
-       expect(result.resumeData.basics.name).toBe('Jane Smith');
-       expect(result.resumeData.work).toHaveLength(1);
-       expect(result.validationErrors).toHaveLength(0);
-     });
+      const result = importResumeData(validJson);
+      
+      expect(result.hasErrors).toBe(false);
+      expect(result.resumeData.basics.name).toBe('Jane Smith');
+      expect(result.resumeData.work).toHaveLength(1);
+      expect(result.validationErrors).toHaveLength(0);
+    });
 
-     it('should handle invalid JSON gracefully', () => {
-       const invalidJson = '{ invalid json }';
-       
-       const result = importResumeData(invalidJson);
-       
-       expect(result.hasErrors).toBe(true);
-       expect(result.validationErrors).toHaveLength(1);
-       expect(result.validationErrors[0]).toMatch(/JSON|parse|format/i);
-       expect(result.resumeData).toBeDefined();
-     });
+    it('should handle invalid JSON gracefully', () => {
+      const invalidJson = '{ invalid json }';
+      
+      const result = importResumeData(invalidJson);
+      
+      expect(result.hasErrors).toBe(true);
+      expect(result.validationErrors).toHaveLength(1);
+      expect(result.validationErrors[0]).toMatch(/JSON|parse|format/i);
+      expect(result.resumeData).toBeDefined();
+    });
 
-     it('should preserve non-conforming data for manual review', () => {
-       const jsonWithExtraFields = JSON.stringify({
-         basics: { name: 'Test User' },
-         work: [{ 
-           name: 'Company',
-           position: 'Developer'
-         }]
-       });
+    it('should preserve non-conforming data for manual review', () => {
+      const jsonWithExtraFields = JSON.stringify({
+        basics: { name: 'Test User' },
+        work: [{ 
+          name: 'Company',
+          position: 'Developer'
+        }]
+      });
 
-       const result = importResumeData(jsonWithExtraFields);
-       
-       expect(result.hasErrors).toBe(false);
-       expect(result.resumeData.basics.name).toBe('Test User');
-       expect(result.resumeData.work).toHaveLength(1);
-     });
-   });
-}); 
+      const result = importResumeData(jsonWithExtraFields);
+      
+      expect(result.hasErrors).toBe(false);
+      expect(result.resumeData.basics.name).toBe('Test User');
+      expect(result.resumeData.work).toHaveLength(1);
+    });
+  });
+});
