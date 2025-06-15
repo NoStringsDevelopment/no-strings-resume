@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import ResumeEditor from "./pages/ResumeEditor";
 import ResumeView from "./pages/ResumeView";
 import ThemeEditor from "./pages/ThemeEditor";
 import Contribute from "./pages/Contribute";
+import Integrations from "./pages/Integrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +31,7 @@ const App = () => (
                 <Route path="/view" element={<ResumeView />} />
                 <Route path="/theme" element={<ThemeEditor />} />
                 <Route path="/contribute" element={<Contribute />} />
+                <Route path="/integrations" element={<Integrations />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
