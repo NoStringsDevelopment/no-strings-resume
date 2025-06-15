@@ -1,4 +1,3 @@
-
 import { ResumeData } from '@/types/resume';
 import { downloadFile, exportResumeAsJson } from '@/utils/importExport';
 
@@ -150,6 +149,17 @@ export function exportAsHTML(resumeData: ResumeData, theme: any) {
         .contact-info span { 
             margin-right: 1em; 
         }
+        .summary-section {
+            margin-top: 2em;
+            padding-top: 1.5em;
+            border-top: 1px solid ${theme.colors.border};
+        }
+        .summary-section h3 {
+            margin-top: 0;
+            border-bottom: none;
+            font-size: 1.3em;
+            margin-bottom: 1em;
+        }
         .section { 
             margin-bottom: 2em; 
         }
@@ -228,11 +238,18 @@ function generateHTMLContent(resumeData: ResumeData): string {
           ${(resumeData.basics.location.city || resumeData.basics.location.region) ? 
             `<span>📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}</span>` : ''}
         </div>
-        ${resumeData.basics.profiles.filter(p => p.visible !== false).map(profile => 
-          `<span>${profile.network}: ${profile.username || profile.url}</span>`
-        ).join(' | ')}
-        ${resumeData.basics.summary ? `<p>${resumeData.basics.summary}</p>` : ''}
+        ${resumeData.basics.profiles.filter(p => p.visible !== false).length > 0 ? 
+          `<div class="contact-info">${resumeData.basics.profiles.filter(p => p.visible !== false).map(profile => 
+            `<span>${profile.network}: ${profile.username || profile.url}</span>`
+          ).join(' • ')}</div>` : ''}
       </header>
+      
+      ${resumeData.basics.summary ? `
+        <div class="summary-section">
+          <h3>Summary</h3>
+          <p>${resumeData.basics.summary}</p>
+        </div>
+      ` : ''}
     `;
   }
 
