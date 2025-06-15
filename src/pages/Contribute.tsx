@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -97,11 +98,12 @@ const Contribute = () => {
                   id='kofiframe' 
                   src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' 
                   className="border-none w-full bg-transparent rounded-lg"
-                  height="400" 
+                  height="500" 
                   title="Support on Ko-fi"
                   style={{ 
                     overflow: 'hidden',
-                    minHeight: '400px'
+                    minHeight: '500px',
+                    maxHeight: '600px'
                   }}
                   scrolling="no"
                 />
