@@ -57,34 +57,24 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
               </h2>
             )}
             
-            {/* Contact Information */}
-            <div className="flex flex-wrap gap-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              {resumeData.basics.email && (
-                <span data-testid="resume-email">📧 {resumeData.basics.email}</span>
-              )}
-              {resumeData.basics.phone && (
-                <span data-testid="resume-phone">📞 {resumeData.basics.phone}</span>
-              )}
-              {resumeData.basics.url && (
-                <span data-testid="resume-url">🌐 {resumeData.basics.url}</span>
-              )}
-              {(resumeData.basics.location.city || resumeData.basics.location.region) && (
-                <span data-testid="resume-location">
-                  📍 {[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}
-                </span>
-              )}
+            {/* Contact Information - Compressed to single line */}
+            <div className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+              {[
+                resumeData.basics.email && `📧 ${resumeData.basics.email}`,
+                resumeData.basics.phone && `📞 ${resumeData.basics.phone}`,
+                resumeData.basics.url && `🌐 ${resumeData.basics.url}`,
+                (resumeData.basics.location.city || resumeData.basics.location.region) && 
+                  `📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}`
+              ].filter(Boolean).join(' • ')}
             </div>
 
-            {/* Social Profiles */}
+            {/* Social Profiles - Also compressed */}
             {resumeData.basics.profiles.some(p => p.visible !== false) && (
-              <div className="flex flex-wrap gap-4 mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              <div className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                 {resumeData.basics.profiles
                   .filter(profile => profile.visible !== false)
-                  .map((profile, index) => (
-                    <span key={index} data-testid={`resume-profile-${index}`}>
-                      {profile.network}: {profile.username || profile.url}
-                    </span>
-                  ))}
+                  .map(profile => `${profile.network}: ${profile.username || profile.url}`)
+                  .join(' • ')}
               </div>
             )}
 
