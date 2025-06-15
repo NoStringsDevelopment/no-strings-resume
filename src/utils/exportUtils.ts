@@ -1,8 +1,8 @@
-import { ResumeData } from '@/types/resume';
+import { ResumeData, Theme } from '@/types/resume';
 import { downloadFile, exportResumeAsJson } from '@/utils/importExport';
 
 // Convert JSON Resume to HR-Open format
-export function convertToHROpen(resumeData: ResumeData): any {
+export function convertToHROpen(resumeData: ResumeData): Record<string, unknown> {
   return {
     type: "http://schema.hropenstandards.org/4.4/recruiting/json/ler-rs/LER-RSType.json",
     person: {
@@ -96,7 +96,7 @@ export function exportAsHROpen(resumeData: ResumeData) {
   downloadFile(jsonContent, `resume-hropen-${timestamp}.json`, 'application/json');
 }
 
-export function exportAsHTML(resumeData: ResumeData, theme: any) {
+export function exportAsHTML(resumeData: ResumeData, theme: Theme) {
   // Create a standalone HTML version
   const htmlContent = `
 <!DOCTYPE html>
@@ -152,13 +152,20 @@ export function exportAsHTML(resumeData: ResumeData, theme: any) {
         .summary-section {
             margin-top: 2em;
             padding-top: 1.5em;
-            border-top: 1px solid ${theme.colors.border};
+            border-top: 1px solid ${theme.colors.border || '#e2e8f0'};
+            clear: both;
         }
         .summary-section h3 {
             margin-top: 0;
-            border-bottom: none;
+            border-bottom: none !important;
             font-size: 1.3em;
             margin-bottom: 1em;
+            color: ${theme.colors.primary || '#2563eb'};
+        }
+        .summary-section p {
+            margin: 0;
+            line-height: 1.6;
+            color: ${theme.colors.text || '#1e293b'};
         }
         .section { 
             margin-bottom: 2em; 
@@ -366,7 +373,7 @@ function generateHTMLContent(resumeData: ResumeData): string {
   return html;
 }
 
-export async function exportAsPDF(resumeData: ResumeData, theme: any) {
+export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   const { jsPDF } = await import('jspdf');
   const pdf = new jsPDF();
   
