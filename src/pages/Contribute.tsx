@@ -1,5 +1,4 @@
 
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -89,42 +88,44 @@ const Contribute = () => {
         </div>
       </section>
 
-      {/* Support Section - Redesigned with two columns */}
+      {/* Support Section - Improved layout with better spacing and centering */}
       <section className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-start max-w-7xl mx-auto">
-            {/* Left Column - Content */}
-            <div className="text-center lg:text-left">
-              <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h3>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                If you find No Strings Resume helpful and want to support its development, 
-                consider making a donation. Every contribution helps keep the project running and growing.
-              </p>
-              <div className="space-y-4">
-                {supportFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-start space-x-3 text-left">
-                    <div className="flex-shrink-0 mt-1">
-                      <Check className="w-5 h-5 text-green-500" />
+          <div className="grid lg:grid-cols-2 gap-8 items-start max-w-7xl mx-auto">
+            {/* Left Column - Content with better centering and padding */}
+            <div className="flex flex-col justify-center h-full px-4 lg:px-8">
+              <div className="text-center lg:text-left max-w-lg mx-auto lg:mx-0">
+                <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
+                <h3 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h3>
+                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                  If you find No Strings Resume helpful and want to support its development, 
+                  consider making a donation. Every contribution helps keep the project running and growing.
+                </p>
+                <div className="space-y-4">
+                  {supportFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start space-x-3 text-left">
+                      <div className="flex-shrink-0 mt-1">
+                        <Check className="w-5 h-5 text-green-500" />
+                      </div>
+                      <p className="text-gray-700 leading-relaxed">{feature}</p>
                     </div>
-                    <p className="text-gray-700 leading-relaxed">{feature}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
             
-            {/* Right Column - Ko-fi Widget */}
+            {/* Right Column - Ko-fi Widget with improved sizing */}
             <div className="flex justify-center lg:justify-end">
-              <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden">
                 <iframe 
                   id='kofiframe' 
                   src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' 
                   className="border-none w-full"
-                  height="600" 
+                  height="750" 
                   title="Support on Ko-fi"
                   style={{ 
-                    minHeight: '600px',
-                    maxHeight: '700px'
+                    minHeight: '700px',
+                    maxHeight: '800px'
                   }}
                   scrolling="auto"
                 />
@@ -196,4 +197,3 @@ const Contribute = () => {
 };
 
 export default Contribute;
-
