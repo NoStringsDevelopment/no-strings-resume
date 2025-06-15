@@ -1,46 +1,27 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Palette, Edit, Eye, Home } from "lucide-react";
 import { ThemeCustomizer } from "@/components/theme/ThemeCustomizer";
 import { ThemePreview } from "@/components/theme/ThemePreview";
-
 const ThemeEditor = () => {
   const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/')}
-                className="flex items-center space-x-2"
-              >
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Theme Editor</h1>
+              
+              
             </div>
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline"
-                onClick={() => navigate('/edit')}
-                className="flex items-center space-x-2"
-              >
+              <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2">
                 <Edit className="w-4 h-4" />
                 <span>Edit</span>
               </Button>
-              <Button 
-                variant="outline"
-                onClick={() => navigate('/view')}
-                className="flex items-center space-x-2"
-              >
+              <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2">
                 <Eye className="w-4 h-4" />
-                <span>Preview</span>
+                <span>View</span>
               </Button>
             </div>
           </div>
@@ -61,15 +42,13 @@ const ThemeEditor = () => {
 
           {/* Live Preview */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Live Preview</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
             <div className="sticky top-8">
               <ThemePreview />
             </div>
           </div>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default ThemeEditor;
