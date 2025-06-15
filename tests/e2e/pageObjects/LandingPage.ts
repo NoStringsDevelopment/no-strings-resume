@@ -30,9 +30,16 @@ export class LandingPage {
   }
 
   async assertPageLoaded() {
-    await this.mainHeading.waitFor();
+    // Check for logo icon which is always visible
+    await this.page.locator('[data-lucide="file-text"]').first().waitFor();
     await this.heroHeading.waitFor();
     await this.startBuildingButton.waitFor();
     await this.viewSampleButton.waitFor();
+    
+    // Check if heading is visible (desktop) or hidden (mobile)
+    const headingVisible = await this.mainHeading.isVisible();
+    if (headingVisible) {
+      await this.mainHeading.waitFor();
+    }
   }
 } 

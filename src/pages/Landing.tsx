@@ -67,12 +67,30 @@ const Landing = () => {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">No Strings Resume</h1>
+              <h1 className="text-xl font-bold text-gray-900 hidden sm:block">No Strings Resume</h1>
             </div>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Button variant="outline" onClick={() => navigate('/contribute')} data-testid="contribute-btn">
-                <Heart className="w-4 h-4 mr-2" />
-                Contribute
+            <nav className="flex items-center space-x-2">
+              {/* Mobile - Icon only */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/contribute')} 
+                className="md:hidden flex items-center"
+                data-testid="contribute-btn-mobile"
+                title="Contribute"
+              >
+                <Heart className="w-4 h-4" />
+              </Button>
+              
+              {/* Desktop - Icon + Text */}
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/contribute')} 
+                className="hidden md:flex items-center space-x-2"
+                data-testid="contribute-btn"
+              >
+                <Heart className="w-4 h-4" />
+                <span>Contribute</span>
               </Button>
             </nav>
           </div>

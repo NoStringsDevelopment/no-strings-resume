@@ -13,7 +13,11 @@ import {
   Calendar, 
   Link,
   ArrowLeft,
-  Clock
+  Clock,
+  Upload,
+  ExternalLink,
+  Shield,
+  AlertTriangle
 } from "lucide-react";
 
 const Integrations = () => {
@@ -21,53 +25,76 @@ const Integrations = () => {
 
   const integrations = [
     {
+      icon: Upload,
+      title: "JSON Resume Registry",
+      description: "Publish your resume to the public JSON Resume registry. Note: This uploads your data to external servers and makes it publicly accessible.",
+      category: "Publishing",
+      status: "planned",
+      privacy: "external"
+    },
+    {
+      icon: ExternalLink,
+      title: "Reactive Resume Builder",
+      description: "Export your resume data to Reactive Resume Builder for additional editing features. Note: This involves sharing your data with a third-party service.",
+      category: "Export",
+      status: "planned",
+      privacy: "external"
+    },
+    {
       icon: Zap,
       title: "Zapier",
       description: "Automate resume workflows with 5,000+ apps. Trigger actions when resumes are updated or exported.",
       category: "Automation",
-      status: "planned"
+      status: "planned",
+      privacy: "external"
     },
     {
       icon: Bot,
       title: "AI Resume Optimization",
       description: "Get AI-powered suggestions to optimize your resume for specific job descriptions and ATS systems.",
       category: "AI",
-      status: "planned"
+      status: "planned",
+      privacy: "external"
     },
     {
       icon: Briefcase,
       title: "Job Board Sync",
       description: "Automatically sync your resume to LinkedIn, Indeed, and other major job platforms.",
       category: "Job Search",
-      status: "planned"
+      status: "planned",
+      privacy: "external"
     },
     {
       icon: Users,
       title: "HR Management Systems",
       description: "Direct integration with popular ATS and HR platforms like Workday, BambooHR, and Greenhouse.",
       category: "HR Tools",
-      status: "planned"
+      status: "planned",
+      privacy: "external"
     },
     {
       icon: Mail,
       title: "Email Templates",
       description: "Generate personalized cover letters and follow-up emails based on your resume data.",
       category: "Communication",
-      status: "planned"
+      status: "planned",
+      privacy: "local"
     },
     {
       icon: Calendar,
       title: "Interview Scheduling",
       description: "Connect with Calendly, Google Calendar, and other scheduling tools for seamless interview booking.",
       category: "Scheduling",
-      status: "planned"
+      status: "planned",
+      privacy: "external"
     },
     {
       icon: Link,
       title: "Portfolio Integration",
       description: "Link to GitHub, Behance, Dribbble, and other portfolio platforms to showcase your work.",
       category: "Portfolio",
-      status: "planned"
+      status: "planned",
+      privacy: "external"
     }
   ];
 
@@ -82,6 +109,27 @@ const Integrations = () => {
           <Clock className="w-3 h-3 mr-1" />
           Planned
         </Badge>;
+      default:
+        return null;
+    }
+  };
+
+  const getPrivacyBadge = (privacy: string) => {
+    switch (privacy) {
+      case "external":
+        return (
+          <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">
+            <AlertTriangle className="w-3 h-3 mr-1" />
+            Shares Data
+          </Badge>
+        );
+      case "local":
+        return (
+          <Badge variant="outline" className="border-green-300 text-green-700 bg-green-50">
+            <Shield className="w-3 h-3 mr-1" />
+            Privacy-Safe
+          </Badge>
+        );
       default:
         return null;
     }
@@ -123,13 +171,33 @@ const Integrations = () => {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              Integrations
+              Optional Integrations
             </span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Supercharge your resume building experience with powerful integrations. 
-            Connect No Strings Resume to your favorite tools and platforms.
+          <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+            For users who choose to share their data externally, these integrations 
+            can extend No Strings Resume's functionality.
           </p>
+          
+          {/* Privacy Warning */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8 text-left max-w-3xl mx-auto">
+            <div className="flex items-start space-x-3">
+              <Shield className="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg font-semibold text-amber-900 mb-2">Privacy Notice</h3>
+                <p className="text-amber-800 leading-relaxed mb-3">
+                  <strong>No Strings Resume's core principle is privacy-first operation.</strong> By default, 
+                  all your resume data stays in your browser and is never sent to external servers.
+                </p>
+                <p className="text-amber-800 leading-relaxed">
+                  The integrations below are <strong>optional features</strong> that would require you to 
+                  explicitly choose to upload your data to third-party services. Each integration will 
+                  clearly explain what data is shared and with whom before you proceed.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
             <Clock className="w-4 h-4 mr-2" />
             Coming Soon - Based on Community Demand
