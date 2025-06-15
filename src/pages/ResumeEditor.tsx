@@ -1,11 +1,12 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
+import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle, PanelRightOpen, PanelRightClose } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useResume } from "@/context/ResumeContext";
+import { useTheme } from "@/context/ThemeContext";
+import { ResumeRenderer } from "@/components/display/ResumeRenderer";
 import BasicEditor from "@/components/editor/BasicEditor";
 import WorkEditor from "@/components/editor/WorkEditor";
 import EducationEditor from "@/components/editor/EducationEditor";
@@ -21,8 +22,10 @@ const ResumeEditor = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { state, dispatch } = useResume();
+  const { themeState } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("basics");
+  const [showPreview, setShowPreview] = useState(false);
   const [importValidation, setImportValidation] = useState<{
     hasErrors: boolean;
     errors: string[];
@@ -236,6 +239,18 @@ const ResumeEditor = () => {
               <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
               <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPreview(!showPreview)}
+                className="flex items-center space-x-1"
+                title="Toggle Preview"
+                data-testid="preview-button"
+              >
+                {showPreview ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
+                <span className="hidden xl:block">Preview</span>
+              </Button>
+              
+              <Button 
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/view')}
@@ -263,81 +278,100 @@ const ResumeEditor = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8" data-testid="editor-main">
-        <div className="max-w-4xl mx-auto">
-          {/* Import Validation Alert */}
-          {importValidation && importValidation.hasErrors && (
-            <Alert className="mb-6 border-amber-200 bg-amber-50" data-testid="import-validation-alert">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <AlertTitle className="text-amber-800">Import completed with validation issues</AlertTitle>
-              <AlertDescription className="text-amber-700">
-                <div className="mt-2 space-y-1">
-                  {importValidation.errors.map((error, index) => (
-                    <div key={index} className="text-sm">• {error}</div>
-                  ))}
-                  {importValidation.invalidFieldsCount > 0 && (
-                    <div className="text-sm font-medium mt-2">
-                      {importValidation.invalidFieldsCount} field(s) had invalid data and were converted to safe defaults.
-                      {state.resumeData.nonConformingData && (
-                        <span className="block text-xs mt-1">
-                          Review the "More" section for non-conforming data that needs manual attention.
-                        </span>
-                      )}
-                    </div>
+        <div className={`${showPreview ? 'grid lg:grid-cols-2 gap-8' : 'max-w-4xl mx-auto'}`}>
+          {/* Editor Content */}
+          <div>
+            {/* Import Validation Alert */}
+            {importValidation && importValidation.hasErrors && (
+              <Alert className="mb-6 border-amber-200 bg-amber-50" data-testid="import-validation-alert">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertTitle className="text-amber-800">Import completed with validation issues</AlertTitle>
+                <AlertDescription className="text-amber-700">
+                  <div className="mt-2 space-y-1">
+                    {importValidation.errors.map((error, index) => (
+                      <div key={index} className="text-sm">• {error}</div>
+                    ))}
+                    {importValidation.invalidFieldsCount > 0 && (
+                      <div className="text-sm font-medium mt-2">
+                        {importValidation.invalidFieldsCount} field(s) had invalid data and were converted to safe defaults.
+                        {state.resumeData.nonConformingData && (
+                          <span className="block text-xs mt-1">
+                            Review the "More" section for non-conforming data that needs manual attention.
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" data-testid="editor-tabs">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8" data-testid="editor-tabs-list">
+                <TabsTrigger value="basics" data-testid="basics-tab">Basics</TabsTrigger>
+                <TabsTrigger value="work" data-testid="work-tab">Work</TabsTrigger>
+                <TabsTrigger value="education" data-testid="education-tab">Education</TabsTrigger>
+                <TabsTrigger value="skills" data-testid="skills-tab">Skills</TabsTrigger>
+                <TabsTrigger value="projects" data-testid="projects-tab">Projects</TabsTrigger>
+                <TabsTrigger value="awards" data-testid="awards-tab">Awards</TabsTrigger>
+                <TabsTrigger value="languages" data-testid="languages-tab">Languages</TabsTrigger>
+                <TabsTrigger value="more" className="relative" data-testid="more-tab">
+                  More
+                  {state.resumeData.nonConformingData && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full" title="Contains non-conforming data" />
                   )}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="basics" className="space-y-6" data-testid="basics-content">
+                <BasicEditor />
+              </TabsContent>
+
+              <TabsContent value="work" className="space-y-6" data-testid="work-content">
+                <WorkEditor />
+              </TabsContent>
+
+              <TabsContent value="education" className="space-y-6" data-testid="education-content">
+                <EducationEditor />
+              </TabsContent>
+
+              <TabsContent value="skills" className="space-y-6" data-testid="skills-content">
+                <SkillsEditor />
+              </TabsContent>
+
+              <TabsContent value="projects" className="space-y-6" data-testid="projects-content">
+                <ProjectsEditor />
+              </TabsContent>
+
+              <TabsContent value="awards" className="space-y-6" data-testid="awards-content">
+                <AwardsEditor />
+              </TabsContent>
+
+              <TabsContent value="languages" className="space-y-6" data-testid="languages-content">
+                <LanguagesEditor />
+              </TabsContent>
+
+              <TabsContent value="more" className="space-y-6" data-testid="more-content">
+                <AdditionalSectionsEditor />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Live Preview */}
+          {showPreview && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
+              <div className="sticky top-8">
+                <div className="max-h-[80vh] overflow-y-auto">
+                  <ResumeRenderer 
+                    resumeData={state.resumeData} 
+                    theme={themeState.currentTheme}
+                    className="scale-75 origin-top"
+                  />
                 </div>
-              </AlertDescription>
-            </Alert>
+              </div>
+            </div>
           )}
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" data-testid="editor-tabs">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8" data-testid="editor-tabs-list">
-              <TabsTrigger value="basics" data-testid="basics-tab">Basics</TabsTrigger>
-              <TabsTrigger value="work" data-testid="work-tab">Work</TabsTrigger>
-              <TabsTrigger value="education" data-testid="education-tab">Education</TabsTrigger>
-              <TabsTrigger value="skills" data-testid="skills-tab">Skills</TabsTrigger>
-              <TabsTrigger value="projects" data-testid="projects-tab">Projects</TabsTrigger>
-              <TabsTrigger value="awards" data-testid="awards-tab">Awards</TabsTrigger>
-              <TabsTrigger value="languages" data-testid="languages-tab">Languages</TabsTrigger>
-              <TabsTrigger value="more" className="relative" data-testid="more-tab">
-                More
-                {state.resumeData.nonConformingData && (
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full" title="Contains non-conforming data" />
-                )}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="basics" className="space-y-6" data-testid="basics-content">
-              <BasicEditor />
-            </TabsContent>
-
-            <TabsContent value="work" className="space-y-6" data-testid="work-content">
-              <WorkEditor />
-            </TabsContent>
-
-            <TabsContent value="education" className="space-y-6" data-testid="education-content">
-              <EducationEditor />
-            </TabsContent>
-
-            <TabsContent value="skills" className="space-y-6" data-testid="skills-content">
-              <SkillsEditor />
-            </TabsContent>
-
-            <TabsContent value="projects" className="space-y-6" data-testid="projects-content">
-              <ProjectsEditor />
-            </TabsContent>
-
-            <TabsContent value="awards" className="space-y-6" data-testid="awards-content">
-              <AwardsEditor />
-            </TabsContent>
-
-            <TabsContent value="languages" className="space-y-6" data-testid="languages-content">
-              <LanguagesEditor />
-            </TabsContent>
-
-            <TabsContent value="more" className="space-y-6" data-testid="more-content">
-              <AdditionalSectionsEditor />
-            </TabsContent>
-          </Tabs>
         </div>
       </main>
 
