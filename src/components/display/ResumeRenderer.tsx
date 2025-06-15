@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ResumeData, Theme } from '@/types/resume';
 import { formatDate } from '@/utils/formatters';
@@ -57,15 +56,20 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
               </h2>
             )}
             
-            {/* Contact Information - Compressed to single line */}
+            {/* Contact Information - Split for test ids */}
             <div className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              {[
-                resumeData.basics.email && `📧 ${resumeData.basics.email}`,
-                resumeData.basics.phone && `📞 ${resumeData.basics.phone}`,
-                resumeData.basics.url && `🌐 ${resumeData.basics.url}`,
-                (resumeData.basics.location.city || resumeData.basics.location.region) && 
-                  `📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}`
-              ].filter(Boolean).join(' • ')}
+              {resumeData.basics.email && (
+                <span data-testid="resume-email">📧 {resumeData.basics.email}</span>
+              )}
+              {resumeData.basics.phone && (
+                <span data-testid="resume-phone">{resumeData.basics.email && ' • '}📞 {resumeData.basics.phone}</span>
+              )}
+              {resumeData.basics.url && (
+                <span data-testid="resume-url">{(resumeData.basics.email || resumeData.basics.phone) && ' • '}🌐 {resumeData.basics.url}</span>
+              )}
+              {(resumeData.basics.location.city || resumeData.basics.location.region) && (
+                <span data-testid="resume-location">{(resumeData.basics.email || resumeData.basics.phone || resumeData.basics.url) && ' • '}📍 {[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}</span>
+              )}
             </div>
 
             {/* Social Profiles - Also compressed */}
