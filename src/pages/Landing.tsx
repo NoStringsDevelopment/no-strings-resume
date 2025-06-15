@@ -1,47 +1,35 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Shield, Download, Eye, Edit, Palette, FileText } from "lucide-react";
-
 const Landing = () => {
   const navigate = useNavigate();
-
-  const features = [
-    {
-      icon: Shield,
-      title: "Privacy First",
-      description: "Your data never leaves your browser. No accounts, no tracking, no hidden data collection."
-    },
-    {
-      icon: Edit,
-      title: "Easy Editing",
-      description: "Intuitive form-based editing with live preview. Add, remove, and reorder sections with ease."
-    },
-    {
-      icon: Palette,
-      title: "Theme Customization",
-      description: "Choose from professional themes or customize colors and fonts to match your style."
-    },
-    {
-      icon: Download,
-      title: "Multiple Formats",
-      description: "Export to PDF, DOCX, HTML, or JSON. ATS-friendly formatting for better job application success."
-    },
-    {
-      icon: Eye,
-      title: "Live Preview",
-      description: "See your changes instantly with real-time preview. What you see is what you get."
-    },
-    {
-      icon: FileText,
-      title: "Industry Standard",
-      description: "Built on JSON Resume standard v1.2.1 for compatibility and future-proofing."
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  const features = [{
+    icon: Shield,
+    title: "Privacy First",
+    description: "Your data never leaves your browser. No accounts, no tracking, no hidden data collection."
+  }, {
+    icon: Edit,
+    title: "Easy Editing",
+    description: "Intuitive form-based editing with live preview. Add, remove, and reorder sections with ease."
+  }, {
+    icon: Palette,
+    title: "Theme Customization",
+    description: "Choose from professional themes or customize colors and fonts to match your style."
+  }, {
+    icon: Download,
+    title: "Multiple Formats",
+    description: "Export to PDF, DOCX, HTML, or JSON. ATS-friendly formatting for better job application success."
+  }, {
+    icon: Eye,
+    title: "Live Preview",
+    description: "See your changes instantly with real-time preview. What you see is what you get."
+  }, {
+    icon: FileText,
+    title: "Industry Standard",
+    description: "Built on JSON Resume standard v1.2.1 for compatibility and future-proofing."
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
@@ -53,13 +41,9 @@ const Landing = () => {
               <h1 className="text-xl font-bold text-gray-900">No Strings Resume</h1>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How it works</a>
-              <Button 
-                variant="outline"
-                onClick={() => navigate('/view')}
-                data-testid="view-sample-btn"
-              >
+              
+              
+              <Button variant="outline" onClick={() => navigate('/view')} data-testid="view-sample-btn">
                 View Sample
               </Button>
             </nav>
@@ -79,21 +63,10 @@ const Landing = () => {
             no cloud storage, no hidden tracking. Export to PDF, DOCX, and more formats.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg"
-              onClick={() => navigate('/edit')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg"
-              data-testid="start-building-btn"
-            >
+            <Button size="lg" onClick={() => navigate('/edit')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg" data-testid="start-building-btn">
               Start Building Resume
             </Button>
-            <Button 
-              variant="outline"
-              size="lg"
-              onClick={() => navigate('/view')}
-              className="px-8 py-3 text-lg"
-              data-testid="view-sample-resume-btn"
-            >
+            <Button variant="outline" size="lg" onClick={() => navigate('/view')} className="px-8 py-3 text-lg" data-testid="view-sample-resume-btn">
               View Sample Resume
             </Button>
           </div>
@@ -104,14 +77,11 @@ const Landing = () => {
       <section id="features" className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h3 className="text-3xl font-bold text-gray-900 mb-4">Why Choose No Strings Resume?</h3>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Built for privacy-conscious professionals who want full control over their data and resume formatting.
-          </p>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">Built for who wants convenient and full control over their data and resume formatting.</p>
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          {features.map((feature, index) => <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6 text-blue-600" />
@@ -123,8 +93,7 @@ const Landing = () => {
                   {feature.description}
                 </CardDescription>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </section>
 
@@ -158,7 +127,7 @@ const Landing = () => {
                 3
               </div>
               <h4 className="text-xl font-semibold text-gray-900 mb-2">Export & Share</h4>
-              <p className="text-gray-600">Download your resume in PDF, DOCX, or other formats. Share the link for online viewing.</p>
+              <p className="text-gray-600">Download your resume in PDF, DOCX, or other formats. Or easily deploy it yourself and share the link for online viewing.</p>
             </div>
           </div>
         </div>
@@ -173,16 +142,12 @@ const Landing = () => {
             </div>
             <span className="font-semibold text-gray-900">No Strings Resume</span>
           </div>
-          <p className="text-gray-600 mb-4">
-            Open source, privacy-first resume builder. Your data, your control.
-          </p>
+          <p className="text-gray-600 mb-4">Open source resume builder. Your data, your control.</p>
           <div className="text-sm text-gray-500">
             Built with React, Tailwind CSS, and respect for your privacy.
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;
