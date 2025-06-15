@@ -96,6 +96,242 @@ export function exportAsHROpen(resumeData: ResumeData) {
   downloadFile(jsonContent, `resume-hropen-${timestamp}.json`, 'application/json');
 }
 
+export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
+  const { default: PizZip } = await import('pizzip');
+  const { default: Docxtemplater } = await import('docxtemplater');
+  
+  // Create a basic DOCX template content
+  const docxContent = generateDOCXContent(resumeData, theme);
+  
+  // Create a simple DOCX structure
+  const zip = new PizZip();
+  
+  // Add the basic DOCX structure
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`);
+
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`);
+
+  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`);
+
+  zip.file('word/document.xml', docxContent);
+
+  const blob = zip.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const timestamp = new Date().toISOString().split('T')[0];
+  
+  // Create download link
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `resume-${timestamp}.docx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
+  const { sectionVisibility } = resumeData;
+  
+  let content = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>`;
+
+  // Helper function to create a paragraph
+  const createParagraph = (text: string, style: 'heading1' | 'heading2' | 'heading3' | 'normal' | 'contact' = 'normal') => {
+    let runProperties = '';
+    
+    switch (style) {
+      case 'heading1':
+        runProperties = '<w:rPr><w:b/><w:sz w:val="48"/><w:color w:val="2563eb"/></w:rPr>';
+        break;
+      case 'heading2':
+        runProperties = '<w:rPr><w:b/><w:sz w:val="32"/><w:color w:val="64748b"/></w:rPr>';
+        break;
+      case 'heading3':
+        runProperties = '<w:rPr><w:b/><w:sz w:val="24"/><w:color w:val="2563eb"/></w:rPr>';
+        break;
+      case 'contact':
+        runProperties = '<w:rPr><w:sz w:val="18"/><w:color w:val="64748b"/></w:rPr>';
+        break;
+      default:
+        runProperties = '<w:rPr><w:sz w:val="22"/></w:rPr>';
+    }
+    
+    return `<w:p><w:r>${runProperties}<w:t>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</w:t></w:r></w:p>`;
+  };
+
+  // Header section
+  if (sectionVisibility.basics) {
+    content += createParagraph(resumeData.basics.name, 'heading1');
+    
+    if (resumeData.basics.label) {
+      content += createParagraph(resumeData.basics.label, 'heading2');
+    }
+    
+    // Contact information
+    const contactInfo = [
+      resumeData.basics.email && `📧 ${resumeData.basics.email}`,
+      resumeData.basics.phone && `📞 ${resumeData.basics.phone}`,
+      resumeData.basics.url && `🌐 ${resumeData.basics.url}`,
+      (resumeData.basics.location.city || resumeData.basics.location.region) && 
+        `📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}`
+    ].filter(Boolean);
+    
+    if (contactInfo.length > 0) {
+      content += createParagraph(contactInfo.join(' • '), 'contact');
+    }
+
+    // Profiles
+    if (resumeData.basics.profiles.some(p => p.visible !== false)) {
+      const profilesInfo = resumeData.basics.profiles
+        .filter(profile => profile.visible !== false)
+        .map(profile => `${profile.network}: ${profile.username || profile.url}`)
+        .join(' • ');
+      
+      if (profilesInfo) {
+        content += createParagraph(profilesInfo, 'contact');
+      }
+    }
+    
+    // Summary section with spacing
+    if (resumeData.basics.summary) {
+      content += '<w:p><w:pPr><w:spacing w:before="240" w:after="240"/><w:pBdr><w:top w:val="single" w:sz="4" w:space="1" w:color="e2e8f0"/><w:bottom w:val="single" w:sz="4" w:space="1" w:color="e2e8f0"/></w:pBdr></w:pPr></w:p>';
+      content += createParagraph('SUMMARY', 'heading3');
+      content += createParagraph(resumeData.basics.summary);
+    }
+  }
+
+  // Work Experience
+  if (sectionVisibility.work && resumeData.work.some(w => w.visible !== false)) {
+    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += createParagraph('WORK EXPERIENCE', 'heading3');
+    
+    resumeData.work
+      .filter(work => work.visible !== false)
+      .forEach(work => {
+        content += createParagraph(`${work.position} at ${work.name}`, 'normal');
+        content += createParagraph(`${work.startDate} - ${work.endDate || 'Present'}`, 'contact');
+        
+        if (work.summary) {
+          content += createParagraph(work.summary);
+        }
+        
+        work.highlights.forEach(highlight => {
+          content += createParagraph(`• ${highlight}`);
+        });
+        
+        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
+      });
+  }
+
+  // Education
+  if (sectionVisibility.education && resumeData.education.some(e => e.visible !== false)) {
+    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += createParagraph('EDUCATION', 'heading3');
+    
+    resumeData.education
+      .filter(edu => edu.visible !== false)
+      .forEach(edu => {
+        const degree = `${edu.studyType}${edu.area ? ` in ${edu.area}` : ''}`;
+        content += createParagraph(degree, 'normal');
+        content += createParagraph(edu.institution, 'contact');
+        content += createParagraph(`${edu.startDate} - ${edu.endDate || 'Present'}`, 'contact');
+        
+        if (edu.score) {
+          content += createParagraph(`Score: ${edu.score}`, 'contact');
+        }
+        
+        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
+      });
+  }
+
+  // Skills
+  if (sectionVisibility.skills && resumeData.skills.some(s => s.visible !== false)) {
+    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += createParagraph('SKILLS', 'heading3');
+    
+    resumeData.skills
+      .filter(skill => skill.visible !== false)
+      .forEach(skill => {
+        const skillText = `${skill.name}${skill.level ? ` (${skill.level})` : ''}`;
+        content += createParagraph(skillText, 'normal');
+        
+        if (skill.keywords.length > 0) {
+          content += createParagraph(skill.keywords.join(', '), 'contact');
+        }
+        
+        content += '<w:p><w:pPr><w:spacing w:after="80"/></w:pPr></w:p>';
+      });
+  }
+
+  // Projects
+  if (sectionVisibility.projects && resumeData.projects.some(p => p.visible !== false)) {
+    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += createParagraph('PROJECTS', 'heading3');
+    
+    resumeData.projects
+      .filter(project => project.visible !== false)
+      .forEach(project => {
+        content += createParagraph(project.name, 'normal');
+        content += createParagraph(project.description);
+        
+        if (project.keywords.length > 0) {
+          content += createParagraph(`Technologies: ${project.keywords.join(', ')}`, 'contact');
+        }
+        
+        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
+      });
+  }
+
+  // Awards
+  if (sectionVisibility.awards && resumeData.awards.some(a => a.visible !== false)) {
+    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += createParagraph('AWARDS', 'heading3');
+    
+    resumeData.awards
+      .filter(award => award.visible !== false)
+      .forEach(award => {
+        content += createParagraph(`${award.title} - ${award.awarder}`, 'normal');
+        content += createParagraph(award.date, 'contact');
+        
+        if (award.summary) {
+          content += createParagraph(award.summary);
+        }
+        
+        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
+      });
+  }
+
+  // Languages
+  if (sectionVisibility.languages && resumeData.languages.some(l => l.visible !== false)) {
+    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += createParagraph('LANGUAGES', 'heading3');
+    
+    resumeData.languages
+      .filter(lang => lang.visible !== false)
+      .forEach(lang => {
+        const langText = `${lang.language}${lang.fluency ? ` (${lang.fluency})` : ''}`;
+        content += createParagraph(langText);
+      });
+  }
+
+  content += `
+  </w:body>
+</w:document>`;
+
+  return content;
+}
+
 export function exportAsHTML(resumeData: ResumeData, theme: Theme) {
   // Create a standalone HTML version
   const htmlContent = `

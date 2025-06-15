@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ResumeContext } from "@/context/ResumeContext";
 import { useTheme } from "@/context/ThemeContext";
 import { ResumeRenderer } from "@/components/display/ResumeRenderer";
-import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF } from "@/utils/exportUtils";
+import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF, exportAsDOCX } from "@/utils/exportUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -51,6 +51,13 @@ const ResumeView = () => {
           toast({
             title: "Success",
             description: "Resume exported as PDF"
+          });
+          break;
+        case 'docx':
+          await exportAsDOCX(state.resumeData, themeState.currentTheme);
+          toast({
+            title: "Success",
+            description: "Resume exported as DOCX"
           });
           break;
         default:
@@ -99,6 +106,10 @@ const ResumeView = () => {
                   <DropdownMenuItem onClick={() => handleExport('pdf')} data-testid="export-pdf-button">
                     <FileText className="w-4 h-4 mr-2" />
                     Export as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('docx')} data-testid="export-docx-button">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as DOCX
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleExport('html')} data-testid="export-html-button">
                     <FileText className="w-4 h-4 mr-2" />
