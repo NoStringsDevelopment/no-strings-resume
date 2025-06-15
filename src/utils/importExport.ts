@@ -1,6 +1,13 @@
 
-import { ResumeData } from '@/types/resume';
+import { ResumeData, NonConformingData, InvalidField } from '@/types/resume';
 import { convertHROpenToJsonResume, HROpenResume } from '@/schemas/hrOpen';
+
+export interface ImportResult {
+  resumeData: ResumeData;
+  hasErrors: boolean;
+  validationErrors: string[];
+  nonConformingData?: NonConformingData;
+}
 
 export function exportResumeAsJson(resumeData: ResumeData): string {
   // Create a clean copy without our custom extensions for JSON Resume export
@@ -23,6 +30,90 @@ export function exportResumeAsJson(resumeData: ResumeData): string {
   };
 
   return JSON.stringify(cleanData, null, 2);
+}
+
+function safeArrayEnsure(value: any): any[] {
+  if (Array.isArray(value)) return value;
+  if (value === null || value === undefined) return [];
+  return [value];
+}
+
+function safeStringEnsure(value: any): string {
+  if (typeof value === 'string') return value;
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
+function validateAndCleanWorkExperience(work: any, invalidFields: InvalidField[]): any {
+  const cleaned = {
+    name: safeStringEnsure(work.name),
+    location: safeStringEnsure(work.location),
+    description: safeStringEnsure(work.description),
+    position: safeStringEnsure(work.position),
+    url: safeStringEnsure(work.url),
+    startDate: safeStringEnsure(work.startDate),
+    endDate: safeStringEnsure(work.endDate),
+    summary: safeStringEnsure(work.summary),
+    highlights: safeArrayEnsure(work.highlights).map(h => safeStringEnsure(h)),
+    visible: work.visible !== false
+  };
+
+  // Track invalid fields
+  if (work.highlights && !Array.isArray(work.highlights)) {
+    invalidFields.push({
+      section: 'work',
+      field: 'highlights',
+      value: work.highlights,
+      reason: 'Expected array, got ' + typeof work.highlights
+    });
+  }
+
+  return cleaned;
+}
+
+function validateAndCleanEducation(education: any, invalidFields: InvalidField[]): any {
+  const cleaned = {
+    institution: safeStringEnsure(education.institution),
+    url: safeStringEnsure(education.url),
+    area: safeStringEnsure(education.area),
+    studyType: safeStringEnsure(education.studyType),
+    startDate: safeStringEnsure(education.startDate),
+    endDate: safeStringEnsure(education.endDate),
+    score: safeStringEnsure(education.score),
+    courses: safeArrayEnsure(education.courses).map(c => safeStringEnsure(c)),
+    visible: education.visible !== false
+  };
+
+  if (education.courses && !Array.isArray(education.courses)) {
+    invalidFields.push({
+      section: 'education',
+      field: 'courses',
+      value: education.courses,
+      reason: 'Expected array, got ' + typeof education.courses
+    });
+  }
+
+  return cleaned;
+}
+
+function validateAndCleanSkills(skill: any, invalidFields: InvalidField[]): any {
+  const cleaned = {
+    name: safeStringEnsure(skill.name),
+    level: safeStringEnsure(skill.level),
+    keywords: safeArrayEnsure(skill.keywords).map(k => safeStringEnsure(k)),
+    visible: skill.visible !== false
+  };
+
+  if (skill.keywords && !Array.isArray(skill.keywords)) {
+    invalidFields.push({
+      section: 'skills',
+      field: 'keywords',
+      value: skill.keywords,
+      reason: 'Expected array, got ' + typeof skill.keywords
+    });
+  }
+
+  return cleaned;
 }
 
 function validateJsonResumeStructure(data: any): boolean {
@@ -51,52 +142,118 @@ function validateHROpenStructure(data: any): boolean {
   return !!(data.person && data.person.name);
 }
 
-export function importResumeData(jsonString: string): ResumeData {
+export function importResumeData(jsonString: string): ImportResult {
+  const validationErrors: string[] = [];
+  const invalidFields: InvalidField[] = [];
+  let hasErrors = false;
+
   try {
     const parsed = JSON.parse(jsonString);
     
     // Check if it's HR Open format
     if (validateHROpenStructure(parsed)) {
       console.log('Detected HR Open format, converting...');
-      return convertHROpenToJsonResume(parsed as HROpenResume);
+      const convertedData = convertHROpenToJsonResume(parsed as HROpenResume);
+      return {
+        resumeData: convertedData,
+        hasErrors: false,
+        validationErrors: ['Successfully converted from HR Open format']
+      };
     }
     
     // Validate JSON Resume structure
     if (!validateJsonResumeStructure(parsed)) {
-      throw new Error('Invalid resume format. Expected JSON Resume v1.2.1 or HR Open format.');
+      validationErrors.push('Invalid resume format. Expected JSON Resume v1.2.1 or HR Open format.');
+      hasErrors = true;
     }
     
-    // It's JSON Resume format, add our extensions if missing
+    // It's JSON Resume format, add our extensions if missing and clean data
     const resumeData: ResumeData = {
       basics: {
-        name: '',
-        label: '',
-        image: '',
-        email: '',
-        phone: '',
-        url: '',
-        summary: '',
+        name: safeStringEnsure(parsed.basics?.name),
+        label: safeStringEnsure(parsed.basics?.label),
+        image: safeStringEnsure(parsed.basics?.image),
+        email: safeStringEnsure(parsed.basics?.email),
+        phone: safeStringEnsure(parsed.basics?.phone),
+        url: safeStringEnsure(parsed.basics?.url),
+        summary: safeStringEnsure(parsed.basics?.summary),
         location: {
-          address: '',
-          postalCode: '',
-          city: '',
-          countryCode: '',
-          region: ''
+          address: safeStringEnsure(parsed.basics?.location?.address),
+          postalCode: safeStringEnsure(parsed.basics?.location?.postalCode),
+          city: safeStringEnsure(parsed.basics?.location?.city),
+          countryCode: safeStringEnsure(parsed.basics?.location?.countryCode),
+          region: safeStringEnsure(parsed.basics?.location?.region)
         },
-        profiles: [],
-        ...parsed.basics
+        profiles: safeArrayEnsure(parsed.basics?.profiles).map(profile => ({
+          network: safeStringEnsure(profile.network),
+          username: safeStringEnsure(profile.username),
+          url: safeStringEnsure(profile.url),
+          visible: profile.visible !== false
+        }))
       },
-      work: parsed.work?.map((work: any) => ({ ...work, visible: work.visible !== false })) || [],
-      education: parsed.education?.map((edu: any) => ({ ...edu, visible: edu.visible !== false })) || [],
-      skills: parsed.skills?.map((skill: any) => ({ ...skill, visible: skill.visible !== false })) || [],
-      projects: parsed.projects?.map((project: any) => ({ ...project, visible: project.visible !== false })) || [],
-      awards: parsed.awards?.map((award: any) => ({ ...award, visible: award.visible !== false })) || [],
-      certificates: parsed.certificates?.map((cert: any) => ({ ...cert, visible: cert.visible !== false })) || [],
-      publications: parsed.publications?.map((pub: any) => ({ ...pub, visible: pub.visible !== false })) || [],
-      languages: parsed.languages?.map((lang: any) => ({ ...lang, visible: lang.visible !== false })) || [],
-      interests: parsed.interests?.map((interest: any) => ({ ...interest, visible: interest.visible !== false })) || [],
-      references: parsed.references?.map((ref: any) => ({ ...ref, visible: ref.visible !== false })) || [],
-      volunteer: parsed.volunteer?.map((vol: any) => ({ ...vol, visible: vol.visible !== false })) || [],
+      work: safeArrayEnsure(parsed.work).map((work: any) => validateAndCleanWorkExperience(work, invalidFields)),
+      education: safeArrayEnsure(parsed.education).map((edu: any) => validateAndCleanEducation(edu, invalidFields)),
+      skills: safeArrayEnsure(parsed.skills).map((skill: any) => validateAndCleanSkills(skill, invalidFields)),
+      projects: safeArrayEnsure(parsed.projects).map((project: any) => ({
+        name: safeStringEnsure(project.name),
+        description: safeStringEnsure(project.description),
+        highlights: safeArrayEnsure(project.highlights).map(h => safeStringEnsure(h)),
+        keywords: safeArrayEnsure(project.keywords).map(k => safeStringEnsure(k)),
+        startDate: safeStringEnsure(project.startDate),
+        endDate: safeStringEnsure(project.endDate),
+        url: safeStringEnsure(project.url),
+        roles: safeArrayEnsure(project.roles).map(r => safeStringEnsure(r)),
+        entity: safeStringEnsure(project.entity),
+        type: safeStringEnsure(project.type),
+        visible: project.visible !== false
+      })),
+      awards: safeArrayEnsure(parsed.awards).map((award: any) => ({
+        title: safeStringEnsure(award.title),
+        date: safeStringEnsure(award.date),
+        awarder: safeStringEnsure(award.awarder),
+        summary: safeStringEnsure(award.summary),
+        visible: award.visible !== false
+      })),
+      certificates: safeArrayEnsure(parsed.certificates).map((cert: any) => ({
+        name: safeStringEnsure(cert.name),
+        date: safeStringEnsure(cert.date),
+        issuer: safeStringEnsure(cert.issuer),
+        url: safeStringEnsure(cert.url),
+        visible: cert.visible !== false
+      })),
+      publications: safeArrayEnsure(parsed.publications).map((pub: any) => ({
+        name: safeStringEnsure(pub.name),
+        publisher: safeStringEnsure(pub.publisher),
+        releaseDate: safeStringEnsure(pub.releaseDate),
+        url: safeStringEnsure(pub.url),
+        summary: safeStringEnsure(pub.summary),
+        visible: pub.visible !== false
+      })),
+      languages: safeArrayEnsure(parsed.languages).map((lang: any) => ({
+        language: safeStringEnsure(lang.language),
+        fluency: safeStringEnsure(lang.fluency),
+        visible: lang.visible !== false
+      })),
+      interests: safeArrayEnsure(parsed.interests).map((interest: any) => ({
+        name: safeStringEnsure(interest.name),
+        keywords: safeArrayEnsure(interest.keywords).map(k => safeStringEnsure(k)),
+        visible: interest.visible !== false
+      })),
+      references: safeArrayEnsure(parsed.references).map((ref: any) => ({
+        name: safeStringEnsure(ref.name),
+        reference: safeStringEnsure(ref.reference),
+        visible: ref.visible !== false
+      })),
+      volunteer: safeArrayEnsure(parsed.volunteer).map((vol: any) => ({
+        organization: safeStringEnsure(vol.organization),
+        position: safeStringEnsure(vol.position),
+        url: safeStringEnsure(vol.url),
+        startDate: safeStringEnsure(vol.startDate),
+        endDate: safeStringEnsure(vol.endDate),
+        summary: safeStringEnsure(vol.summary),
+        highlights: safeArrayEnsure(vol.highlights).map(h => safeStringEnsure(h)),
+        visible: vol.visible !== false
+      })),
       sectionVisibility: {
         basics: true,
         work: true,
@@ -114,21 +271,82 @@ export function importResumeData(jsonString: string): ResumeData {
       }
     };
 
-    // Ensure profiles have visible property
-    if (resumeData.basics.profiles) {
-      resumeData.basics.profiles = resumeData.basics.profiles.map(profile => ({
-        ...profile,
-        visible: profile.visible !== false
-      }));
+    // Add non-conforming data if there were issues
+    if (invalidFields.length > 0) {
+      hasErrors = true;
+      resumeData.nonConformingData = {
+        invalidFields,
+        parsingErrors: validationErrors,
+        originalData: parsed
+      };
     }
 
-    return resumeData;
+    return {
+      resumeData,
+      hasErrors,
+      validationErrors,
+      nonConformingData: resumeData.nonConformingData
+    };
   } catch (error) {
     console.error('Error importing resume data:', error);
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Invalid JSON format or unsupported file structure');
+    const errorMessage = error instanceof Error ? error.message : 'Invalid JSON format or unsupported file structure';
+    
+    // Return a minimal resume structure with error information
+    const defaultResumeData: ResumeData = {
+      basics: {
+        name: '',
+        label: '',
+        image: '',
+        email: '',
+        phone: '',
+        url: '',
+        summary: '',
+        location: {
+          address: '',
+          postalCode: '',
+          city: '',
+          countryCode: '',
+          region: ''
+        },
+        profiles: []
+      },
+      work: [],
+      education: [],
+      skills: [],
+      projects: [],
+      awards: [],
+      certificates: [],
+      publications: [],
+      languages: [],
+      interests: [],
+      references: [],
+      volunteer: [],
+      sectionVisibility: {
+        basics: true,
+        work: true,
+        education: true,
+        skills: true,
+        projects: true,
+        awards: true,
+        certificates: true,
+        publications: true,
+        languages: true,
+        interests: true,
+        references: true,
+        volunteer: true
+      },
+      nonConformingData: {
+        rawText: jsonString,
+        parsingErrors: [errorMessage],
+        originalData: null
+      }
+    };
+
+    return {
+      resumeData: defaultResumeData,
+      hasErrors: true,
+      validationErrors: [errorMessage]
+    };
   }
 }
 

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw } from "lucide-react";
+import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useResume } from "@/context/ResumeContext";
@@ -14,6 +14,7 @@ import AwardsEditor from "@/components/editor/AwardsEditor";
 import LanguagesEditor from "@/components/editor/LanguagesEditor";
 import AdditionalSectionsEditor from "@/components/editor/AdditionalSectionsEditor";
 import { exportResumeAsJson, importResumeData, downloadFile } from "@/utils/importExport";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ResumeEditor = () => {
   const navigate = useNavigate();
@@ -21,6 +22,11 @@ const ResumeEditor = () => {
   const { state, dispatch } = useResume();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("basics");
+  const [importValidation, setImportValidation] = useState<{
+    hasErrors: boolean;
+    errors: string[];
+    invalidFieldsCount: number;
+  } | null>(null);
 
   const handleImport = () => {
     fileInputRef.current?.click();
@@ -34,12 +40,29 @@ const ResumeEditor = () => {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const resumeData = importResumeData(content);
-        dispatch({ type: 'SET_RESUME_DATA', payload: resumeData });
-        toast({
-          title: "Import Successful",
-          description: "Resume data has been imported and validated successfully."
+        const importResult = importResumeData(content);
+        
+        dispatch({ type: 'SET_RESUME_DATA', payload: importResult.resumeData });
+        
+        // Set validation state for display
+        setImportValidation({
+          hasErrors: importResult.hasErrors,
+          errors: importResult.validationErrors,
+          invalidFieldsCount: importResult.nonConformingData?.invalidFields?.length || 0
         });
+
+        if (importResult.hasErrors) {
+          toast({
+            title: "Import Completed with Issues",
+            description: `Resume imported but ${importResult.validationErrors.length} validation issues found. See details below.`,
+            variant: "default"
+          });
+        } else {
+          toast({
+            title: "Import Successful",
+            description: "Resume data has been imported and validated successfully."
+          });
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to import resume data. Please check the file format.";
         toast({
@@ -216,6 +239,31 @@ const ResumeEditor = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Import Validation Alert */}
+          {importValidation && importValidation.hasErrors && (
+            <Alert className="mb-6 border-amber-200 bg-amber-50">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-800">Import completed with validation issues</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                <div className="mt-2 space-y-1">
+                  {importValidation.errors.map((error, index) => (
+                    <div key={index} className="text-sm">• {error}</div>
+                  ))}
+                  {importValidation.invalidFieldsCount > 0 && (
+                    <div className="text-sm font-medium mt-2">
+                      {importValidation.invalidFieldsCount} field(s) had invalid data and were converted to safe defaults.
+                      {state.resumeData.nonConformingData && (
+                        <span className="block text-xs mt-1">
+                          Review the "More" section for non-conforming data that needs manual attention.
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
               <TabsTrigger value="basics">Basics</TabsTrigger>
@@ -225,7 +273,12 @@ const ResumeEditor = () => {
               <TabsTrigger value="projects">Projects</TabsTrigger>
               <TabsTrigger value="awards">Awards</TabsTrigger>
               <TabsTrigger value="languages">Languages</TabsTrigger>
-              <TabsTrigger value="more">More</TabsTrigger>
+              <TabsTrigger value="more" className="relative">
+                More
+                {state.resumeData.nonConformingData && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full" title="Contains non-conforming data" />
+                )}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="basics" className="space-y-6">

@@ -1,4 +1,3 @@
-
 // JSON Resume Schema v1.2.1 with extensions for visibility toggles
 export interface ResumeData {
   basics: Basics;
@@ -17,6 +16,23 @@ export interface ResumeData {
   
   // Extension: section visibility toggles
   sectionVisibility: SectionVisibility;
+  
+  // Extension: non-conforming data that needs manual review
+  nonConformingData?: NonConformingData;
+}
+
+export interface NonConformingData {
+  rawText?: string;
+  invalidFields?: InvalidField[];
+  parsingErrors?: string[];
+  originalData?: any;
+}
+
+export interface InvalidField {
+  section: string;
+  field: string;
+  value: any;
+  reason: string;
 }
 
 export interface Basics {
