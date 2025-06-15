@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ThemeCustomizer } from './ThemeCustomizer';
+import { expectComponentVisible } from '@/utils/testUtils';
 
 // Mock the useTheme hook
 const mockSetTheme = vi.fn();
@@ -143,12 +144,15 @@ describe('ThemeCustomizer', () => {
     const sectionSpacingLabel = screen.getByText('Section Spacing');
     expect(sectionSpacingLabel).toBeInTheDocument();
     
-    // Find the select button (RadixUI select renders as a button)
+    // Find all select components and verify we have the expected ones
     const selectButtons = screen.getAllByRole('combobox');
     expect(selectButtons.length).toBeGreaterThan(0);
     
-    // Verify that the select component is rendered
-    expect(selectButtons[0]).toBeInTheDocument();
+    // Check specifically for the section spacing select (should contain "Spacious" or similar)
+    const sectionSpacingSelect = selectButtons.find(btn => 
+      btn.textContent?.includes('Spacious') || btn.textContent?.includes('rem')
+    );
+    expect(sectionSpacingSelect).toBeInTheDocument();
   });
 
   it('renders preset themes section', () => {
