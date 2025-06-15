@@ -55,11 +55,12 @@ export default function BasicEditor() {
     });
   };
 
-  const sectionVisible = state.resumeData.sectionVisibility.basics;
+  // Safety check for sectionVisibility
+  const sectionVisible = state.resumeData.sectionVisibility?.basics ?? true;
   const toggleSectionVisibility = () => {
     dispatch({
       type: 'UPDATE_SECTION_VISIBILITY',
-      payload: { ...state.resumeData.sectionVisibility, basics: !sectionVisible }
+      payload: { basics: !sectionVisible }
     });
   };
 

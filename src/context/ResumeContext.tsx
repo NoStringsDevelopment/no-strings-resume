@@ -56,6 +56,21 @@ export type ResumeAction =
   | { type: 'CLEAR_ALL' }
   | { type: 'RESET_TO_DEFAULT' };
 
+const defaultSectionVisibility: SectionVisibility = {
+  basics: true,
+  work: true,
+  volunteer: true,
+  education: true,
+  skills: true,
+  projects: true,
+  awards: true,
+  certificates: true,
+  publications: true,
+  languages: true,
+  interests: true,
+  references: true
+};
+
 const defaultResumeData: ResumeData = {
   basics: {
     name: '',
@@ -85,20 +100,7 @@ const defaultResumeData: ResumeData = {
   languages: [],
   interests: [],
   references: [],
-  sectionVisibility: {
-    basics: true,
-    work: true,
-    volunteer: true,
-    education: true,
-    skills: true,
-    projects: true,
-    awards: true,
-    certificates: true,
-    publications: true,
-    languages: true,
-    interests: true,
-    references: true
-  }
+  sectionVisibility: defaultSectionVisibility
 };
 
 const defaultThemes: Theme[] = [
@@ -125,6 +127,14 @@ const defaultThemes: Theme[] = [
   }
 ];
 
+// Utility function to ensure sectionVisibility is always present
+const ensureSectionVisibility = (resumeData: ResumeData): ResumeData => {
+  return {
+    ...resumeData,
+    sectionVisibility: resumeData.sectionVisibility || defaultSectionVisibility
+  };
+};
+
 const initialState: ResumeState = {
   resumeData: defaultResumeData,
   currentTheme: defaultThemes[0],
@@ -136,8 +146,9 @@ const initialState: ResumeState = {
 
 const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState => {
   const addToHistory = (newResumeData: ResumeData) => {
+    const safeResumeData = ensureSectionVisibility(newResumeData);
     const newHistory = state.history.slice(0, state.historyIndex + 1);
-    newHistory.push(newResumeData);
+    newHistory.push(safeResumeData);
     // Keep history size reasonable (max 50 entries)
     if (newHistory.length > 50) {
       newHistory.shift();
@@ -150,10 +161,11 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
 
   switch (action.type) {
     case 'SET_RESUME_DATA':
-      const historyUpdate = addToHistory(action.payload);
+      const safePayload = ensureSectionVisibility(action.payload);
+      const historyUpdate = addToHistory(safePayload);
       return {
         ...state,
-        resumeData: action.payload,
+        resumeData: safePayload,
         isSaved: false,
         ...historyUpdate,
       };
@@ -174,9 +186,10 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'UNDO':
       if (state.historyIndex > 0) {
         const newIndex = state.historyIndex - 1;
+        const safeResumeData = ensureSectionVisibility(state.history[newIndex]);
         return {
           ...state,
-          resumeData: state.history[newIndex],
+          resumeData: safeResumeData,
           historyIndex: newIndex,
           isSaved: false,
         };
@@ -186,9 +199,10 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'REDO':
       if (state.historyIndex < state.history.length - 1) {
         const newIndex = state.historyIndex + 1;
+        const safeResumeData = ensureSectionVisibility(state.history[newIndex]);
         return {
           ...state,
-          resumeData: state.history[newIndex],
+          resumeData: safeResumeData,
           historyIndex: newIndex,
           isSaved: false,
         };
