@@ -1,8 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Shield, Download, Eye, Edit, Palette, FileText, Heart } from "lucide-react";
+import { Shield, Download, Eye, Edit, Palette, FileText, Heart, Users, Zap, Code, Target, Lock, Briefcase } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -31,6 +30,32 @@ const Landing = () => {
     icon: FileText,
     title: "Industry Standard",
     description: "Built on JSON Resume standard v1.2.1 for compatibility and future-proofing."
+  }];
+
+  const userPersonas = [{
+    icon: Users,
+    title: "The Practical Applicant",
+    description: "Uses No Strings Resume as their primary tool, appreciating simplicity and seamless import/export. Perfect for gig workers and career switchers who need reliable, accessible resume building."
+  }, {
+    icon: Zap,
+    title: "The Spontaneous Job Seeker",
+    description: "Needs fast, straightforward solutions for imminent deadlines or first-time resume creation. Start building immediately with zero commitment or setup required."
+  }, {
+    icon: Code,
+    title: "The Tech-Savvy Candidate",
+    description: "Self-hosts the application, interacts with JSON data directly, and customizes templates. Values high-quality, maintainable code and full flexibility."
+  }, {
+    icon: Target,
+    title: "The Seasoned Job Hunter",
+    description: "Leverages advanced features like custom themes, template modifications, and strategic export optimization. Approaches applications with efficiency and expertise."
+  }, {
+    icon: Lock,
+    title: "The Privacy-Conscious User",
+    description: "Appreciates no-backend architecture and local data storage. Values complete control over their personal information without third-party sharing."
+  }, {
+    icon: Briefcase,
+    title: "Recruiters and Employers",
+    description: "Receives direct links to view candidate resumes online. Easy review and export of ATS-friendly, keyword-optimized documents for recruitment processes."
   }];
   
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -133,6 +158,35 @@ const Landing = () => {
               <p className="text-gray-600">Download your resume in PDF, DOCX, or other formats. Or easily deploy it yourself and share the link for online viewing.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* User Personas Section */}
+      <section id="for-everyone" className="container mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h3 className="text-3xl font-bold text-gray-900 mb-4">A Resume Builder Designed for Everyone</h3>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Whether you're creating your first resume, experienced with job applications, or reviewing candidates, 
+            No Strings Resume works for everyone.
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {userPersonas.map((persona, index) => (
+            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+              <CardHeader>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-4">
+                  <persona.icon className="w-6 h-6 text-blue-600" />
+                </div>
+                <CardTitle className="text-xl text-gray-900">{persona.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-600 leading-relaxed">
+                  {persona.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
 
