@@ -1,9 +1,12 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Shield, Download, Eye, Edit, Palette, FileText } from "lucide-react";
+import { Shield, Download, Eye, Edit, Palette, FileText, Heart } from "lucide-react";
+
 const Landing = () => {
   const navigate = useNavigate();
+  
   const features = [{
     icon: Shield,
     title: "Privacy First",
@@ -29,6 +32,7 @@ const Landing = () => {
     title: "Industry Standard",
     description: "Built on JSON Resume standard v1.2.1 for compatibility and future-proofing."
   }];
+  
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
@@ -41,10 +45,9 @@ const Landing = () => {
               <h1 className="text-xl font-bold text-gray-900">No Strings Resume</h1>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
-              
-              
-              <Button variant="outline" onClick={() => navigate('/view')} data-testid="view-sample-btn">
-                View Sample
+              <Button variant="outline" onClick={() => navigate('/contribute')} data-testid="contribute-btn">
+                <Heart className="w-4 h-4 mr-2" />
+                Contribute
               </Button>
             </nav>
           </div>
@@ -150,4 +153,5 @@ const Landing = () => {
       </footer>
     </div>;
 };
+
 export default Landing;

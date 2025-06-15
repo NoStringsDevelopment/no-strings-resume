@@ -10,6 +10,7 @@ import Landing from "./pages/Landing";
 import ResumeEditor from "./pages/ResumeEditor";
 import ResumeView from "./pages/ResumeView";
 import ThemeEditor from "./pages/ThemeEditor";
+import Contribute from "./pages/Contribute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
                 <Route path="/edit" element={<ResumeEditor />} />
                 <Route path="/view" element={<ResumeView />} />
                 <Route path="/theme" element={<ThemeEditor />} />
+                <Route path="/contribute" element={<Contribute />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
