@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Github, MessageSquare, Heart, Code, Bug, FileText } from "lucide-react";
+import { Github, MessageSquare, Heart, Code, Bug, FileText, Check } from "lucide-react";
 
 const Contribute = () => {
   const navigate = useNavigate();
@@ -37,6 +37,12 @@ const Contribute = () => {
       action: "Join Discussions",
       link: "https://github.com/NoStringsDevelopment/no-strings-resume/discussions"
     }
+  ];
+
+  const supportFeatures = [
+    "Support ongoing development and maintenance",
+    "Help cover hosting and infrastructure costs",
+    "Enable new features and improvements"
   ];
 
   return (
@@ -95,19 +101,15 @@ const Contribute = () => {
                 If you find No Strings Resume helpful and want to support its development, 
                 consider making a donation. Every contribution helps keep the project running and growing.
               </p>
-              <div className="space-y-4 text-left">
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-600">Support ongoing development and maintenance</p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-600">Help cover hosting and infrastructure costs</p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <p className="text-gray-600">Enable new features and improvements</p>
-                </div>
+              <div className="space-y-4">
+                {supportFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-start space-x-3 text-left">
+                    <div className="flex-shrink-0 mt-1">
+                      <Check className="w-5 h-5 text-green-500" />
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{feature}</p>
+                  </div>
+                ))}
               </div>
             </div>
             
