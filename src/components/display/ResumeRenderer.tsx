@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ResumeData, Theme } from '@/types/resume';
 import { formatDate } from '@/utils/formatters';
@@ -75,6 +76,9 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
     '--color-border': theme.colors.border,
     '--font-heading': theme.fonts.heading,
     '--font-body': theme.fonts.body,
+    '--font-family': theme.typography.fontFamily,
+    '--font-size': `${theme.typography.fontSize}px`,
+    '--line-height': theme.typography.lineHeight,
     '--spacing-section': theme.spacing.section,
     '--spacing-item': theme.spacing.item,
   } as React.CSSProperties;
@@ -85,7 +89,14 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
       style={themeStyles}
       data-testid="resume-renderer"
     >
-      <div className="bg-white shadow-lg max-w-4xl mx-auto" style={{ fontFamily: 'var(--font-body)' }}>
+      <div 
+        className="bg-white shadow-lg max-w-4xl mx-auto" 
+        style={{ 
+          fontFamily: 'var(--font-family)', 
+          fontSize: 'var(--font-size)',
+          lineHeight: 'var(--line-height)'
+        }}
+      >
         {/* Header Section */}
         {sectionVisibility.basics && (
           <header className="p-8 border-b-2" style={{ borderColor: 'var(--color-primary)' }}>
@@ -145,21 +156,22 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
           </header>
         )}
 
-        <div className="p-8 space-y-8">
+        <div className="p-8" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>
           {/* Work Experience */}
           {sectionVisibility.work && work.some(w => w.visible !== false) && (
             <section data-testid="resume-work-section">
               <h3 
-                className="text-2xl font-bold mb-4 pb-2 border-b" 
+                className="text-2xl font-bold pb-2 border-b" 
                 style={{ 
                   color: 'var(--color-primary)', 
                   fontFamily: 'var(--font-heading)',
-                  borderColor: 'var(--color-border)'
+                  borderColor: 'var(--color-border)',
+                  marginBottom: 'var(--spacing-item)'
                 }}
               >
                 Work Experience
               </h3>
-              <div className="space-y-6">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-item)' }}>
                 {work
                   .filter(work => work.visible !== false)
                   .map((work, index) => (

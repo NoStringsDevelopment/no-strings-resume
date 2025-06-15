@@ -17,6 +17,11 @@ const mockTheme: Theme = {
     background: '#ffffff',
     border: '#e2e8f0'
   },
+  typography: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    lineHeight: 1.5
+  },
   fonts: {
     heading: 'Inter',
     body: 'Inter'

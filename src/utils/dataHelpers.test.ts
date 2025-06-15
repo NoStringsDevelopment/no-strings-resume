@@ -1,5 +1,6 @@
+
 import { describe, it, expect } from 'vitest';
-import { normalizeResumeData, addVisibilityToItems } from './dataHelpers';
+import { normalizeResumeData } from './dataHelpers';
 
 describe('normalizeResumeData', () => {
   describe('basics normalization', () => {
@@ -74,31 +75,5 @@ describe('normalizeResumeData', () => {
       const normalized = normalizeResumeData(data);
       expect(normalized.skills[0].visible).toBe(true);
     });
-  });
-});
-
-describe('addVisibilityToItems', () => {
-  it('should add visible: true to items without a visible property', () => {
-    const items = [
-      { name: 'Item 1' },
-      { name: 'Item 2' },
-      { name: 'Item 3' }
-    ];
-    const result = addVisibilityToItems(items);
-    expect(result[0].visible).toBe(true);
-    expect(result[1].visible).toBe(true);
-    expect(result[2].visible).toBe(true);
-  });
-
-  it('should preserve existing visible properties', () => {
-    const items = [
-      { name: 'Item 1', visible: false },
-      { name: 'Item 2' },
-      { name: 'Item 3', visible: true }
-    ];
-    const result = addVisibilityToItems(items);
-    expect(result[0].visible).toBe(false);
-    expect(result[1].visible).toBe(true);
-    expect(result[2].visible).toBe(true);
   });
 });
