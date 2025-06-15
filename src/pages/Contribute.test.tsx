@@ -235,7 +235,7 @@ describe('Contribute Component', () => {
       // Check that the iframe is contained within a properly styled container
       const kofiContainer = kofiIframe?.parentElement;
       expect(kofiContainer).toHaveClass('w-full');
-      expect(kofiContainer).toHaveClass('max-w-md');
+      expect(kofiContainer).toHaveClass('max-w-lg');
       expect(kofiContainer).toHaveClass('bg-white');
       expect(kofiContainer).toHaveClass('rounded-xl');
       expect(kofiContainer).toHaveClass('shadow-lg');
