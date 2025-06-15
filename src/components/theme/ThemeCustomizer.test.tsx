@@ -3,7 +3,6 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ThemeCustomizer } from './ThemeCustomizer';
-import { ThemeProvider } from '@/context/ThemeContext';
 
 // Mock the useTheme hook
 const mockSetTheme = vi.fn();
@@ -34,15 +33,41 @@ const mockThemeState = {
       item: '1rem'
     }
   },
-  availableThemes: []
+  availableThemes: [
+    {
+      id: 'professional',
+      name: 'Professional Blue',
+      colors: {
+        primary: '#2563eb',
+        secondary: '#64748b',
+        accent: '#0ea5e9',
+        text: '#1e293b',
+        textSecondary: '#64748b',
+        background: '#ffffff',
+        border: '#e2e8f0'
+      },
+      typography: {
+        fontFamily: 'Inter',
+        fontSize: 14,
+        lineHeight: 1.5
+      },
+      fonts: {
+        heading: 'Inter',
+        body: 'Inter'
+      },
+      spacing: {
+        section: '2rem',
+        item: '1rem'
+      }
+    }
+  ]
 };
 
 vi.mock('@/context/ThemeContext', () => ({
   useTheme: () => ({
     themeState: mockThemeState,
     setTheme: mockSetTheme
-  }),
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
+  })
 }));
 
 describe('ThemeCustomizer', () => {
@@ -114,6 +139,34 @@ describe('ThemeCustomizer', () => {
         fontSize: 16
       }
     });
+  });
+
+  it('updates section spacing when layout option changes', () => {
+    render(<ThemeCustomizer />);
+    
+    // Find the section spacing select
+    const sectionSpacingSelect = screen.getByDisplayValue('Spacious (2rem)');
+    
+    fireEvent.click(sectionSpacingSelect);
+    
+    // Wait for the dropdown to appear and select compact option
+    const compactOption = screen.getByText('Compact (1rem)');
+    fireEvent.click(compactOption);
+    
+    expect(mockSetTheme).toHaveBeenCalledWith({
+      ...mockThemeState.currentTheme,
+      spacing: {
+        ...mockThemeState.currentTheme.spacing,
+        section: '1rem'
+      }
+    });
+  });
+
+  it('renders preset themes section', () => {
+    render(<ThemeCustomizer />);
+    
+    expect(screen.getByText('Preset Themes')).toBeInTheDocument();
+    expect(screen.getByText('Professional Blue')).toBeInTheDocument();
   });
 
   it('renders reset button', () => {

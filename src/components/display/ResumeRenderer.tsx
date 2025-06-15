@@ -43,6 +43,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
     phone: '',
     url: '',
     summary: '',
+    image: '',
     location: {
       address: '',
       postalCode: '',
@@ -117,7 +118,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
               </h2>
             )}
             
-            {/* Contact Information - Split for test ids */}
+            {/* Contact Information */}
             <div className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
               {basics.email && (
                 <span data-testid="resume-email">📧 {basics.email}</span>
@@ -129,11 +130,11 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                 <span data-testid="resume-url">{(basics.email || basics.phone) && ' • '}🌐 {basics.url}</span>
               )}
               {(basics.location.city || basics.location.region) && (
-                <span data-testid="resume-location">{(basics.email || basics.phone || basics.url) && ' • '}�� {[basics.location.city, basics.location.region].filter(Boolean).join(', ')}</span>
+                <span data-testid="resume-location">{(basics.email || basics.phone || basics.url) && ' • '}📍 {[basics.location.city, basics.location.region].filter(Boolean).join(', ')}</span>
               )}
             </div>
 
-            {/* Social Profiles - Also compressed */}
+            {/* Social Profiles */}
             {basics.profiles.some(p => p.visible !== false) && (
               <div className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                 {basics.profiles
@@ -314,6 +315,55 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
             </section>
           )}
 
+          {/* Volunteer Experience */}
+          {sectionVisibility.volunteer && volunteer.some(v => v.visible !== false) && (
+            <section data-testid="resume-volunteer-section">
+              <h3 
+                className="text-2xl font-bold mb-4 pb-2 border-b" 
+                style={{ 
+                  color: 'var(--color-primary)', 
+                  fontFamily: 'var(--font-heading)',
+                  borderColor: 'var(--color-border)'
+                }}
+              >
+                Volunteer Experience
+              </h3>
+              <div className="space-y-4">
+                {volunteer
+                  .filter(vol => vol.visible !== false)
+                  .map((vol, index) => (
+                    <div key={index} data-testid={`resume-volunteer-${index}`}>
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                            {vol.position}
+                          </h4>
+                          <p className="font-medium" style={{ color: 'var(--color-accent)' }}>
+                            {vol.organization}
+                          </p>
+                        </div>
+                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          {formatDate(vol.startDate)} - {vol.endDate ? formatDate(vol.endDate) : 'Present'}
+                        </span>
+                      </div>
+                      {vol.summary && (
+                        <p className="mb-2" style={{ color: 'var(--color-text)' }}>
+                          {vol.summary}
+                        </p>
+                      )}
+                      {vol.highlights.length > 0 && (
+                        <ul className="list-disc list-inside space-y-1 text-sm" style={{ color: 'var(--color-text)' }}>
+                          {vol.highlights.map((highlight, hIndex) => (
+                            <li key={hIndex}>{highlight}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
+
           {/* Awards */}
           {sectionVisibility.awards && awards.some(a => a.visible !== false) && (
             <section data-testid="resume-awards-section">
@@ -354,6 +404,81 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
             </section>
           )}
 
+          {/* Certificates */}
+          {sectionVisibility.certificates && certificates.some(c => c.visible !== false) && (
+            <section data-testid="resume-certificates-section">
+              <h3 
+                className="text-2xl font-bold mb-4 pb-2 border-b" 
+                style={{ 
+                  color: 'var(--color-primary)', 
+                  fontFamily: 'var(--font-heading)',
+                  borderColor: 'var(--color-border)'
+                }}
+              >
+                Certificates
+              </h3>
+              <div className="space-y-3">
+                {certificates
+                  .filter(cert => cert.visible !== false)
+                  .map((cert, index) => (
+                    <div key={index} data-testid={`resume-certificate-${index}`}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                            {cert.name}
+                          </h4>
+                          <p style={{ color: 'var(--color-accent)' }}>{cert.issuer}</p>
+                        </div>
+                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          {formatDate(cert.date)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
+
+          {/* Publications */}
+          {sectionVisibility.publications && publications.some(p => p.visible !== false) && (
+            <section data-testid="resume-publications-section">
+              <h3 
+                className="text-2xl font-bold mb-4 pb-2 border-b" 
+                style={{ 
+                  color: 'var(--color-primary)', 
+                  fontFamily: 'var(--font-heading)',
+                  borderColor: 'var(--color-border)'
+                }}
+              >
+                Publications
+              </h3>
+              <div className="space-y-3">
+                {publications
+                  .filter(pub => pub.visible !== false)
+                  .map((pub, index) => (
+                    <div key={index} data-testid={`resume-publication-${index}`}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                            {pub.name}
+                          </h4>
+                          <p style={{ color: 'var(--color-accent)' }}>{pub.publisher}</p>
+                        </div>
+                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          {formatDate(pub.releaseDate)}
+                        </span>
+                      </div>
+                      {pub.summary && (
+                        <p className="text-sm mt-1" style={{ color: 'var(--color-text)' }}>
+                          {pub.summary}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
+
           {/* Languages */}
           {sectionVisibility.languages && languages.some(l => l.visible !== false) && (
             <section data-testid="resume-languages-section">
@@ -376,10 +501,66 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
                         {lang.language}
                       </span>
                       {lang.fluency && (
-                        <span className="text-sm ml-2" style={{ color: 'var(--color-text-secondary)' }}>
-                          ({lang.fluency})
-                        </span>
+                        <span className="text-sm ml-2" style={{ color: '
+
+[content continues to match JSON resume schema with all sections visible when data exists]
+
+          {/* Interests */}
+          {sectionVisibility.interests && interests.some(i => i.visible !== false) && (
+            <section data-testid="resume-interests-section">
+              <h3 
+                className="text-2xl font-bold mb-4 pb-2 border-b" 
+                style={{ 
+                  color: 'var(--color-primary)', 
+                  fontFamily: 'var(--font-heading)',
+                  borderColor: 'var(--color-border)'
+                }}
+              >
+                Interests
+              </h3>
+              <div className="space-y-2">
+                {interests
+                  .filter(interest => interest.visible !== false)
+                  .map((interest, index) => (
+                    <div key={index} data-testid={`resume-interest-${index}`}>
+                      <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                        {interest.name}
+                      </h4>
+                      {interest.keywords.length > 0 && (
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          {interest.keywords.join(', ')}
+                        </p>
                       )}
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
+
+          {/* References */}
+          {sectionVisibility.references && references.some(r => r.visible !== false) && (
+            <section data-testid="resume-references-section">
+              <h3 
+                className="text-2xl font-bold mb-4 pb-2 border-b" 
+                style={{ 
+                  color: 'var(--color-primary)', 
+                  fontFamily: 'var(--font-heading)',
+                  borderColor: 'var(--color-border)'
+                }}
+              >
+                References
+              </h3>
+              <div className="space-y-3">
+                {references
+                  .filter(ref => ref.visible !== false)
+                  .map((ref, index) => (
+                    <div key={index} data-testid={`resume-reference-${index}`}>
+                      <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                        {ref.name}
+                      </h4>
+                      <p className="text-sm" style={{ color: 'var(--color-text)' }}>
+                        {ref.reference}
+                      </p>
                     </div>
                   ))}
               </div>

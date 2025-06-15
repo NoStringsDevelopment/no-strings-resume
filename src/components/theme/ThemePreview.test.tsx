@@ -37,7 +37,42 @@ const mockResumeData = {
     label: 'Software Developer',
     email: 'john@example.com',
     phone: '+1 234 567 8900',
-    summary: 'Test summary'
+    summary: 'Test summary',
+    image: '',
+    url: '',
+    location: {
+      address: '',
+      postalCode: '',
+      city: '',
+      countryCode: '',
+      region: ''
+    },
+    profiles: []
+  },
+  work: [],
+  volunteer: [],
+  education: [],
+  skills: [],
+  projects: [],
+  awards: [],
+  certificates: [],
+  publications: [],
+  languages: [],
+  interests: [],
+  references: [],
+  sectionVisibility: {
+    basics: true,
+    work: true,
+    volunteer: true,
+    education: true,
+    skills: true,
+    projects: true,
+    awards: true,
+    certificates: true,
+    publications: true,
+    languages: true,
+    interests: true,
+    references: true
   }
 };
 
@@ -75,9 +110,11 @@ describe('ThemePreview', () => {
   });
 
   it('shows default content when no resume data', () => {
-    vi.mocked(require('@/context/ResumeContext').useResume).mockReturnValue({
+    const mockUseResume = vi.fn().mockReturnValue({
       state: { resumeData: { basics: {} } }
     });
+    
+    vi.mocked(require('@/context/ResumeContext')).useResume = mockUseResume;
     
     render(<ThemePreview />);
     
