@@ -1,10 +1,65 @@
 
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { FileText, Edit, Download, Home } from "lucide-react";
+import { FileText, Edit, Download, Home, Undo } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useResumeContext } from "@/context/ResumeContext";
+import { useTheme } from "@/context/ThemeContext";
+import { ResumeRenderer } from "@/components/display/ResumeRenderer";
+import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF } from "@/utils/exportUtils";
+import { useToast } from "@/hooks/use-toast";
 
 const ResumeView = () => {
   const navigate = useNavigate();
+  const { state, dispatch } = useResumeContext();
+  const { themeState } = useTheme();
+  const { toast } = useToast();
+
+  const handleExport = async (format: string) => {
+    try {
+      switch (format) {
+        case 'json':
+          exportAsJsonResume(state.resumeData);
+          toast({ title: "Success", description: "Resume exported as JSON Resume format" });
+          break;
+        case 'hropen':
+          exportAsHROpen(state.resumeData);
+          toast({ title: "Success", description: "Resume exported as HR-Open format" });
+          break;
+        case 'html':
+          exportAsHTML(state.resumeData, themeState.currentTheme);
+          toast({ title: "Success", description: "Resume exported as HTML" });
+          break;
+        case 'pdf':
+          await exportAsPDF(state.resumeData, themeState.currentTheme);
+          toast({ title: "Success", description: "Resume exported as PDF" });
+          break;
+        default:
+          toast({ title: "Error", description: "Export format not supported" });
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({ title: "Error", description: "Failed to export resume" });
+    }
+  };
+
+  const canUndo = state.history.currentIndex > 0;
+  const canRedo = state.history.currentIndex < state.history.states.length - 1;
+
+  const handleUndo = () => {
+    if (canUndo) {
+      dispatch({ type: 'UNDO' });
+      toast({ title: "Undone", description: "Last action was undone" });
+    }
+  };
+
+  const handleRedo = () => {
+    if (canRedo) {
+      dispatch({ type: 'REDO' });
+      toast({ title: "Redone", description: "Last action was redone" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -17,6 +72,7 @@ const ResumeView = () => {
                 variant="ghost" 
                 onClick={() => navigate('/')}
                 className="flex items-center space-x-2"
+                data-testid="view-home-button"
               >
                 <Home className="w-4 h-4" />
                 <span>Home</span>
@@ -24,21 +80,81 @@ const ResumeView = () => {
               <h1 className="text-xl font-semibold text-gray-900">Resume View</h1>
             </div>
             <div className="flex items-center space-x-2">
+              {/* Undo/Redo buttons */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleUndo}
+                disabled={!canUndo}
+                className="flex items-center space-x-1"
+                data-testid="view-undo-button"
+              >
+                <Undo className="w-4 h-4" />
+                <span className="hidden sm:inline">Undo</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRedo}
+                disabled={!canRedo}
+                className="flex items-center space-x-1 rotate-180"
+                data-testid="view-redo-button"
+              >
+                <Undo className="w-4 h-4" />
+                <span className="hidden sm:inline rotate-180">Redo</span>
+              </Button>
+
               <Button 
                 variant="outline"
                 onClick={() => navigate('/edit')}
                 className="flex items-center space-x-2"
+                data-testid="view-edit-button"
               >
                 <Edit className="w-4 h-4" />
                 <span>Edit</span>
               </Button>
-              <Button 
-                className="flex items-center space-x-2"
-                disabled
-              >
-                <Download className="w-4 h-4" />
-                <span>Export</span>
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    className="flex items-center space-x-2"
+                    data-testid="view-export-button"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" data-testid="view-export-menu">
+                  <DropdownMenuItem 
+                    onClick={() => handleExport('pdf')}
+                    data-testid="export-pdf-button"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handleExport('html')}
+                    data-testid="export-html-button"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as HTML
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handleExport('json')}
+                    data-testid="export-json-button"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as JSON Resume
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handleExport('hropen')}
+                    data-testid="export-hropen-button"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as HR-Open JSON
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -46,25 +162,17 @@ const ResumeView = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-            <FileText className="w-16 h-16 text-green-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Resume Preview</h2>
-            <p className="text-gray-600 mb-6">
-              This is where your formatted resume will be displayed. You'll be able to see exactly how it will look when exported.
-            </p>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500">Coming soon:</p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Formatted resume display</li>
-                <li>• Multiple theme layouts</li>
-                <li>• Export to PDF, DOCX, HTML</li>
-                <li>• Print-friendly formatting</li>
-                <li>• ATS-optimized structure</li>
-              </ul>
-            </div>
-          </div>
+        <div className="mb-6">
+          <p className="text-gray-600 text-center">
+            This is how your resume will appear when exported. Use the Export button to download in your preferred format.
+          </p>
         </div>
+        
+        <ResumeRenderer 
+          resumeData={state.resumeData} 
+          theme={themeState.currentTheme}
+          data-testid="resume-display"
+        />
       </main>
     </div>
   );
