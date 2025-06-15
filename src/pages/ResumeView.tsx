@@ -88,10 +88,10 @@ const ResumeView = () => {
                 className="flex items-center space-x-2 text-blue-600 hover:text-blue-700" 
                 data-testid="view-home-button"
               >
-                <div className="w-8 h-8 bg-blue-600 text-white rounded font-bold flex items-center justify-center text-sm">
-                  NR
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-semibold">No Strings Resume</span>
+                <span className="font-semibold hidden sm:block">No Strings Resume</span>
               </Button>
             </div>
             <div className="flex items-center space-x-2">

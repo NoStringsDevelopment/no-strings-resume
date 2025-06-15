@@ -1,7 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
-import { Palette, Edit, Eye } from "lucide-react";
+import { Palette, Edit, Eye, FileText } from "lucide-react";
 import { ThemeCustomizer } from "@/components/theme/ThemeCustomizer";
 import { EnhancedPreview } from "@/components/display/EnhancedPreview";
 import { useResume } from "@/context/ResumeContext";
@@ -23,14 +24,17 @@ const ThemeEditor = () => {
           <div className="hidden md:flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <button 
+                <Button 
+                  variant="ghost"
                   onClick={() => navigate('/')}
-                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
                   data-testid="home-button"
                 >
-                  <span className="text-white font-bold text-sm">NR</span>
-                </button>
-                <span className="font-semibold text-gray-900 hidden lg:block">No Strings Resume</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-900 hidden lg:block">No Strings Resume</span>
+                </Button>
               </div>
               <div className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full font-medium hidden sm:block">
                 Theme Mode
@@ -71,14 +75,17 @@ const ThemeEditor = () => {
             {/* First Row - Branding and Preview Toggle */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <button 
+                <Button 
+                  variant="ghost"
                   onClick={() => navigate('/')}
-                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
                   data-testid="home-button-mobile"
                 >
-                  <span className="text-white font-bold text-sm">NR</span>
-                </button>
-                <span className="font-semibold text-gray-900">No Strings Resume</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-900">No Strings Resume</span>
+                </Button>
                 <div className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
                   Theme
                 </div>
