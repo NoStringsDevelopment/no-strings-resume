@@ -264,14 +264,14 @@ const ResumeEditor = () => {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - Two Column Layout */}
       <main className="container mx-auto px-4 py-8" data-testid="editor-main">
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Editor Content */}
-          <div>
+          {/* Left Column - Editor Content */}
+          <div className="space-y-6">
             {/* Import Validation Alert */}
             {importValidation && importValidation.hasErrors && (
-              <Alert className="mb-6 border-amber-200 bg-amber-50" data-testid="import-validation-alert">
+              <Alert className="border-amber-200 bg-amber-50" data-testid="import-validation-alert">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                 <AlertTitle className="text-amber-800">Import completed with validation issues</AlertTitle>
                 <AlertDescription className="text-amber-700">
@@ -345,9 +345,9 @@ const ResumeEditor = () => {
             </Tabs>
           </div>
 
-          {/* Live Preview - Always visible, consistent with ThemeEditor */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
+          {/* Right Column - Live Preview */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Preview</h2>
             <div className="sticky top-8">
               <EnhancedPreview 
                 resumeData={state.resumeData} 

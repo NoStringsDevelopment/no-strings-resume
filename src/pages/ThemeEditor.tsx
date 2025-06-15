@@ -15,8 +15,8 @@ const ThemeEditor = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+      <header className="bg-white border-b shadow-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -36,32 +36,32 @@ const ThemeEditor = () => {
             <div className="flex items-center space-x-2">
               <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
                 <Edit className="w-4 h-4" />
-                <span>Edit</span>
+                <span className="hidden lg:block">Edit</span>
               </Button>
               <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
                 <Eye className="w-4 h-4" />
-                <span>View</span>
+                <span className="hidden lg:block">View</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - Two Column Layout */}
       <main className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Theme Customization Panel */}
-          <div>
-            <div className="flex items-center space-x-2 mb-6">
+          {/* Left Column - Theme Customization Panel */}
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
               <Palette className="w-6 h-6 text-purple-600" />
               <h2 className="text-2xl font-bold text-gray-900">Customize Theme</h2>
             </div>
             <ThemeCustomizer />
           </div>
 
-          {/* Live Preview */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
+          {/* Right Column - Live Preview */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Preview</h2>
             <div className="sticky top-8">
               <EnhancedPreview 
                 resumeData={state.resumeData} 
