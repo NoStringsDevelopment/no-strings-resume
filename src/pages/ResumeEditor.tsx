@@ -1,8 +1,9 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
-import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
+import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useResume } from "@/context/ResumeContext";
@@ -141,19 +142,22 @@ const ResumeEditor = () => {
       <header className="bg-white border-b shadow-sm sticky top-0 z-10" data-testid="editor-header">
         <div className="container mx-auto px-4 py-3">
           {/* Desktop Layout - Single Row */}
-          <div className="hidden md:flex items-center justify-between">
+          <div className="hidden lg:flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <button 
+                <Button 
+                  variant="ghost"
                   onClick={() => navigate('/')}
-                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
                   data-testid="home-button"
                 >
-                  <span className="text-white font-bold text-sm">NR</span>
-                </button>
-                <span className="font-semibold text-gray-900 hidden lg:block">No Strings Resume</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-900 hidden xl:block">No Strings Resume</span>
+                </Button>
               </div>
-              <div className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium hidden sm:block">
+              <div className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium hidden xl:block">
                 Edit Mode
               </div>
             </div>
@@ -170,7 +174,7 @@ const ResumeEditor = () => {
                 data-testid="undo-button"
               >
                 <Undo className="w-4 h-4" />
-                <span className="hidden xl:block">Undo</span>
+                <span className="hidden 2xl:block">Undo</span>
               </Button>
               
               <Button 
@@ -183,10 +187,10 @@ const ResumeEditor = () => {
                 data-testid="redo-button"
               >
                 <Redo className="w-4 h-4" />
-                <span className="hidden xl:block">Redo</span>
+                <span className="hidden 2xl:block">Redo</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
+              <div className="w-px h-6 bg-gray-300 mx-1" />
               
               {/* File Actions */}
               <Button 
@@ -198,7 +202,7 @@ const ResumeEditor = () => {
                 data-testid="import-button"
               >
                 <Upload className="w-4 h-4" />
-                <span className="hidden xl:block">Import</span>
+                <span className="hidden 2xl:block">Import</span>
               </Button>
               
               <Button 
@@ -210,10 +214,10 @@ const ResumeEditor = () => {
                 data-testid="backup-button"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden xl:block">Backup</span>
+                <span className="hidden 2xl:block">Backup</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
+              <div className="w-px h-6 bg-gray-300 mx-1" />
               
               {/* Data Actions */}
               <Button 
@@ -225,7 +229,7 @@ const ResumeEditor = () => {
                 data-testid="clear-button"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="hidden xl:block">Clear</span>
+                <span className="hidden 2xl:block">Clear</span>
               </Button>
               
               <Button 
@@ -237,10 +241,10 @@ const ResumeEditor = () => {
                 data-testid="reset-button"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span className="hidden xl:block">Reset</span>
+                <span className="hidden 2xl:block">Reset</span>
               </Button>
               
-              <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
+              <div className="w-px h-6 bg-gray-300 mx-1" />
               
               {/* Preview Toggle */}
               <div className="flex items-center space-x-2 mr-2">
@@ -252,13 +256,13 @@ const ResumeEditor = () => {
                 />
                 <label 
                   htmlFor="preview-toggle" 
-                  className="text-sm font-medium cursor-pointer hidden sm:block"
+                  className="text-sm font-medium cursor-pointer hidden xl:block"
                 >
                   Preview
                 </label>
               </div>
               
-              <div className="w-px h-6 bg-gray-300 mr-1 hidden sm:block" />
+              <div className="w-px h-6 bg-gray-300 mr-1" />
               
               {/* Navigation Actions */}
               <Button 
@@ -269,7 +273,7 @@ const ResumeEditor = () => {
                 data-testid="theme-button"
               >
                 <Palette className="w-4 h-4" />
-                <span className="hidden lg:block">Theme</span>
+                <span className="hidden xl:block">Theme</span>
               </Button>
               
               <Button 
@@ -280,24 +284,27 @@ const ResumeEditor = () => {
                 data-testid="view-button"
               >
                 <Eye className="w-4 h-4" />
-                <span className="hidden lg:block">View</span>
+                <span className="hidden xl:block">View</span>
               </Button>
             </div>
           </div>
 
-          {/* Mobile/Tablet Layout - Two Rows */}
-          <div className="md:hidden space-y-3">
-            {/* First Row - Branding and Navigation Actions */}
+          {/* Mobile/Tablet Layout - Three Rows */}
+          <div className="lg:hidden space-y-3">
+            {/* First Row - Branding */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <button 
+                <Button 
+                  variant="ghost"
                   onClick={() => navigate('/')}
-                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
                   data-testid="home-button-mobile"
                 >
-                  <span className="text-white font-bold text-sm">NR</span>
-                </button>
-                <span className="font-semibold text-gray-900">No Strings Resume</span>
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-900">No Strings Resume</span>
+                </Button>
                 <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
                   Edit
                 </div>
@@ -399,9 +406,11 @@ const ResumeEditor = () => {
                   <RotateCcw className="w-4 h-4" />
                 </Button>
               </div>
+            </div>
 
-              {/* Preview Toggle */}
-              <div className="flex items-center space-x-1">
+            {/* Third Row - Preview Toggle */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-2">
                 <Checkbox 
                   id="preview-toggle-mobile"
                   checked={isPreviewVisible}

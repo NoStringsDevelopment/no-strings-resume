@@ -91,7 +91,7 @@ const ResumeView = () => {
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-semibold hidden sm:block">No Strings Resume</span>
+                <span className="font-semibold hidden xl:block">No Strings Resume</span>
               </Button>
             </div>
             <div className="flex items-center space-x-2">

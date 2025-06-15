@@ -33,10 +33,10 @@ const ThemeEditor = () => {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
-                  <span className="font-semibold text-gray-900 hidden lg:block">No Strings Resume</span>
+                  <span className="font-semibold text-gray-900 hidden xl:block">No Strings Resume</span>
                 </Button>
               </div>
-              <div className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full font-medium hidden sm:block">
+              <div className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full font-medium hidden lg:block">
                 Theme Mode
               </div>
             </div>
@@ -51,28 +51,28 @@ const ThemeEditor = () => {
                 />
                 <label 
                   htmlFor="theme-preview-toggle" 
-                  className="text-sm font-medium cursor-pointer hidden sm:block"
+                  className="text-sm font-medium cursor-pointer hidden lg:block"
                 >
                   Preview
                 </label>
               </div>
               
-              <div className="w-px h-6 bg-gray-300 mr-1 hidden sm:block" />
+              <div className="w-px h-6 bg-gray-300 mr-1 hidden lg:block" />
               
               <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
                 <Edit className="w-4 h-4" />
-                <span className="hidden lg:block">Edit</span>
+                <span className="hidden xl:block">Edit</span>
               </Button>
               <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
                 <Eye className="w-4 h-4" />
-                <span className="hidden lg:block">View</span>
+                <span className="hidden xl:block">View</span>
               </Button>
             </div>
           </div>
 
-          {/* Mobile/Tablet Layout - Two Rows */}
+          {/* Mobile/Tablet Layout - Three Rows */}
           <div className="md:hidden space-y-3">
-            {/* First Row - Branding and Preview Toggle */}
+            {/* First Row - Branding */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Button 
@@ -90,20 +90,21 @@ const ThemeEditor = () => {
                   Theme
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button-mobile">
-                  <Edit className="w-4 h-4" />
-                  <span>Edit</span>
-                </Button>
-                <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button-mobile">
-                  <Eye className="w-4 h-4" />
-                  <span>View</span>
-                </Button>
-              </div>
             </div>
 
-            {/* Second Row - Preview Toggle */}
+            {/* Second Row - Navigation */}
+            <div className="flex items-center justify-center space-x-2">
+              <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button-mobile">
+                <Edit className="w-4 h-4" />
+                <span>Edit</span>
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button-mobile">
+                <Eye className="w-4 h-4" />
+                <span>View</span>
+              </Button>
+            </div>
+
+            {/* Third Row - Preview Toggle */}
             <div className="flex items-center justify-center">
               <div className="flex items-center space-x-2">
                 <Checkbox 
