@@ -4,9 +4,9 @@ import { useResume } from "@/context/ResumeContext";
 
 export const ThemePreview = () => {
   const { themeState } = useTheme();
-  const { resumeState } = useResume();
+  const { state } = useResume();
   const { currentTheme } = themeState;
-  const { resumeData } = resumeState;
+  const { resumeData } = state;
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">

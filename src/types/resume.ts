@@ -184,18 +184,27 @@ export interface SectionVisibility {
 }
 
 // Theme types
+export interface ThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  text: string;
+  textSecondary: string;
+  background: string;
+  border: string;
+}
+
+export interface ThemeTypography {
+  fontFamily: string;
+  fontSize: number;
+  lineHeight: number;
+}
+
 export interface Theme {
   id: string;
   name: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    text: string;
-    textSecondary: string;
-    background: string;
-    border: string;
-  };
+  colors: ThemeColors;
+  typography: ThemeTypography;
   fonts: {
     heading: string;
     body: string;

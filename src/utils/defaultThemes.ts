@@ -15,6 +15,11 @@ export function getDefaultThemes(): Theme[] {
         background: '#ffffff',
         border: '#e2e8f0'
       },
+      typography: {
+        fontFamily: 'Inter',
+        fontSize: 14,
+        lineHeight: 1.5
+      },
       fonts: {
         heading: 'Inter',
         body: 'Inter'
@@ -36,6 +41,11 @@ export function getDefaultThemes(): Theme[] {
         background: '#ffffff',
         border: '#d1d5db'
       },
+      typography: {
+        fontFamily: 'Inter',
+        fontSize: 14,
+        lineHeight: 1.5
+      },
       fonts: {
         heading: 'Inter',
         body: 'Inter'
@@ -56,6 +66,11 @@ export function getDefaultThemes(): Theme[] {
         textSecondary: '#6b7280',
         background: '#ffffff',
         border: '#e5e7eb'
+      },
+      typography: {
+        fontFamily: 'Inter',
+        fontSize: 14,
+        lineHeight: 1.5
       },
       fonts: {
         heading: 'Inter',

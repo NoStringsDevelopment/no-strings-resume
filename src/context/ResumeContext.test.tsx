@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { render, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ResumeProvider, useResume } from './ResumeContext';
 
 // Mock localStorage
@@ -249,4 +250,4 @@ describe('ResumeContext Integration', () => {
     expect(capturedState.resumeData.work[0].visible).toBe(false);
     expect(capturedState.resumeData.work[1].visible).toBe(true);
   });
-}); 
+});
