@@ -793,6 +793,8 @@ interface ResumeContextType {
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
+export { ResumeContext };
+
 export const ResumeProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(resumeReducer, initialState);
 

@@ -50,8 +50,8 @@ const ResumeView = () => {
     }
   };
 
-  const canUndo = state.history.currentIndex > 0;
-  const canRedo = state.history.currentIndex < state.history.states.length - 1;
+  const canUndo = state.historyIndex > 0;
+  const canRedo = state.historyIndex < state.history.length - 1;
 
   const handleUndo = () => {
     if (canUndo) {
