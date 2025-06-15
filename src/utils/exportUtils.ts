@@ -151,8 +151,11 @@ export function exportAsHTML(resumeData: ResumeData, theme: Theme) {
         }
         .summary-section {
             margin-top: 2em;
+            margin-bottom: 2em;
             padding-top: 1.5em;
+            padding-bottom: 1.5em;
             border-top: 1px solid ${theme.colors.border || '#e2e8f0'};
+            border-bottom: 1px solid ${theme.colors.border || '#e2e8f0'};
             clear: both;
         }
         .summary-section h3 {
