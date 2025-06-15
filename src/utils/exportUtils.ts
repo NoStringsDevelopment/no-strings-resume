@@ -415,33 +415,33 @@ export async function exportAsPDF(resumeData: ResumeData, theme: any) {
       yPosition += 8;
     }
     
-    // Contact information
+    // Contact information - compressed to single line
     const contactInfo = [
-      resumeData.basics.email && `Email: ${resumeData.basics.email}`,
-      resumeData.basics.phone && `Phone: ${resumeData.basics.phone}`,
-      resumeData.basics.url && `Website: ${resumeData.basics.url}`,
+      resumeData.basics.email && `📧 ${resumeData.basics.email}`,
+      resumeData.basics.phone && `📞 ${resumeData.basics.phone}`,
+      resumeData.basics.url && `🌐 ${resumeData.basics.url}`,
       (resumeData.basics.location.city || resumeData.basics.location.region) && 
-        `Location: ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}`
+        `📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}`
     ].filter(Boolean);
     
     if (contactInfo.length > 0) {
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor('#64748b');
-      contactInfo.forEach(info => {
-        pdf.text(info, margin, yPosition);
-        yPosition += 6;
-      });
+      const contactLine = contactInfo.join(' • ');
+      addText(contactLine, 10, false, '#64748b');
     }
 
-    // Profiles
+    // Profiles - also compressed to single line
     if (resumeData.basics.profiles.some(p => p.visible !== false)) {
-      resumeData.basics.profiles
+      const profilesInfo = resumeData.basics.profiles
         .filter(profile => profile.visible !== false)
-        .forEach(profile => {
-          pdf.text(`${profile.network}: ${profile.username || profile.url}`, margin, yPosition);
-          yPosition += 6;
-        });
+        .map(profile => `${profile.network}: ${profile.username || profile.url}`)
+        .join(' • ');
+      
+      if (profilesInfo) {
+        addText(profilesInfo, 10, false, '#64748b');
+      }
     }
     
     // Summary

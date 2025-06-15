@@ -9,6 +9,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { ResumeRenderer } from "@/components/display/ResumeRenderer";
 import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF } from "@/utils/exportUtils";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ResumeView = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const ResumeView = () => {
   const { state, dispatch } = context;
   const { themeState } = useTheme();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleExport = async (format: string) => {
     try {
@@ -93,14 +95,14 @@ const ResumeView = () => {
                 data-testid="view-edit-button"
               >
                 <Edit className="w-4 h-4" />
-                <span>Edit</span>
+                {!isMobile && <span>Edit</span>}
               </Button>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button className="flex items-center space-x-2" data-testid="view-export-button">
                     <Download className="w-4 h-4" />
-                    <span>Export</span>
+                    {!isMobile && <span>Export</span>}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" data-testid="view-export-menu">
