@@ -1,29 +1,25 @@
+
 import React, { useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { FileText, Edit, Download, Home, Undo } from "lucide-react";
+import { FileText, Edit, Download } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ResumeContext } from "@/context/ResumeContext";
 import { useTheme } from "@/context/ThemeContext";
 import { ResumeRenderer } from "@/components/display/ResumeRenderer";
 import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF } from "@/utils/exportUtils";
 import { useToast } from "@/hooks/use-toast";
+
 const ResumeView = () => {
   const navigate = useNavigate();
   const context = useContext(ResumeContext);
   if (!context) {
     throw new Error('ResumeView must be used within a ResumeProvider');
   }
-  const {
-    state,
-    dispatch
-  } = context;
-  const {
-    themeState
-  } = useTheme();
-  const {
-    toast
-  } = useToast();
+  const { state, dispatch } = context;
+  const { themeState } = useTheme();
+  const { toast } = useToast();
+
   const handleExport = async (format: string) => {
     try {
       switch (format) {
@@ -69,48 +65,33 @@ const ResumeView = () => {
       });
     }
   };
-  const canUndo = state.historyIndex > 0;
-  const canRedo = state.historyIndex < state.history.length - 1;
-  const handleUndo = () => {
-    if (canUndo) {
-      dispatch({
-        type: 'UNDO'
-      });
-      toast({
-        title: "Undone",
-        description: "Last action was undone"
-      });
-    }
-  };
-  const handleRedo = () => {
-    if (canRedo) {
-      dispatch({
-        type: 'REDO'
-      });
-      toast({
-        title: "Redone",
-        description: "Last action was redone"
-      });
-    }
-  };
-  return <div className="min-h-screen bg-gray-50">
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/')} className="flex items-center space-x-2" data-testid="view-home-button">
-                <Home className="w-4 h-4" />
-                <span>Home</span>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/')} 
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700" 
+                data-testid="view-home-button"
+              >
+                <div className="w-8 h-8 bg-blue-600 text-white rounded font-bold flex items-center justify-center text-sm">
+                  NR
+                </div>
+                <span className="font-semibold">No Strings Resume</span>
               </Button>
-              
             </div>
             <div className="flex items-center space-x-2">
-              {/* Undo/Redo buttons */}
-              
-              
-
-              <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="view-edit-button">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/edit')} 
+                className="flex items-center space-x-2" 
+                data-testid="view-edit-button"
+              >
                 <Edit className="w-4 h-4" />
                 <span>Edit</span>
               </Button>
@@ -148,14 +129,12 @@ const ResumeView = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          
-        </div>
-        
         <div data-testid="resume-display">
           <ResumeRenderer resumeData={state.resumeData} theme={themeState.currentTheme} />
         </div>
       </main>
-    </div>;
+    </div>
+  );
 };
+
 export default ResumeView;
