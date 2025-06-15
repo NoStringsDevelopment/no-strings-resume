@@ -1,12 +1,13 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { Edit, Eye, Palette, Upload, Download, Undo, Redo, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useResume } from "@/context/ResumeContext";
 import { useTheme } from "@/context/ThemeContext";
+import { usePreviewToggle } from "@/hooks/usePreviewToggle";
 import { EnhancedPreview } from "@/components/display/EnhancedPreview";
 import BasicEditor from "@/components/editor/BasicEditor";
 import WorkEditor from "@/components/editor/WorkEditor";
@@ -24,6 +25,7 @@ const ResumeEditor = () => {
   const { toast } = useToast();
   const { state, dispatch } = useResume();
   const { themeState } = useTheme();
+  const { isPreviewVisible, togglePreview } = usePreviewToggle();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("basics");
   const [importValidation, setImportValidation] = useState<{
@@ -48,7 +50,6 @@ const ResumeEditor = () => {
         
         dispatch({ type: 'SET_RESUME_DATA', payload: importResult.resumeData });
         
-        // Set validation state for display
         setImportValidation({
           hasErrors: importResult.hasErrors,
           errors: importResult.validationErrors,
@@ -114,7 +115,6 @@ const ResumeEditor = () => {
 
   const handleResetToDefault = async () => {
     try {
-      // Fetch the default resume.json from public folder
       const response = await fetch('/resume.json');
       const defaultResumeData = await response.json();
       
@@ -158,6 +158,25 @@ const ResumeEditor = () => {
             </div>
             
             <div className="flex items-center space-x-1">
+              {/* Preview Toggle */}
+              <div className="flex items-center space-x-2 mr-2">
+                <Checkbox 
+                  id="preview-toggle"
+                  checked={isPreviewVisible}
+                  onCheckedChange={togglePreview}
+                  data-testid="preview-toggle"
+                />
+                <label 
+                  htmlFor="preview-toggle" 
+                  className="text-sm font-medium cursor-pointer hidden sm:block"
+                >
+                  Preview
+                </label>
+              </div>
+              
+              <div className="w-px h-6 bg-gray-300 mr-1 hidden sm:block" />
+              
+              {/* Undo, Redo, Import, Export, Clear, Reset Buttons */}
               <Button 
                 variant="ghost"
                 size="sm"
@@ -264,9 +283,9 @@ const ResumeEditor = () => {
         </div>
       </header>
 
-      {/* Main Content - Two Column Layout */}
+      {/* Main Content - Conditional Layout */}
       <main className="container mx-auto px-4 py-8" data-testid="editor-main">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className={`grid gap-8 ${isPreviewVisible ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
           {/* Left Column - Editor Content */}
           <div className="space-y-6">
             {/* Import Validation Alert */}
@@ -345,17 +364,19 @@ const ResumeEditor = () => {
             </Tabs>
           </div>
 
-          {/* Right Column - Live Preview */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Preview</h2>
-            <div className="sticky top-8">
-              <EnhancedPreview 
-                resumeData={state.resumeData} 
-                theme={themeState.currentTheme}
-                data-testid="editor-preview"
-              />
+          {/* Right Column - Live Preview (Conditional) */}
+          {isPreviewVisible && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-900">Preview</h2>
+              <div className="sticky top-8">
+                <EnhancedPreview 
+                  resumeData={state.resumeData} 
+                  theme={themeState.currentTheme}
+                  data-testid="editor-preview"
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
 

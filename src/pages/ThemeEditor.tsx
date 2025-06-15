@@ -1,16 +1,19 @@
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { Palette, Edit, Eye } from "lucide-react";
 import { ThemeCustomizer } from "@/components/theme/ThemeCustomizer";
 import { EnhancedPreview } from "@/components/display/EnhancedPreview";
 import { useResume } from "@/context/ResumeContext";
 import { useTheme } from "@/context/ThemeContext";
+import { usePreviewToggle } from "@/hooks/usePreviewToggle";
 
 const ThemeEditor = () => {
   const navigate = useNavigate();
   const { state } = useResume();
   const { themeState } = useTheme();
+  const { isPreviewVisible, togglePreview } = usePreviewToggle();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -34,6 +37,24 @@ const ThemeEditor = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              {/* Preview Toggle */}
+              <div className="flex items-center space-x-2 mr-2">
+                <Checkbox 
+                  id="theme-preview-toggle"
+                  checked={isPreviewVisible}
+                  onCheckedChange={togglePreview}
+                  data-testid="preview-toggle"
+                />
+                <label 
+                  htmlFor="theme-preview-toggle" 
+                  className="text-sm font-medium cursor-pointer hidden sm:block"
+                >
+                  Preview
+                </label>
+              </div>
+              
+              <div className="w-px h-6 bg-gray-300 mr-1 hidden sm:block" />
+              
               <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
                 <Edit className="w-4 h-4" />
                 <span className="hidden lg:block">Edit</span>
@@ -47,9 +68,9 @@ const ThemeEditor = () => {
         </div>
       </header>
 
-      {/* Main Content - Two Column Layout */}
+      {/* Main Content - Conditional Layout */}
       <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className={`grid gap-8 ${isPreviewVisible ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
           {/* Left Column - Theme Customization Panel */}
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
@@ -59,17 +80,19 @@ const ThemeEditor = () => {
             <ThemeCustomizer />
           </div>
 
-          {/* Right Column - Live Preview */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Preview</h2>
-            <div className="sticky top-8">
-              <EnhancedPreview 
-                resumeData={state.resumeData} 
-                theme={themeState.currentTheme}
-                data-testid="theme-preview"
-              />
+          {/* Right Column - Live Preview (Conditional) */}
+          {isPreviewVisible && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-900">Preview</h2>
+              <div className="sticky top-8">
+                <EnhancedPreview 
+                  resumeData={state.resumeData} 
+                  theme={themeState.currentTheme}
+                  data-testid="theme-preview"
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
