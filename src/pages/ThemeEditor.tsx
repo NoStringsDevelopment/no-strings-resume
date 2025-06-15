@@ -86,31 +86,31 @@ const ThemeEditor = () => {
               </div>
               
               <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="theme-preview-toggle-mobile"
-                  checked={isPreviewVisible}
-                  onCheckedChange={togglePreview}
-                  data-testid="preview-toggle"
-                />
-                <label 
-                  htmlFor="theme-preview-toggle-mobile" 
-                  className="text-sm font-medium cursor-pointer"
-                >
-                  Preview
-                </label>
+                <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
+                  <Edit className="w-4 h-4" />
+                  <span>Edit</span>
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
+                  <Eye className="w-4 h-4" />
+                  <span>View</span>
+                </Button>
               </div>
             </div>
 
-            {/* Second Row - Navigation Buttons */}
+            {/* Second Row - Preview Toggle */}
             <div className="flex items-center justify-center space-x-2">
-              <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
-                <Edit className="w-4 h-4" />
-                <span>Edit</span>
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
-                <Eye className="w-4 h-4" />
-                <span>View</span>
-              </Button>
+              <Checkbox 
+                id="theme-preview-toggle-mobile"
+                checked={isPreviewVisible}
+                onCheckedChange={togglePreview}
+                data-testid="preview-toggle"
+              />
+              <label 
+                htmlFor="theme-preview-toggle-mobile" 
+                className="text-sm font-medium cursor-pointer"
+              >
+                Preview
+              </label>
             </div>
           </div>
         </div>
