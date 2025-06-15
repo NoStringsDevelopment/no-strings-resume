@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, within, cleanup } from '@testing-library/react';
+import { describe, it, expect, test } from 'vitest';
 import { ResumeProvider } from '@/context/ResumeContext';
 import BasicEditor from './BasicEditor';
 import WorkEditor from './WorkEditor';
@@ -440,4 +441,4 @@ describe('Editor Visibility Toggles and Capitalization', () => {
       });
     });
   });
-}); 
+});

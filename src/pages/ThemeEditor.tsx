@@ -2,6 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Palette, Edit, Eye, Home } from "lucide-react";
+import { ThemeCustomizer } from "@/components/theme/ThemeCustomizer";
+import { ThemePreview } from "@/components/theme/ThemePreview";
 
 const ThemeEditor = () => {
   const navigate = useNavigate();
@@ -47,22 +49,21 @@ const ThemeEditor = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-            <Palette className="w-16 h-16 text-purple-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Theme Customization</h2>
-            <p className="text-gray-600 mb-6">
-              Customize the visual appearance of your resume. Choose from preset themes or create your own style.
-            </p>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500">Coming soon:</p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Color palette customization</li>
-                <li>• Font selection</li>
-                <li>• Layout spacing controls</li>
-                <li>• Preset professional themes</li>
-                <li>• Live theme preview</li>
-              </ul>
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Theme Customization Panel */}
+          <div>
+            <div className="flex items-center space-x-2 mb-6">
+              <Palette className="w-6 h-6 text-purple-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Customize Theme</h2>
+            </div>
+            <ThemeCustomizer />
+          </div>
+
+          {/* Live Preview */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Live Preview</h2>
+            <div className="sticky top-8">
+              <ThemePreview />
             </div>
           </div>
         </div>
