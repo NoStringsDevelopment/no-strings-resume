@@ -1,4 +1,3 @@
-
 import { useResume } from "@/context/ResumeContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -117,7 +116,7 @@ export default function EducationEditor() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor={`institution-${index}`}>institution</Label>
+                <Label htmlFor={`institution-${index}`}>Institution</Label>
                 <Input
                   id={`institution-${index}`}
                   value={edu.institution}
@@ -128,7 +127,7 @@ export default function EducationEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`url-${index}`}>url</Label>
+                <Label htmlFor={`url-${index}`}>Website</Label>
                 <Input
                   id={`url-${index}`}
                   value={edu.url}
@@ -138,7 +137,7 @@ export default function EducationEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`area-${index}`}>area</Label>
+                <Label htmlFor={`area-${index}`}>Area of Study</Label>
                 <Input
                   id={`area-${index}`}
                   value={edu.area}
@@ -149,43 +148,43 @@ export default function EducationEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`studyType-${index}`}>studyType</Label>
+                <Label htmlFor={`studyType-${index}`}>Study Type</Label>
                 <Input
                   id={`studyType-${index}`}
                   value={edu.studyType}
                   onChange={(e) => updateEducation(index, 'studyType', e.target.value)}
-                  placeholder="Bachelor of Science"
+                  placeholder="Bachelor"
                   spellCheck={true}
                   data-testid={`education-${index}-study-type-input`}
                 />
               </div>
               <div>
-                <Label htmlFor={`startDate-${index}`}>startDate</Label>
+                <Label htmlFor={`startDate-${index}`}>Start Date</Label>
                 <Input
                   id={`startDate-${index}`}
                   value={edu.startDate}
                   onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
-                  placeholder="YYYY-MM"
+                  placeholder="YYYY-MM-DD"
                   data-testid={`education-${index}-start-date-input`}
                 />
               </div>
               <div>
-                <Label htmlFor={`endDate-${index}`}>endDate</Label>
+                <Label htmlFor={`endDate-${index}`}>End Date</Label>
                 <Input
                   id={`endDate-${index}`}
                   value={edu.endDate}
                   onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
-                  placeholder="YYYY-MM"
+                  placeholder="YYYY-MM-DD or leave blank if current"
                   data-testid={`education-${index}-end-date-input`}
                 />
               </div>
               <div>
-                <Label htmlFor={`score-${index}`}>score</Label>
+                <Label htmlFor={`score-${index}`}>Score</Label>
                 <Input
                   id={`score-${index}`}
-                  value={edu.score}
+                  value={edu.score || ''}
                   onChange={(e) => updateEducation(index, 'score', e.target.value)}
-                  placeholder="3.8"
+                  placeholder="3.7 GPA"
                   data-testid={`education-${index}-score-input`}
                 />
               </div>
@@ -193,7 +192,7 @@ export default function EducationEditor() {
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <Label>courses</Label>
+                <Label>Courses</Label>
                 <Button
                   variant="outline"
                   size="sm"
@@ -201,7 +200,7 @@ export default function EducationEditor() {
                   data-testid={`education-${index}-add-course-button`}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add course
+                  Add Course
                 </Button>
               </div>
               <div className="space-y-2">

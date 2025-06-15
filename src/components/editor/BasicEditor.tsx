@@ -1,4 +1,3 @@
-
 import { useResume } from "@/context/ResumeContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,7 +87,7 @@ export default function BasicEditor() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">name</Label>
+              <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
                 value={basics.name}
@@ -99,7 +98,7 @@ export default function BasicEditor() {
               />
             </div>
             <div>
-              <Label htmlFor="label">label</Label>
+              <Label htmlFor="label">Label</Label>
               <Input
                 id="label"
                 value={basics.label}
@@ -110,7 +109,7 @@ export default function BasicEditor() {
               />
             </div>
             <div>
-              <Label htmlFor="email">email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -121,17 +120,17 @@ export default function BasicEditor() {
               />
             </div>
             <div>
-              <Label htmlFor="phone">phone</Label>
+              <Label htmlFor="phone">Phone</Label>
               <Input
                 id="phone"
                 value={basics.phone}
                 onChange={(e) => updateBasics('phone', e.target.value)}
-                placeholder="(555) 123-4567"
+                placeholder="+1 (555) 123-4567"
                 data-testid="phone-input"
               />
             </div>
             <div>
-              <Label htmlFor="url">url</Label>
+              <Label htmlFor="url">Website</Label>
               <Input
                 id="url"
                 value={basics.url}
@@ -143,7 +142,7 @@ export default function BasicEditor() {
           </div>
           
           <div>
-            <Label htmlFor="summary">summary</Label>
+            <Label htmlFor="summary">Summary</Label>
             <Textarea
               id="summary"
               value={basics.summary}
@@ -159,55 +158,55 @@ export default function BasicEditor() {
 
       <Card data-testid="location-card">
         <CardHeader>
-          <CardTitle>location</CardTitle>
+          <CardTitle>Location</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="address">address</Label>
+              <Label htmlFor="address">Address</Label>
               <Input
                 id="address"
                 value={basics.location.address}
                 onChange={(e) => updateLocation('address', e.target.value)}
-                placeholder="Street address"
+                placeholder="123 Main Street"
                 spellCheck={true}
                 data-testid="address-input"
               />
             </div>
             <div>
-              <Label htmlFor="city">city</Label>
+              <Label htmlFor="city">City</Label>
               <Input
                 id="city"
                 value={basics.location.city}
                 onChange={(e) => updateLocation('city', e.target.value)}
-                placeholder="City"
+                placeholder="San Francisco"
                 spellCheck={true}
                 data-testid="city-input"
               />
             </div>
             <div>
-              <Label htmlFor="region">region</Label>
+              <Label htmlFor="region">Region</Label>
               <Input
                 id="region"
                 value={basics.location.region}
                 onChange={(e) => updateLocation('region', e.target.value)}
-                placeholder="State or Region"
+                placeholder="CA"
                 spellCheck={true}
                 data-testid="region-input"
               />
             </div>
             <div>
-              <Label htmlFor="postalCode">postalCode</Label>
+              <Label htmlFor="postalCode">Postal Code</Label>
               <Input
                 id="postalCode"
                 value={basics.location.postalCode}
                 onChange={(e) => updateLocation('postalCode', e.target.value)}
-                placeholder="Postal code"
+                placeholder="94102"
                 data-testid="postal-code-input"
               />
             </div>
             <div>
-              <Label htmlFor="countryCode">countryCode</Label>
+              <Label htmlFor="countryCode">Country Code</Label>
               <Input
                 id="countryCode"
                 value={basics.location.countryCode}
@@ -223,7 +222,7 @@ export default function BasicEditor() {
       <Card data-testid="profiles-card">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            profiles
+            Profiles
             <Button onClick={addProfile} size="sm" data-testid="add-profile-button">
               <Plus className="w-4 h-4 mr-2" />
               Add Profile
@@ -246,7 +245,7 @@ export default function BasicEditor() {
                   </Button>
                 </div>
                 <div className="flex-1">
-                  <Label>network</Label>
+                  <Label>Network</Label>
                   <Input
                     value={profile.network}
                     onChange={(e) => updateProfile(index, 'network', e.target.value)}
@@ -256,7 +255,7 @@ export default function BasicEditor() {
                   />
                 </div>
                 <div className="flex-1">
-                  <Label>username</Label>
+                  <Label>Username</Label>
                   <Input
                     value={profile.username}
                     onChange={(e) => updateProfile(index, 'username', e.target.value)}
@@ -265,7 +264,7 @@ export default function BasicEditor() {
                   />
                 </div>
                 <div className="flex-1">
-                  <Label>url</Label>
+                  <Label>URL</Label>
                   <Input
                     value={profile.url}
                     onChange={(e) => updateProfile(index, 'url', e.target.value)}

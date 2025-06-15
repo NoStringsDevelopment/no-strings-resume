@@ -24,7 +24,7 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'ADD_CERTIFICATE', payload: newCertificate });
   };
 
-  const updateCertificate = (index: number, field: keyof Certificate, value: any) => {
+  const updateCertificate = (index: number, field: keyof Certificate, value: string | boolean) => {
     dispatch({ 
       type: 'UPDATE_CERTIFICATE', 
       payload: { index, data: { [field]: value } }
@@ -33,6 +33,15 @@ const AdditionalSectionsEditor = () => {
 
   const removeCertificate = (index: number) => {
     dispatch({ type: 'REMOVE_CERTIFICATE', payload: index });
+  };
+
+  // Certificate section visibility
+  const certificatesSectionVisible = state.resumeData.sectionVisibility?.certificates ?? true;
+  const toggleCertificatesSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { certificates: !certificatesSectionVisible }
+    });
   };
 
   // Publication handlers
@@ -48,7 +57,7 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'ADD_PUBLICATION', payload: newPublication });
   };
 
-  const updatePublication = (index: number, field: keyof Publication, value: any) => {
+  const updatePublication = (index: number, field: keyof Publication, value: string | boolean) => {
     dispatch({ 
       type: 'UPDATE_PUBLICATION', 
       payload: { index, data: { [field]: value } }
@@ -57,6 +66,15 @@ const AdditionalSectionsEditor = () => {
 
   const removePublication = (index: number) => {
     dispatch({ type: 'REMOVE_PUBLICATION', payload: index });
+  };
+
+  // Publication section visibility
+  const publicationsSectionVisible = state.resumeData.sectionVisibility?.publications ?? true;
+  const togglePublicationsSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { publications: !publicationsSectionVisible }
+    });
   };
 
   // Volunteer handlers
@@ -74,7 +92,7 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'ADD_VOLUNTEER', payload: newVolunteer });
   };
 
-  const updateVolunteer = (index: number, field: keyof Volunteer, value: any) => {
+  const updateVolunteer = (index: number, field: keyof Volunteer, value: string | boolean | string[]) => {
     dispatch({ 
       type: 'UPDATE_VOLUNTEER', 
       payload: { index, data: { [field]: value } }
@@ -83,6 +101,15 @@ const AdditionalSectionsEditor = () => {
 
   const removeVolunteer = (index: number) => {
     dispatch({ type: 'REMOVE_VOLUNTEER', payload: index });
+  };
+
+  // Volunteer section visibility
+  const volunteerSectionVisible = state.resumeData.sectionVisibility?.volunteer ?? true;
+  const toggleVolunteerSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { volunteer: !volunteerSectionVisible }
+    });
   };
 
   const addVolunteerHighlight = (index: number) => {
@@ -115,7 +142,7 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'ADD_INTEREST', payload: newInterest });
   };
 
-  const updateInterest = (index: number, field: keyof Interest, value: any) => {
+  const updateInterest = (index: number, field: keyof Interest, value: string | boolean | string[]) => {
     dispatch({ 
       type: 'UPDATE_INTEREST', 
       payload: { index, data: { [field]: value } }
@@ -124,6 +151,15 @@ const AdditionalSectionsEditor = () => {
 
   const removeInterest = (index: number) => {
     dispatch({ type: 'REMOVE_INTEREST', payload: index });
+  };
+
+  // Interest section visibility
+  const interestsSectionVisible = state.resumeData.sectionVisibility?.interests ?? true;
+  const toggleInterestsSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { interests: !interestsSectionVisible }
+    });
   };
 
   const addInterestKeyword = (interestIndex: number) => {
@@ -156,7 +192,7 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'ADD_REFERENCE', payload: newReference });
   };
 
-  const updateReference = (index: number, field: keyof Reference, value: any) => {
+  const updateReference = (index: number, field: keyof Reference, value: string | boolean) => {
     dispatch({ 
       type: 'UPDATE_REFERENCE', 
       payload: { index, data: { [field]: value } }
@@ -167,21 +203,35 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_REFERENCE', payload: index });
   };
 
+  // Reference section visibility
+  const referencesSectionVisible = state.resumeData.sectionVisibility?.references ?? true;
+  const toggleReferencesSectionVisibility = () => {
+    dispatch({
+      type: 'UPDATE_SECTION_VISIBILITY',
+      payload: { references: !referencesSectionVisible }
+    });
+  };
+
   return (
     <div className="space-y-8">
-      {/* Section Visibility Controls */}
       <SectionVisibilityEditor />
-
-      {/* Non-Conforming Data */}
-      {state.resumeData.nonConformingData && (
-        <NonConformingDataViewer data={state.resumeData.nonConformingData} />
-      )}
-
+      
       {/* Certificates Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Certificates</h2>
-          <Button onClick={addCertificate} className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleCertificatesSectionVisibility}
+              className="p-1"
+              data-testid="certificates-visibility-toggle"
+            >
+              {certificatesSectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+            <h2 className="text-2xl font-bold">Certificates</h2>
+          </div>
+          <Button onClick={addCertificate} className="flex items-center space-x-2" data-testid="add-certificate-button">
             <Plus className="w-4 h-4" />
             <span>Add Certificate</span>
           </Button>
@@ -200,6 +250,7 @@ const AdditionalSectionsEditor = () => {
                     size="sm"
                     onClick={() => updateCertificate(index, 'visible', !certificate.visible)}
                     className="flex items-center space-x-1"
+                    data-testid={`certificate-${index}-visibility-toggle`}
                   >
                     {certificate.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
@@ -217,16 +268,16 @@ const AdditionalSectionsEditor = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`cert-name-${index}`}>Certificate Name</Label>
+                  <Label htmlFor={`cert-name-${index}`}>Name</Label>
                   <Input
                     id={`cert-name-${index}`}
                     value={certificate.name}
                     onChange={(e) => updateCertificate(index, 'name', e.target.value)}
-                    placeholder="AWS Certified Solutions Architect"
+                    placeholder="Certificate name"
                   />
                 </div>
                 <div>
-                  <Label htmlFor={`cert-date-${index}`}>Date Issued</Label>
+                  <Label htmlFor={`cert-date-${index}`}>Date</Label>
                   <Input
                     id={`cert-date-${index}`}
                     type="date"
@@ -237,16 +288,16 @@ const AdditionalSectionsEditor = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor={`cert-issuer-${index}`}>Issuing Organization</Label>
+                  <Label htmlFor={`cert-issuer-${index}`}>Issuer</Label>
                   <Input
                     id={`cert-issuer-${index}`}
                     value={certificate.issuer}
                     onChange={(e) => updateCertificate(index, 'issuer', e.target.value)}
-                    placeholder="Amazon Web Services"
+                    placeholder="Issuing organization"
                   />
                 </div>
                 <div>
-                  <Label htmlFor={`cert-url-${index}`}>Certificate URL</Label>
+                  <Label htmlFor={`cert-url-${index}`}>URL</Label>
                   <Input
                     id={`cert-url-${index}`}
                     value={certificate.url}
@@ -275,8 +326,19 @@ const AdditionalSectionsEditor = () => {
       {/* Publications Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Publications</h2>
-          <Button onClick={addPublication} className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={togglePublicationsSectionVisibility}
+              className="p-1"
+              data-testid="publications-visibility-toggle"
+            >
+              {publicationsSectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+            <h2 className="text-2xl font-bold">Publications</h2>
+          </div>
+          <Button onClick={addPublication} className="flex items-center space-x-2" data-testid="add-publication-button">
             <Plus className="w-4 h-4" />
             <span>Add Publication</span>
           </Button>
@@ -295,6 +357,7 @@ const AdditionalSectionsEditor = () => {
                     size="sm"
                     onClick={() => updatePublication(index, 'visible', !publication.visible)}
                     className="flex items-center space-x-1"
+                    data-testid={`publication-${index}-visibility-toggle`}
                   >
                     {publication.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
@@ -310,25 +373,27 @@ const AdditionalSectionsEditor = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor={`pub-name-${index}`}>Publication Title</Label>
-                <Input
-                  id={`pub-name-${index}`}
-                  value={publication.name}
-                  onChange={(e) => updatePublication(index, 'name', e.target.value)}
-                  placeholder="Building Scalable React Applications"
-                />
-              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`pub-name-${index}`}>Name</Label>
+                  <Input
+                    id={`pub-name-${index}`}
+                    value={publication.name}
+                    onChange={(e) => updatePublication(index, 'name', e.target.value)}
+                    placeholder="Publication title"
+                  />
+                </div>
                 <div>
                   <Label htmlFor={`pub-publisher-${index}`}>Publisher</Label>
                   <Input
                     id={`pub-publisher-${index}`}
                     value={publication.publisher}
                     onChange={(e) => updatePublication(index, 'publisher', e.target.value)}
-                    placeholder="TechMedium"
+                    placeholder="Publishing organization"
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`pub-date-${index}`}>Release Date</Label>
                   <Input
@@ -338,15 +403,15 @@ const AdditionalSectionsEditor = () => {
                     onChange={(e) => updatePublication(index, 'releaseDate', e.target.value)}
                   />
                 </div>
-              </div>
-              <div>
-                <Label htmlFor={`pub-url-${index}`}>Publication URL</Label>
-                <Input
-                  id={`pub-url-${index}`}
-                  value={publication.url}
-                  onChange={(e) => updatePublication(index, 'url', e.target.value)}
-                  placeholder="https://publication-url.com"
-                />
+                <div>
+                  <Label htmlFor={`pub-url-${index}`}>URL</Label>
+                  <Input
+                    id={`pub-url-${index}`}
+                    value={publication.url}
+                    onChange={(e) => updatePublication(index, 'url', e.target.value)}
+                    placeholder="https://publication-url.com"
+                  />
+                </div>
               </div>
               <div>
                 <Label htmlFor={`pub-summary-${index}`}>Summary</Label>
@@ -378,8 +443,19 @@ const AdditionalSectionsEditor = () => {
       {/* Volunteer Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Volunteer Experience</h2>
-          <Button onClick={addVolunteer} className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleVolunteerSectionVisibility}
+              className="p-1"
+              data-testid="volunteer-visibility-toggle"
+            >
+              {volunteerSectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+            <h2 className="text-2xl font-bold">Volunteer Experience</h2>
+          </div>
+          <Button onClick={addVolunteer} className="flex items-center space-x-2" data-testid="add-volunteer-button">
             <Plus className="w-4 h-4" />
             <span>Add Volunteer Experience</span>
           </Button>
@@ -398,6 +474,7 @@ const AdditionalSectionsEditor = () => {
                     size="sm"
                     onClick={() => updateVolunteer(index, 'visible', !volunteer.visible)}
                     className="flex items-center space-x-1"
+                    data-testid={`volunteer-${index}-visibility-toggle`}
                   >
                     {volunteer.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
@@ -526,8 +603,19 @@ const AdditionalSectionsEditor = () => {
       {/* Interests Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Interests</h2>
-          <Button onClick={addInterest} className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleInterestsSectionVisibility}
+              className="p-1"
+              data-testid="interests-visibility-toggle"
+            >
+              {interestsSectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+            <h2 className="text-2xl font-bold">Interests</h2>
+          </div>
+          <Button onClick={addInterest} className="flex items-center space-x-2" data-testid="add-interest-button">
             <Plus className="w-4 h-4" />
             <span>Add Interest</span>
           </Button>
@@ -546,6 +634,7 @@ const AdditionalSectionsEditor = () => {
                     size="sm"
                     onClick={() => updateInterest(index, 'visible', !interest.visible)}
                     className="flex items-center space-x-1"
+                    data-testid={`interest-${index}-visibility-toggle`}
                   >
                     {interest.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
@@ -562,12 +651,12 @@ const AdditionalSectionsEditor = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor={`interest-name-${index}`}>Interest Name</Label>
+                <Label htmlFor={`interest-name-${index}`}>Name</Label>
                 <Input
                   id={`interest-name-${index}`}
                   value={interest.name}
                   onChange={(e) => updateInterest(index, 'name', e.target.value)}
-                  placeholder="Technology, Sports, Arts, etc."
+                  placeholder="Interest name"
                 />
               </div>
               <div>
@@ -582,13 +671,13 @@ const AdditionalSectionsEditor = () => {
                     Add Keyword
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="space-y-2">
                   {interest.keywords.map((keyword, keywordIndex) => (
                     <div key={keywordIndex} className="flex gap-2">
                       <Input
                         value={keyword}
                         onChange={(e) => updateInterestKeyword(index, keywordIndex, e.target.value)}
-                        placeholder="Specific interest"
+                        placeholder="Keyword or detail"
                         className="flex-1"
                       />
                       <Button
@@ -623,8 +712,19 @@ const AdditionalSectionsEditor = () => {
       {/* References Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">References</h2>
-          <Button onClick={addReference} className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleReferencesSectionVisibility}
+              className="p-1"
+              data-testid="references-visibility-toggle"
+            >
+              {referencesSectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+            <h2 className="text-2xl font-bold">References</h2>
+          </div>
+          <Button onClick={addReference} className="flex items-center space-x-2" data-testid="add-reference-button">
             <Plus className="w-4 h-4" />
             <span>Add Reference</span>
           </Button>
@@ -643,6 +743,7 @@ const AdditionalSectionsEditor = () => {
                     size="sm"
                     onClick={() => updateReference(index, 'visible', !reference.visible)}
                     className="flex items-center space-x-1"
+                    data-testid={`reference-${index}-visibility-toggle`}
                   >
                     {reference.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
@@ -659,21 +760,21 @@ const AdditionalSectionsEditor = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor={`reference-name-${index}`}>Reference Name & Title</Label>
+                <Label htmlFor={`ref-name-${index}`}>Name</Label>
                 <Input
-                  id={`reference-name-${index}`}
+                  id={`ref-name-${index}`}
                   value={reference.name}
                   onChange={(e) => updateReference(index, 'name', e.target.value)}
-                  placeholder="John Doe - CEO at Company"
+                  placeholder="Reference name"
                 />
               </div>
               <div>
-                <Label htmlFor={`reference-text-${index}`}>Reference Text</Label>
+                <Label htmlFor={`ref-reference-${index}`}>Reference</Label>
                 <Textarea
-                  id={`reference-text-${index}`}
+                  id={`ref-reference-${index}`}
                   value={reference.reference}
                   onChange={(e) => updateReference(index, 'reference', e.target.value)}
-                  placeholder="What they said about you..."
+                  placeholder="Reference statement or contact information..."
                   rows={4}
                 />
               </div>
@@ -693,6 +794,13 @@ const AdditionalSectionsEditor = () => {
           </Card>
         )}
       </div>
+
+      {/* Non-conforming data section */}
+      {state.resumeData.nonConformingData && (
+        <div className="mt-8">
+          <NonConformingDataViewer data={state.resumeData.nonConformingData} />
+        </div>
+      )}
     </div>
   );
 };

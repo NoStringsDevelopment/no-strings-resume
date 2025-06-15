@@ -1,4 +1,3 @@
-
 import { useResume } from "@/context/ResumeContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,10 +75,11 @@ export default function WorkEditor() {
             size="sm"
             onClick={toggleSectionVisibility}
             className="p-1"
+            data-testid="work-visibility-toggle"
           >
             {sectionVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </Button>
-          <h2 className="text-2xl font-bold">work</h2>
+          <h2 className="text-2xl font-bold">Work</h2>
         </div>
         <Button onClick={addWorkExperience}>
           <Plus className="w-4 h-4 mr-2" />
@@ -97,6 +97,7 @@ export default function WorkEditor() {
                   size="sm"
                   onClick={() => updateWorkExperience(index, 'visible', !experience.visible)}
                   className="p-1"
+                  data-testid={`work-${index}-visibility-toggle`}
                 >
                   {experience.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
@@ -115,7 +116,7 @@ export default function WorkEditor() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor={`name-${index}`}>name</Label>
+                <Label htmlFor={`name-${index}`}>Company Name</Label>
                 <Input
                   id={`name-${index}`}
                   value={experience.name}
@@ -125,7 +126,7 @@ export default function WorkEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`position-${index}`}>position</Label>
+                <Label htmlFor={`position-${index}`}>Position</Label>
                 <Input
                   id={`position-${index}`}
                   value={experience.position}
@@ -135,7 +136,7 @@ export default function WorkEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`location-${index}`}>location</Label>
+                <Label htmlFor={`location-${index}`}>Location</Label>
                 <Input
                   id={`location-${index}`}
                   value={experience.location || ''}
@@ -145,7 +146,7 @@ export default function WorkEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`url-${index}`}>url</Label>
+                <Label htmlFor={`url-${index}`}>Website</Label>
                 <Input
                   id={`url-${index}`}
                   value={experience.url}
@@ -154,7 +155,7 @@ export default function WorkEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`startDate-${index}`}>startDate</Label>
+                <Label htmlFor={`startDate-${index}`}>Start Date</Label>
                 <Input
                   id={`startDate-${index}`}
                   value={experience.startDate}
@@ -163,7 +164,7 @@ export default function WorkEditor() {
                 />
               </div>
               <div>
-                <Label htmlFor={`endDate-${index}`}>endDate</Label>
+                <Label htmlFor={`endDate-${index}`}>End Date</Label>
                 <Input
                   id={`endDate-${index}`}
                   value={experience.endDate}
@@ -174,7 +175,7 @@ export default function WorkEditor() {
             </div>
 
             <div>
-              <Label htmlFor={`description-${index}`}>description</Label>
+              <Label htmlFor={`description-${index}`}>Description</Label>
               <Textarea
                 id={`description-${index}`}
                 value={experience.description || ''}
@@ -186,7 +187,7 @@ export default function WorkEditor() {
             </div>
 
             <div>
-              <Label htmlFor={`summary-${index}`}>summary</Label>
+              <Label htmlFor={`summary-${index}`}>Summary</Label>
               <Textarea
                 id={`summary-${index}`}
                 value={experience.summary}
@@ -199,7 +200,7 @@ export default function WorkEditor() {
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <Label>highlights</Label>
+                <Label>Highlights</Label>
                 <Button
                   variant="outline"
                   size="sm"
