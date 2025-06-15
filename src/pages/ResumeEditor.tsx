@@ -357,7 +357,7 @@ const ResumeEditor = () => {
             </Tabs>
           </div>
 
-          {/* Live Preview - Now using the same EnhancedPreview as ThemeEditor */}
+          {/* Live Preview - Consistent with ThemeEditor */}
           {showPreview && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
