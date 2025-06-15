@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useResume } from "@/context/ResumeContext";
 import { useTheme } from "@/context/ThemeContext";
-import { ResumeRenderer } from "@/components/display/ResumeRenderer";
+import { EnhancedPreview } from "@/components/display/EnhancedPreview";
 import BasicEditor from "@/components/editor/BasicEditor";
 import WorkEditor from "@/components/editor/WorkEditor";
 import EducationEditor from "@/components/editor/EducationEditor";
@@ -363,7 +363,7 @@ const ResumeEditor = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
               <div className="sticky top-8">
                 <div className="max-h-[80vh] overflow-y-auto">
-                  <ResumeRenderer 
+                  <EnhancedPreview 
                     resumeData={state.resumeData} 
                     theme={themeState.currentTheme}
                     className="scale-75 origin-top"

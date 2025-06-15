@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Palette, Edit, Eye } from "lucide-react";
 import { ThemeCustomizer } from "@/components/theme/ThemeCustomizer";
-import { ResumeRenderer } from "@/components/display/ResumeRenderer";
+import { EnhancedPreview } from "@/components/display/EnhancedPreview";
 import { useResume } from "@/context/ResumeContext";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -34,13 +34,13 @@ const ThemeEditor = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2">
-                <Eye className="w-4 h-4" />
-                <span>View</span>
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2">
+              <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
                 <Edit className="w-4 h-4" />
                 <span>Edit</span>
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
+                <Eye className="w-4 h-4" />
+                <span>View</span>
               </Button>
             </div>
           </div>
@@ -63,13 +63,11 @@ const ThemeEditor = () => {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview</h2>
             <div className="sticky top-8">
-              <div className="max-h-[80vh] overflow-y-auto">
-                <ResumeRenderer 
-                  resumeData={state.resumeData} 
-                  theme={themeState.currentTheme}
-                  className="scale-75 origin-top"
-                />
-              </div>
+              <EnhancedPreview 
+                resumeData={state.resumeData} 
+                theme={themeState.currentTheme}
+                data-testid="theme-preview"
+              />
             </div>
           </div>
         </div>
