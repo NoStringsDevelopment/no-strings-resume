@@ -88,16 +88,6 @@ const ResumeView = () => {
               </Button>
             </div>
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/edit')} 
-                className="flex items-center space-x-2" 
-                data-testid="view-edit-button"
-              >
-                <Edit className="w-4 h-4" />
-                {!isMobile && <span>Edit</span>}
-              </Button>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button className="flex items-center space-x-2" data-testid="view-export-button">
@@ -124,6 +114,16 @@ const ResumeView = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/edit')} 
+                className="flex items-center space-x-2" 
+                data-testid="view-edit-button"
+              >
+                <Edit className="w-4 h-4" />
+                {!isMobile && <span>Edit</span>}
+              </Button>
             </div>
           </div>
         </div>

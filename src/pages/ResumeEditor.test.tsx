@@ -159,11 +159,11 @@ vi.mock('@/utils/importExport', () => ({
 }));
 
 // Mock fetch for reset functionality
-global.fetch = vi.fn(() =>
+vi.stubGlobal('fetch', vi.fn(() =>
   Promise.resolve({
     json: () => Promise.resolve({ basics: { name: 'Default Name' } })
   })
-) as any;
+));
 
 const renderResumeEditor = () => {
   return render(
@@ -178,71 +178,51 @@ describe('ResumeEditor Preview Functionality', () => {
     vi.clearAllMocks();
   });
 
-  it('renders without preview initially', () => {
+  it('renders with preview always visible', () => {
     renderResumeEditor();
     
     expect(screen.getByTestId('resume-editor')).toBeInTheDocument();
-    expect(screen.queryByTestId('editor-preview')).not.toBeInTheDocument();
-  });
-
-  it('shows preview when preview button is clicked', () => {
-    renderResumeEditor();
-    
-    const previewButton = screen.getByTestId('preview-button');
-    fireEvent.click(previewButton);
-    
     expect(screen.getByTestId('editor-preview')).toBeInTheDocument();
   });
 
-  it('hides preview when preview button is clicked again', () => {
-    renderResumeEditor();
-    
-    const previewButton = screen.getByTestId('preview-button');
-    
-    // Show preview
-    fireEvent.click(previewButton);
-    expect(screen.getByTestId('editor-preview')).toBeInTheDocument();
-    
-    // Hide preview
-    fireEvent.click(previewButton);
-    expect(screen.queryByTestId('editor-preview')).not.toBeInTheDocument();
-  });
-
-  it('changes layout to two columns when preview is shown', () => {
+  it('has two-column layout by default', () => {
     renderResumeEditor();
     
     const mainContent = screen.getByTestId('editor-main');
     
-    // Initially single column
-    expect(mainContent.firstChild).not.toHaveClass('grid', 'lg:grid-cols-2');
-    
-    // Show preview - should become two column
-    const previewButton = screen.getByTestId('preview-button');
-    fireEvent.click(previewButton);
-    
+    // Should always have two-column layout
     expect(mainContent.firstChild).toHaveClass('grid', 'lg:grid-cols-2');
   });
 
-  it('preview button shows correct icon states', () => {
+  it('displays preview heading', () => {
     renderResumeEditor();
     
-    const previewButton = screen.getByTestId('preview-button');
-    
-    // Initially should show PanelRightOpen icon (preview closed)
-    expect(previewButton.querySelector('svg')).toBeInTheDocument();
-    
-    // After clicking, should show PanelRightClose icon (preview open)
-    fireEvent.click(previewButton);
-    expect(previewButton.querySelector('svg')).toBeInTheDocument();
+    expect(screen.getByText('Preview')).toBeInTheDocument();
   });
 
   it('preview has sticky positioning', () => {
     renderResumeEditor();
     
-    const previewButton = screen.getByTestId('preview-button');
-    fireEvent.click(previewButton);
-    
     const previewContainer = screen.getByTestId('editor-preview').closest('.sticky');
     expect(previewContainer).toHaveClass('sticky', 'top-8');
+  });
+
+  it('renders enhanced preview component', () => {
+    renderResumeEditor();
+    
+    const preview = screen.getByTestId('editor-preview');
+    expect(preview).toBeInTheDocument();
+    expect(preview).toHaveTextContent('Enhanced Preview');
+  });
+
+  it('maintains preview visibility across tab changes', () => {
+    renderResumeEditor();
+    
+    // Change tabs
+    const workTab = screen.getByTestId('work-tab');
+    fireEvent.click(workTab);
+    
+    // Preview should still be visible
+    expect(screen.getByTestId('editor-preview')).toBeInTheDocument();
   });
 });

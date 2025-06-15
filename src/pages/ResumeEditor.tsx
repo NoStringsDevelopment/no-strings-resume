@@ -241,23 +241,23 @@ const ResumeEditor = () => {
               <Button 
                 variant="outline"
                 size="sm"
-                onClick={() => navigate('/view')}
-                className="flex items-center space-x-1"
-                data-testid="view-button"
-              >
-                <Eye className="w-4 h-4" />
-                <span className="hidden lg:block">View</span>
-              </Button>
-              
-              <Button 
-                variant="outline"
-                size="sm"
                 onClick={() => navigate('/theme')}
                 className="flex items-center space-x-1"
                 data-testid="theme-button"
               >
                 <Palette className="w-4 h-4" />
                 <span className="hidden lg:block">Theme</span>
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/view')}
+                className="flex items-center space-x-1"
+                data-testid="view-button"
+              >
+                <Eye className="w-4 h-4" />
+                <span className="hidden lg:block">View</span>
               </Button>
             </div>
           </div>

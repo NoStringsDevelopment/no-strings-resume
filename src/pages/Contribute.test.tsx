@@ -231,8 +231,14 @@ describe('Contribute Component', () => {
       expect(kofiIframe).toBeInTheDocument();
       expect(kofiIframe).toHaveClass('border-none');
       expect(kofiIframe).toHaveClass('w-full');
-      expect(kofiIframe).toHaveClass('bg-gray-100');
-      expect(kofiIframe).toHaveClass('rounded-lg');
+      
+      // Check that the iframe is contained within a properly styled container
+      const kofiContainer = kofiIframe?.parentElement;
+      expect(kofiContainer).toHaveClass('w-full');
+      expect(kofiContainer).toHaveClass('max-w-md');
+      expect(kofiContainer).toHaveClass('bg-white');
+      expect(kofiContainer).toHaveClass('rounded-xl');
+      expect(kofiContainer).toHaveClass('shadow-lg');
     });
 
     it('should render Ko-fi iframe without blocking page load', () => {
