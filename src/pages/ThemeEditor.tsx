@@ -20,7 +20,8 @@ const ThemeEditor = () => {
       {/* Header */}
       <header className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+          {/* Desktop Layout - Single Row */}
+          <div className="hidden md:flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <button 
@@ -62,6 +63,53 @@ const ThemeEditor = () => {
               <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
                 <Eye className="w-4 h-4" />
                 <span className="hidden lg:block">View</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Layout - Two Rows */}
+          <div className="md:hidden space-y-3">
+            {/* First Row - Branding and Preview Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => navigate('/')}
+                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  data-testid="home-button"
+                >
+                  <span className="text-white font-bold text-sm">NR</span>
+                </button>
+                <span className="font-semibold text-gray-900">No Strings Resume</span>
+                <div className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
+                  Theme
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="theme-preview-toggle-mobile"
+                  checked={isPreviewVisible}
+                  onCheckedChange={togglePreview}
+                  data-testid="preview-toggle"
+                />
+                <label 
+                  htmlFor="theme-preview-toggle-mobile" 
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  Preview
+                </label>
+              </div>
+            </div>
+
+            {/* Second Row - Navigation Buttons */}
+            <div className="flex items-center justify-center space-x-2">
+              <Button variant="outline" onClick={() => navigate('/edit')} className="flex items-center space-x-2" data-testid="edit-button">
+                <Edit className="w-4 h-4" />
+                <span>Edit</span>
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/view')} className="flex items-center space-x-2" data-testid="view-button">
+                <Eye className="w-4 h-4" />
+                <span>View</span>
               </Button>
             </div>
           </div>

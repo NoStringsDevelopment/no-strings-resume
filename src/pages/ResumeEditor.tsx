@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -140,7 +141,8 @@ const ResumeEditor = () => {
       {/* Header */}
       <header className="bg-white border-b shadow-sm sticky top-0 z-10" data-testid="editor-header">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
+          {/* Desktop Layout - Single Row */}
+          <div className="hidden md:flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <button 
@@ -176,7 +178,7 @@ const ResumeEditor = () => {
               
               <div className="w-px h-6 bg-gray-300 mr-1 hidden sm:block" />
               
-              {/* Undo, Redo, Import, Export, Clear, Reset Buttons */}
+              {/* History Actions */}
               <Button 
                 variant="ghost"
                 size="sm"
@@ -205,6 +207,7 @@ const ResumeEditor = () => {
               
               <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
+              {/* File Actions */}
               <Button 
                 variant="ghost"
                 size="sm"
@@ -231,6 +234,7 @@ const ResumeEditor = () => {
               
               <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
+              {/* Data Actions */}
               <Button 
                 variant="ghost"
                 size="sm"
@@ -257,6 +261,7 @@ const ResumeEditor = () => {
               
               <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
+              {/* Navigation Actions */}
               <Button 
                 variant="outline"
                 size="sm"
@@ -278,6 +283,139 @@ const ResumeEditor = () => {
                 <Eye className="w-4 h-4" />
                 <span className="hidden lg:block">View</span>
               </Button>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Layout - Two Rows */}
+          <div className="md:hidden space-y-3">
+            {/* First Row - Branding and Preview Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <button 
+                  onClick={() => navigate('/')}
+                  className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
+                  data-testid="home-button"
+                >
+                  <span className="text-white font-bold text-sm">NR</span>
+                </button>
+                <span className="font-semibold text-gray-900">No Strings Resume</span>
+                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                  Edit
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="preview-toggle-mobile"
+                  checked={isPreviewVisible}
+                  onCheckedChange={togglePreview}
+                  data-testid="preview-toggle"
+                />
+                <label 
+                  htmlFor="preview-toggle-mobile" 
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  Preview
+                </label>
+              </div>
+            </div>
+
+            {/* Second Row - Action Buttons */}
+            <div className="flex items-center justify-between space-x-1">
+              {/* History Actions */}
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleUndo}
+                  disabled={!canUndo}
+                  title="Undo"
+                  data-testid="undo-button"
+                >
+                  <Undo className="w-4 h-4" />
+                </Button>
+                
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRedo}
+                  disabled={!canRedo}
+                  title="Redo"
+                  data-testid="redo-button"
+                >
+                  <Redo className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* File Actions */}
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleImport}
+                  title="Import"
+                  data-testid="import-button"
+                >
+                  <Upload className="w-4 h-4" />
+                </Button>
+                
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleExportJson}
+                  title="Backup"
+                  data-testid="backup-button"
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Data Actions */}
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearAll}
+                  className="text-red-600 hover:text-red-700"
+                  title="Clear All"
+                  data-testid="clear-button"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+                
+                <Button 
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetToDefault}
+                  title="Reset to Default"
+                  data-testid="reset-button"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Navigation Actions */}
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/theme')}
+                  title="Theme"
+                  data-testid="theme-button"
+                >
+                  <Palette className="w-4 h-4" />
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/view')}
+                  title="View"
+                  data-testid="view-button"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
