@@ -96,10 +96,14 @@ const Contribute = () => {
                 <iframe 
                   id='kofiframe' 
                   src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' 
-                  className="border-none w-full bg-gray-100 rounded-lg"
-                  height="320" 
+                  className="border-none w-full bg-transparent rounded-lg"
+                  height="400" 
                   title="Support on Ko-fi"
-                  style={{ overflow: 'hidden' }}
+                  style={{ 
+                    overflow: 'hidden',
+                    minHeight: '400px'
+                  }}
+                  scrolling="no"
                 />
               </div>
             </div>
