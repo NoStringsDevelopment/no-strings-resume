@@ -160,24 +160,6 @@ const ResumeEditor = () => {
             </div>
             
             <div className="flex items-center space-x-1">
-              {/* Preview Toggle */}
-              <div className="flex items-center space-x-2 mr-2">
-                <Checkbox 
-                  id="preview-toggle"
-                  checked={isPreviewVisible}
-                  onCheckedChange={togglePreview}
-                  data-testid="preview-toggle"
-                />
-                <label 
-                  htmlFor="preview-toggle" 
-                  className="text-sm font-medium cursor-pointer hidden sm:block"
-                >
-                  Preview
-                </label>
-              </div>
-              
-              <div className="w-px h-6 bg-gray-300 mr-1 hidden sm:block" />
-              
               {/* History Actions */}
               <Button 
                 variant="ghost"
@@ -261,6 +243,24 @@ const ResumeEditor = () => {
               
               <div className="w-px h-6 bg-gray-300 mx-1 hidden sm:block" />
               
+              {/* Preview Toggle */}
+              <div className="flex items-center space-x-2 mr-2">
+                <Checkbox 
+                  id="preview-toggle"
+                  checked={isPreviewVisible}
+                  onCheckedChange={togglePreview}
+                  data-testid="preview-toggle"
+                />
+                <label 
+                  htmlFor="preview-toggle" 
+                  className="text-sm font-medium cursor-pointer hidden sm:block"
+                >
+                  Preview
+                </label>
+              </div>
+              
+              <div className="w-px h-6 bg-gray-300 mr-1 hidden sm:block" />
+              
               {/* Navigation Actions */}
               <Button 
                 variant="outline"
@@ -288,7 +288,7 @@ const ResumeEditor = () => {
 
           {/* Mobile/Tablet Layout - Two Rows */}
           <div className="md:hidden space-y-3">
-            {/* First Row - Branding and Preview Toggle */}
+            {/* First Row - Branding and Navigation Actions */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <button 
@@ -304,19 +304,26 @@ const ResumeEditor = () => {
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="preview-toggle-mobile"
-                  checked={isPreviewVisible}
-                  onCheckedChange={togglePreview}
-                  data-testid="preview-toggle"
-                />
-                <label 
-                  htmlFor="preview-toggle-mobile" 
-                  className="text-sm font-medium cursor-pointer"
+              <div className="flex items-center space-x-1">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/theme')}
+                  title="Theme"
+                  data-testid="theme-button"
                 >
-                  Preview
-                </label>
+                  <Palette className="w-4 h-4" />
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/view')}
+                  title="View"
+                  data-testid="view-button"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
               </div>
             </div>
 
@@ -394,27 +401,20 @@ const ResumeEditor = () => {
                 </Button>
               </div>
 
-              {/* Navigation Actions */}
-              <div className="flex items-center space-x-1">
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/theme')}
-                  title="Theme"
-                  data-testid="theme-button"
+              {/* Preview Toggle */}
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="preview-toggle-mobile"
+                  checked={isPreviewVisible}
+                  onCheckedChange={togglePreview}
+                  data-testid="preview-toggle"
+                />
+                <label 
+                  htmlFor="preview-toggle-mobile" 
+                  className="text-sm font-medium cursor-pointer"
                 >
-                  <Palette className="w-4 h-4" />
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/view')}
-                  title="View"
-                  data-testid="view-button"
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
+                  Preview
+                </label>
               </div>
             </div>
           </div>
