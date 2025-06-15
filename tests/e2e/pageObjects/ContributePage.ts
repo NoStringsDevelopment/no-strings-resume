@@ -22,7 +22,7 @@ export class ContributePage {
     this.page = page;
     this.backToHomeButton = page.getByTestId('back-to-home-btn');
     this.startBuildingButton = page.getByTestId('start-building-btn');
-    this.mainHeading = page.getByRole('heading', { name: 'No Strings Resume', exact: true });
+    this.mainHeading = page.getByRole('heading', { name: /Help Make.*No Strings Resume.*Even Better/i });
     this.heroHeading = page.getByRole('heading', { name: /Help Make.*No Strings Resume.*Even Better/i });
     this.gradientText = page.getByTestId('gradient-text');
     this.heroDescription = page.getByText(/No Strings Resume is an open-source project/i);

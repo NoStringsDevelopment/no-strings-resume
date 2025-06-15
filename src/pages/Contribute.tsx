@@ -77,7 +77,7 @@ const Contribute = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Help Make{' '}
             <span 
               className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
@@ -86,7 +86,7 @@ const Contribute = () => {
               No Strings Resume
             </span>
             <br />Even Better
-          </h2>
+          </h1>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
             No Strings Resume is an open-source project built by the community, for the community. 
             Your contributions help make privacy-first resume building accessible to everyone.
@@ -102,7 +102,7 @@ const Contribute = () => {
             <div className="flex flex-col justify-center h-full px-4 lg:px-8">
               <div className="text-center lg:text-left max-w-lg mx-auto lg:mx-0">
                 <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
-                <h3 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h3>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h2>
                 <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                   If you find No Strings Resume helpful and want to support its development, 
                   consider making a donation. Every contribution helps keep the project running and growing.
@@ -144,7 +144,7 @@ const Contribute = () => {
       {/* Contribution Ways */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold text-gray-900 mb-4">Ways to Contribute</h3>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Ways to Contribute</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Whether you're a developer, designer, writer, or just someone who loves the project, 
             there are many ways to get involved.
@@ -162,7 +162,7 @@ const Contribute = () => {
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <way.icon className="w-6 h-6 text-blue-600" />
                 </div>
-                <CardTitle className="text-xl text-gray-900">{way.title}</CardTitle>
+                <h3 className="font-semibold tracking-tight text-xl text-gray-900">{way.title}</h3>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-gray-600 leading-relaxed mb-4">
