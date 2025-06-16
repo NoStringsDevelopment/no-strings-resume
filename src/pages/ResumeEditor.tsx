@@ -267,6 +267,17 @@ const ResumeEditor = () => {
               <Button 
                 variant="outline"
                 size="sm"
+                onClick={() => navigate('/integrations')}
+                className="flex items-center space-x-1"
+                data-testid="integrations-button"
+              >
+                <Zap className="w-4 h-4" />
+                <span className="hidden xl:block">Integrations</span>
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="sm"
                 onClick={() => navigate('/theme')}
                 className="flex items-center space-x-1"
                 data-testid="theme-button"
@@ -310,6 +321,17 @@ const ResumeEditor = () => {
               </div>
               
               <div className="flex items-center space-x-1">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/integrations')}
+                  className="flex items-center space-x-1"
+                  data-testid="integrations-button-mobile"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span className="hidden sm:inline">Integrations</span>
+                </Button>
+                
                 <Button 
                   variant="outline"
                   size="sm"

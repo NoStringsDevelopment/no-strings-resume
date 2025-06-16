@@ -7,7 +7,19 @@ const Contribute = () => {
   const contributionWays = [{
     icon: Code,
     title: "Code Contributions",
-    description: "Help improve the codebase by submitting pull requests for new features, bug fixes, or improvements.",
+    description: (
+      <>
+        Help improve the codebase by submitting pull requests for new features, bug fixes, or improvements. 
+        You can also help build{' '}
+        <button 
+          onClick={() => navigate('/integrations')} 
+          className="text-blue-600 hover:text-blue-800 underline font-medium"
+        >
+          new integrations
+        </button>
+        {' '}for popular services.
+      </>
+    ),
     action: "View Repository",
     link: "https://github.com/NoStringsDevelopment/no-strings-resume"
   }, {
