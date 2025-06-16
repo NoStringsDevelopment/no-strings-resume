@@ -8,8 +8,14 @@ test.describe('Resume Builder', () => {
     await landingPage.goto();
     await landingPage.assertPageLoaded();
     
-    // Verify all expected elements are visible
-    await expect(landingPage.mainHeading).toBeVisible();
+    // Verify expected elements are visible (mainHeading is hidden on mobile)
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width >= 640) {
+      // Desktop/tablet - main heading should be visible
+      await expect(landingPage.mainHeading).toBeVisible();
+    }
+    
+    // These should always be visible
     await expect(landingPage.heroHeading).toBeVisible();
     await expect(landingPage.privacyMessage).toBeVisible();
     await expect(landingPage.startBuildingButton).toBeVisible();

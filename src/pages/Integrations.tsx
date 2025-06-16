@@ -219,7 +219,10 @@ const Integrations = () => {
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
                     <integration.icon className="w-6 h-6 text-blue-600" />
                   </div>
-                  {getStatusBadge(integration.status)}
+                  <div className="flex flex-col gap-2">
+                    {getStatusBadge(integration.status)}
+                    {getPrivacyBadge(integration.privacy)}
+                  </div>
                 </div>
                 <CardTitle className="text-xl text-gray-900">{integration.title}</CardTitle>
                 <Badge variant="secondary" className="w-fit">
@@ -243,10 +246,23 @@ const Integrations = () => {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Request an Integration
             </h2>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
               Don't see the integration you need? Let us know what tools you'd like to connect 
               with No Strings Resume and we'll prioritize based on community demand.
             </p>
+            
+            {/* Privacy Reminder */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 text-left">
+              <div className="flex items-start space-x-2">
+                <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-blue-800">
+                  <strong>Remember:</strong> All integrations are optional. No Strings Resume will always work 
+                  completely offline with your data staying in your browser. Integrations are for users who 
+                  specifically choose to share their data externally.
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 onClick={() => window.open('https://github.com/NoStringsDevelopment/no-strings-resume/discussions', '_blank')}
