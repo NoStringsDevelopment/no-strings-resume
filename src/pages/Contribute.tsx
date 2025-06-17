@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -89,71 +88,65 @@ const Contribute = () => {
         </div>
       </section>
 
-      {/* Support Section - Improved layout and spacing */}
-      <section className="bg-gray-50 py-16">
+      {/* Support Section - Improved design */}
+      <section className="bg-white py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Left Column - Content */}
-              <div className="space-y-8">
-                <div className="text-center lg:text-left">
-                  <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h2>
-                  <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                    If you find No Strings Resume helpful and want to support its development, 
-                    consider making a donation. Every contribution helps keep the project running and growing.
-                  </p>
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Header */}
+            <div className="mb-12">
+              <Heart className="w-16 h-16 text-red-500 mx-auto mb-6" />
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">Support the Project</h2>
+              <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
+                If you find No Strings Resume helpful and want to support its development, 
+                consider making a donation. Every contribution helps keep the project running and growing.
+              </p>
+            </div>
+            
+            {/* Features Grid */}
+            <div className="grid md:grid-cols-3 gap-8 mb-16">
+              {supportFeatures.map((feature, index) => (
+                <div key={index} className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <Check className="w-6 h-6 text-green-600" />
+                  </div>
+                  <p className="text-gray-700 font-medium">{feature}</p>
                 </div>
-                
-                <div className="space-y-4">
-                  {supportFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="flex-shrink-0 mt-1">
-                        <Check className="w-5 h-5 text-green-500" />
-                      </div>
-                      <p className="text-gray-700 leading-relaxed">{feature}</p>
-                    </div>
-                  ))}
+              ))}
+            </div>
+            
+            {/* Donation Card */}
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 md:p-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">Make a Donation</h3>
+              <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                Support the development of No Strings Resume with a secure payment via Stripe.
+              </p>
+              
+              {/* QR Code */}
+              <div className="flex justify-center mb-8">
+                <div className="bg-white rounded-2xl p-6 shadow-lg">
+                  <img 
+                    src="/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png" 
+                    alt="QR Code for donation" 
+                    className="w-48 h-48 rounded-lg"
+                  />
                 </div>
               </div>
               
-              {/* Right Column - Stripe Payment */}
-              <div className="flex justify-center">
-                <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-                  <div className="text-center space-y-6">
-                    <h3 className="text-2xl font-bold text-gray-900">Make a Donation</h3>
-                    <p className="text-gray-600">
-                      Support the development of No Strings Resume with a secure payment via Stripe.
-                    </p>
-                    
-                    {/* QR Code */}
-                    <div className="flex justify-center">
-                      <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-4">
-                        <img 
-                          src="/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png" 
-                          alt="QR Code for donation" 
-                          className="w-40 h-40 rounded-lg"
-                        />
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-gray-500">Scan with your phone to donate</p>
-                    
-                    {/* Stripe Button */}
-                    <div className="space-y-3">
-                      <Button 
-                        onClick={() => window.open('https://buy.stripe.com/6oU5kF8MzcKqgU18EPfUQ07', '_blank')}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg transition-all duration-200"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Donate via Stripe
-                      </Button>
-                      <p className="text-xs text-gray-500">
-                        Secure payment processing • No account required
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              <p className="text-gray-500 mb-6">Scan with your phone to donate</p>
+              
+              {/* Stripe Button */}
+              <div className="space-y-4">
+                <Button 
+                  onClick={() => window.open('https://buy.stripe.com/6oU5kF8MzcKqgU18EPfUQ07', '_blank')}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-8 text-lg rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                  size="lg"
+                >
+                  <ExternalLink className="w-5 h-5 mr-3" />
+                  Donate via Stripe
+                </Button>
+                <p className="text-sm text-gray-500">
+                  Secure payment processing • No account required
+                </p>
               </div>
             </div>
           </div>
