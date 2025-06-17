@@ -6,10 +6,12 @@ import { Github, MessageSquare, Heart, Code, Bug, FileText, Check, ExternalLink 
 
 const Contribute = () => {
   const navigate = useNavigate();
-  const contributionWays = [{
-    icon: Code,
-    title: "Code Contributions",
-    description: <>
+  
+  const contributionWays = [
+    {
+      icon: Code,
+      title: "Code Contributions",
+      description: <>
         Help improve the codebase by submitting pull requests for new features, bug fixes, or improvements. 
         You can also help build{' '}
         <button onClick={() => navigate('/integrations')} className="text-blue-600 hover:text-blue-800 underline font-medium">
@@ -17,31 +19,40 @@ const Contribute = () => {
         </button>
         {' '}for popular services.
       </>,
-    action: "View Repository",
-    link: "https://github.com/NoStringsDevelopment/no-strings-resume"
-  }, {
-    icon: Bug,
-    title: "Report Issues",
-    description: "Found a bug or have a feature request? Let us know by creating an issue on GitHub.",
-    action: "Report Issue",
-    link: "https://github.com/NoStringsDevelopment/no-strings-resume/issues"
-  }, {
-    icon: FileText,
-    title: "Documentation",
-    description: "Help improve documentation, write tutorials, or contribute to the project's knowledge base.",
-    action: "Contribute Docs",
-    link: "https://github.com/NoStringsDevelopment/no-strings-resume"
-  }, {
-    icon: MessageSquare,
-    title: "Community Support",
-    description: "Help other users by answering questions and providing support in discussions.",
-    action: "Join Discussions",
-    link: "https://github.com/NoStringsDevelopment/no-strings-resume/discussions"
-  }];
+      action: "View Repository",
+      link: "https://github.com/NoStringsDevelopment/no-strings-resume"
+    },
+    {
+      icon: Bug,
+      title: "Report Issues",
+      description: "Found a bug or have a feature request? Let us know by creating an issue on GitHub.",
+      action: "Report Issue",
+      link: "https://github.com/NoStringsDevelopment/no-strings-resume/issues"
+    },
+    {
+      icon: FileText,
+      title: "Documentation",
+      description: "Help improve documentation, write tutorials, or contribute to the project's knowledge base.",
+      action: "Contribute Docs",
+      link: "https://github.com/NoStringsDevelopment/no-strings-resume"
+    },
+    {
+      icon: MessageSquare,
+      title: "Community Support",
+      description: "Help other users by answering questions and providing support in discussions.",
+      action: "Join Discussions",
+      link: "https://github.com/NoStringsDevelopment/no-strings-resume/discussions"
+    }
+  ];
   
-  const supportFeatures = ["Support ongoing development and maintenance", "Help cover hosting and infrastructure costs", "Enable new features and improvements"];
+  const supportFeatures = [
+    "Support ongoing development and maintenance",
+    "Help cover hosting and infrastructure costs", 
+    "Enable new features and improvements"
+  ];
   
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
@@ -53,7 +64,9 @@ const Contribute = () => {
               <span className="text-xl font-bold text-gray-900 hidden sm:block">No Strings Resume</span>
             </Button>
             <nav className="flex items-center space-x-4">
-              
+              <Button onClick={() => navigate('/edit')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" data-testid="start-building-btn">
+                Start Building
+              </Button>
             </nav>
           </div>
         </div>
@@ -76,64 +89,69 @@ const Contribute = () => {
         </div>
       </section>
 
-      {/* Support Section - Updated with Stripe payment */}
+      {/* Support Section - Improved layout and spacing */}
       <section className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-8 items-center max-w-7xl mx-auto">
-            {/* Left Column - Content */}
-            <div className="flex flex-col justify-center h-full px-4 lg:px-8">
-              <div className="text-center lg:text-left max-w-lg mx-auto lg:mx-0">
-                <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h2>
-                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                  If you find No Strings Resume helpful and want to support its development, 
-                  consider making a donation. Every contribution helps keep the project running and growing.
-                </p>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left Column - Content */}
+              <div className="space-y-8">
+                <div className="text-center lg:text-left">
+                  <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Support the Project</h2>
+                  <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                    If you find No Strings Resume helpful and want to support its development, 
+                    consider making a donation. Every contribution helps keep the project running and growing.
+                  </p>
+                </div>
+                
                 <div className="space-y-4">
-                  {supportFeatures.map((feature, index) => <div key={index} className="flex items-start space-x-3 text-left">
+                  {supportFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start space-x-3">
                       <div className="flex-shrink-0 mt-1">
                         <Check className="w-5 h-5 text-green-500" />
                       </div>
                       <p className="text-gray-700 leading-relaxed">{feature}</p>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            
-            {/* Right Column - Stripe Payment */}
-            <div className="flex justify-center lg:justify-end">
-              <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
-                <div className="text-center space-y-6">
-                  <h3 className="text-2xl font-bold text-gray-900">Make a Donation</h3>
-                  <p className="text-gray-600">
-                    Support the development of No Strings Resume with a secure payment via Stripe.
-                  </p>
-                  
-                  {/* QR Code */}
-                  <div className="flex justify-center">
-                    <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-4">
-                      <img 
-                        src="/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png" 
-                        alt="QR Code for donation" 
-                        className="w-48 h-48 rounded-lg"
-                      />
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-gray-500">Scan with your phone to donate</p>
-                  
-                  {/* Stripe Button */}
-                  <div className="space-y-3">
-                    <Button 
-                      onClick={() => window.open('https://buy.stripe.com/6oU5kF8MzcKqgU18EPfUQ07', '_blank')}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg transition-all duration-200"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Donate via Stripe
-                    </Button>
-                    <p className="text-xs text-gray-500">
-                      Secure payment processing • No account required
+              
+              {/* Right Column - Stripe Payment */}
+              <div className="flex justify-center">
+                <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+                  <div className="text-center space-y-6">
+                    <h3 className="text-2xl font-bold text-gray-900">Make a Donation</h3>
+                    <p className="text-gray-600">
+                      Support the development of No Strings Resume with a secure payment via Stripe.
                     </p>
+                    
+                    {/* QR Code */}
+                    <div className="flex justify-center">
+                      <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-4">
+                        <img 
+                          src="/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png" 
+                          alt="QR Code for donation" 
+                          className="w-40 h-40 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-500">Scan with your phone to donate</p>
+                    
+                    {/* Stripe Button */}
+                    <div className="space-y-3">
+                      <Button 
+                        onClick={() => window.open('https://buy.stripe.com/6oU5kF8MzcKqgU18EPfUQ07', '_blank')}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg transition-all duration-200"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Donate via Stripe
+                      </Button>
+                      <p className="text-xs text-gray-500">
+                        Secure payment processing • No account required
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -153,12 +171,13 @@ const Contribute = () => {
         </div>
         
         <div className="grid md:grid-cols-2 gap-6 mb-12">
-          {contributionWays.map((way, index) => <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white" data-testid={`contribution-card-${way.title.toLowerCase().replace(/\s+/g, '-')}`}>
+          {contributionWays.map((way, index) => (
+            <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white" data-testid={`contribution-card-${way.title.toLowerCase().replace(/\s+/g, '-')}`}>
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <way.icon className="w-6 h-6 text-blue-600" />
                 </div>
-                <h3 className="font-semibold tracking-tight text-xl text-gray-900">{way.title}</h3>
+                <CardTitle className="text-xl text-gray-900">{way.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-gray-600 leading-relaxed mb-4">
@@ -169,7 +188,8 @@ const Contribute = () => {
                   {way.action}
                 </Button>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -188,7 +208,8 @@ const Contribute = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
 
 export default Contribute;
