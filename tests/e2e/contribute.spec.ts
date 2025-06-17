@@ -24,7 +24,6 @@ test.describe('Contribute Page', () => {
     // Header section
     await expect(contributePage.mainHeading).toBeVisible();
     await expect(contributePage.backToHomeButton).toBeVisible();
-    await expect(contributePage.startBuildingButton).toBeVisible();
     
     // Hero section
     await expect(contributePage.heroHeading).toBeVisible();
@@ -66,8 +65,15 @@ test.describe('Contribute Page', () => {
       await expect(card.locator).toBeVisible();
       await expect(card.locator).toContainText(card.name);
       
-      // Check that each card has a button
-      const button = card.locator.locator('button');
+      // Check that each card has the main action button using specific test-id
+      const buttonTestIdMap = {
+        'Code Contributions': 'contribution-button-code-contributions',
+        'Report Issues': 'contribution-button-report-issues',
+        'Documentation': 'contribution-button-documentation',
+        'Community Support': 'contribution-button-community-support'
+      } as const;
+      
+      const button = card.locator.getByTestId(buttonTestIdMap[card.name as keyof typeof buttonTestIdMap]);
       await expect(button).toBeVisible();
       await expect(button).toContainText(/View Repository|Report Issue|Contribute Docs|Join Discussions/);
     }
@@ -77,29 +83,23 @@ test.describe('Contribute Page', () => {
     // Test back to home button
     await contributePage.clickBackToHome();
     await expect(page.url()).toMatch(/\/$/);
-    
-    // Navigate back to contribute page
-    await contributePage.goto();
-    
-    // Test start building button
-    await contributePage.clickStartBuilding();
-    await expect(page.url()).toMatch(/\/edit/);
   });
 
-  test('should handle Ko-fi widget gracefully', async ({ page }) => {
-    // Check that the Ko-fi iframe exists
-    await expect(contributePage.kofiIframe).toBeVisible();
+  test('should handle Stripe donation gracefully', async ({ page }) => {
+    // Check that the Stripe button exists
+    await expect(contributePage.stripeButton).toBeVisible();
     
-    // Verify iframe has proper attributes
-    const iframe = contributePage.kofiIframe;
-    await expect(iframe).toHaveAttribute('src', /ko-fi\.com/);
-    await expect(iframe).toHaveAttribute('title', 'Support on Ko-fi');
+    // Check that QR code exists
+    await expect(contributePage.qrCodeImage).toBeVisible();
+    
+    // Verify button has proper text
+    await expect(contributePage.stripeButton).toContainText('Donate via Stripe');
     
     // Monitor console for any critical JavaScript errors
     const consoleMessages: string[] = [];
     page.on('console', msg => consoleMessages.push(msg.text()));
     
-    // Wait a bit for iframe to potentially load
+    // Wait a bit for any potential JS to load
     await page.waitForTimeout(2000);
     
     // Should not have any critical JavaScript errors that break the page
@@ -159,7 +159,7 @@ test.describe('Contribute Page', () => {
 
   test('should handle external link clicks', async ({ page, context }) => {
     // Test that external links work (GitHub repository links)
-    const codeButton = contributePage.codeContributionCard.locator('button');
+    const codeButton = contributePage.codeContributionCard.getByTestId('contribution-button-code-contributions');
     
     // Listen for new page/tab opening
     const newPagePromise = context.waitForEvent('page');
@@ -209,8 +209,27 @@ test.describe('Contribute Page', () => {
     // Check that navigation buttons can be focused
     await contributePage.backToHomeButton.focus();
     await expect(contributePage.backToHomeButton).toBeFocused();
+  });
+
+  test('should display support features and donation options', async () => {
+    // Check support features are displayed
+    await expect(contributePage.page.getByText(/Support ongoing development and maintenance/)).toBeVisible();
+    await expect(contributePage.page.getByText(/Help cover hosting and infrastructure costs/)).toBeVisible();
+    await expect(contributePage.page.getByText(/Enable new features and improvements/)).toBeVisible();
     
-    await contributePage.startBuildingButton.focus();
-    await expect(contributePage.startBuildingButton).toBeFocused();
+    // Check donation elements
+    await expect(contributePage.stripeButton).toBeVisible();
+    await expect(contributePage.qrCodeImage).toBeVisible();
+    await expect(contributePage.page.getByText(/Scan with your phone to donate/)).toBeVisible();
+  });
+
+  test('should have integrations link in code contributions card', async ({ page }) => {
+    // Find the integrations link within the code contributions card
+    const integrationsLink = contributePage.codeContributionCard.getByText('new integrations');
+    await expect(integrationsLink).toBeVisible();
+    
+    // Test the integrations link click
+    await integrationsLink.click();
+    await expect(page.url()).toMatch(/\/integrations/);
   });
 }); 

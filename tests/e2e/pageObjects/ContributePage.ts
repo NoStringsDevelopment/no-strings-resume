@@ -3,7 +3,6 @@ import { Page, Locator } from '@playwright/test';
 export class ContributePage {
   readonly page: Page;
   readonly backToHomeButton: Locator;
-  readonly startBuildingButton: Locator;
   readonly mainHeading: Locator;
   readonly heroHeading: Locator;
   readonly gradientText: Locator;
@@ -15,13 +14,13 @@ export class ContributePage {
   readonly documentationCard: Locator;
   readonly communitySupportCard: Locator;
   readonly supportProjectHeading: Locator;
-  readonly kofiIframe: Locator;
+  readonly stripeButton: Locator;
+  readonly qrCodeImage: Locator;
   readonly footer: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.backToHomeButton = page.getByTestId('back-to-home-btn');
-    this.startBuildingButton = page.getByTestId('start-building-btn');
     this.mainHeading = page.getByRole('heading', { name: /Help Make.*No Strings Resume.*Even Better/i });
     this.heroHeading = page.getByRole('heading', { name: /Help Make.*No Strings Resume.*Even Better/i });
     this.gradientText = page.getByTestId('gradient-text');
@@ -33,7 +32,8 @@ export class ContributePage {
     this.documentationCard = page.getByTestId('contribution-card-documentation');
     this.communitySupportCard = page.getByTestId('contribution-card-community-support');
     this.supportProjectHeading = page.getByRole('heading', { name: 'Support the Project' });
-    this.kofiIframe = page.locator('#kofiframe');
+    this.stripeButton = page.getByText('Donate via Stripe');
+    this.qrCodeImage = page.getByAltText('QR Code for donation');
     this.footer = page.locator('footer');
   }
 
@@ -45,20 +45,15 @@ export class ContributePage {
     await this.backToHomeButton.click();
   }
 
-  async clickStartBuilding() {
-    await this.startBuildingButton.click();
-  }
-
   async clickContributionCard(cardType: 'code' | 'issues' | 'documentation' | 'community') {
-    const cardMap = {
-      code: this.codeContributionCard,
-      issues: this.reportIssuesCard,
-      documentation: this.documentationCard,
-      community: this.communitySupportCard
+    const buttonTestIdMap = {
+      code: 'contribution-button-code-contributions',
+      issues: 'contribution-button-report-issues',
+      documentation: 'contribution-button-documentation',
+      community: 'contribution-button-community-support'
     };
     
-    const card = cardMap[cardType];
-    const button = card.locator('button');
+    const button = this.page.getByTestId(buttonTestIdMap[cardType]);
     await button.click();
   }
 
@@ -73,7 +68,6 @@ export class ContributePage {
     // Header elements
     await this.mainHeading.isVisible();
     await this.backToHomeButton.isVisible();
-    await this.startBuildingButton.isVisible();
     
     // Hero section
     await this.heroHeading.isVisible();
@@ -89,7 +83,8 @@ export class ContributePage {
     
     // Support section
     await this.supportProjectHeading.isVisible();
-    await this.kofiIframe.isVisible();
+    await this.stripeButton.isVisible();
+    await this.qrCodeImage.isVisible();
     
     // Footer
     await this.footer.isVisible();

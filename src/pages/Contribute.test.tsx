@@ -3,18 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Contribute from './Contribute';
 
-// Type for Ko-fi widget
-interface KofiWidget {
-  init: (text: string, color: string, id: string) => void;
-  draw: () => void;
-}
-
-declare global {
-  interface Window {
-    kofiwidget2?: KofiWidget;
-  }
-}
-
 // Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
@@ -23,19 +11,6 @@ vi.mock('react-router-dom', async () => {
     ...actual,
     useNavigate: () => mockNavigate,
   };
-});
-
-// Mock console methods to test Ko-fi widget handling
-const mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
-const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-// Mock Ko-fi widget
-Object.defineProperty(window, 'kofiwidget2', {
-  value: {
-    init: vi.fn(),
-    draw: vi.fn(),
-  },
-  writable: true,
 });
 
 const renderWithRouter = (component: JSX.Element) => {
@@ -49,18 +24,6 @@ const renderWithRouter = (component: JSX.Element) => {
 describe('Contribute Component', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
-    mockConsoleLog.mockClear();
-    mockConsoleWarn.mockClear();
-    
-    // Clear any existing Ko-fi scripts
-    const scripts = document.querySelectorAll('script[src*="ko-fi"]');
-    scripts.forEach(script => script.remove());
-  });
-
-  afterEach(() => {
-    // Cleanup scripts after each test
-    const scripts = document.querySelectorAll('script[src*="ko-fi"]');
-    scripts.forEach(script => script.remove());
   });
 
   describe('Component Mounting', () => {
@@ -88,7 +51,6 @@ describe('Contribute Component', () => {
       
       // Check navigation buttons
       expect(screen.getByTestId('back-to-home-btn')).toBeInTheDocument();
-      expect(screen.getByTestId('start-building-btn')).toBeInTheDocument();
     });
 
     it('should handle navigation button clicks', () => {
@@ -97,10 +59,6 @@ describe('Contribute Component', () => {
       // Test back to home button
       fireEvent.click(screen.getByTestId('back-to-home-btn'));
       expect(mockNavigate).toHaveBeenCalledWith('/');
-      
-      // Test start building button
-      fireEvent.click(screen.getByTestId('start-building-btn'));
-      expect(mockNavigate).toHaveBeenCalledWith('/edit');
     });
   });
 
@@ -184,6 +142,16 @@ describe('Contribute Component', () => {
         expect(button.closest('button')).toBeInTheDocument();
       });
     });
+
+    it('should have integrations link in code contributions', () => {
+      renderWithRouter(<Contribute />);
+      
+      expect(screen.getByText('new integrations')).toBeInTheDocument();
+      
+      // Test integrations link click
+      fireEvent.click(screen.getByText('new integrations'));
+      expect(mockNavigate).toHaveBeenCalledWith('/integrations');
+    });
   });
 
   describe('Support Section', () => {
@@ -194,13 +162,27 @@ describe('Contribute Component', () => {
       expect(screen.getByText(/If you find No Strings Resume helpful/)).toBeInTheDocument();
     });
 
-    it('should have Ko-fi iframe', () => {
+    it('should have Stripe donation button', () => {
       renderWithRouter(<Contribute />);
       
-      const kofiIframe = document.getElementById('kofiframe');
-      expect(kofiIframe).toBeInTheDocument();
-      expect(kofiIframe).toHaveAttribute('src');
-      expect(kofiIframe?.getAttribute('src')).toMatch(/ko-fi\.com/);
+      expect(screen.getByText('Donate via Stripe')).toBeInTheDocument();
+      expect(screen.getByText(/Secure payment processing/)).toBeInTheDocument();
+    });
+
+    it('should display support features', () => {
+      renderWithRouter(<Contribute />);
+      
+      expect(screen.getByText(/Support ongoing development and maintenance/)).toBeInTheDocument();
+      expect(screen.getByText(/Help cover hosting and infrastructure costs/)).toBeInTheDocument();
+      expect(screen.getByText(/Enable new features and improvements/)).toBeInTheDocument();
+    });
+
+    it('should have QR code for donations', () => {
+      renderWithRouter(<Contribute />);
+      
+      const qrImage = screen.getByAltText('QR Code for donation');
+      expect(qrImage).toBeInTheDocument();
+      expect(qrImage).toHaveAttribute('src', '/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png');
     });
   });
 
@@ -210,46 +192,6 @@ describe('Contribute Component', () => {
       
       expect(screen.getByText('Open source resume builder. Your data, your control.')).toBeInTheDocument();
       expect(screen.getByText(/Built with React, Tailwind CSS/)).toBeInTheDocument();
-    });
-  });
-
-  describe('Ko-fi Widget Integration', () => {
-    it('should display Ko-fi iframe with correct attributes', () => {
-      renderWithRouter(<Contribute />);
-      
-      const kofiIframe = document.getElementById('kofiframe');
-      expect(kofiIframe).toBeInTheDocument();
-      expect(kofiIframe?.tagName.toLowerCase()).toBe('iframe');
-      expect(kofiIframe).toHaveAttribute('title', 'Support on Ko-fi');
-      expect(kofiIframe?.getAttribute('src')).toMatch(/ko-fi\.com.*leej3/);
-    });
-
-    it('should have Ko-fi iframe with proper styling', () => {
-      renderWithRouter(<Contribute />);
-      
-      const kofiIframe = document.getElementById('kofiframe');
-      expect(kofiIframe).toBeInTheDocument();
-      expect(kofiIframe).toHaveClass('border-none');
-      expect(kofiIframe).toHaveClass('w-full');
-      
-      // Check that the iframe is contained within a properly styled container
-      const kofiContainer = kofiIframe?.parentElement;
-      expect(kofiContainer).toHaveClass('w-full');
-      expect(kofiContainer).toHaveClass('max-w-lg');
-      expect(kofiContainer).toHaveClass('bg-white');
-      expect(kofiContainer).toHaveClass('rounded-xl');
-      expect(kofiContainer).toHaveClass('shadow-lg');
-    });
-
-    it('should render Ko-fi iframe without blocking page load', () => {
-      renderWithRouter(<Contribute />);
-      
-      // Verify that the iframe doesn't block other content from loading
-      expect(screen.getByText('Support the Project')).toBeInTheDocument();
-      expect(screen.getByText('Ways to Contribute')).toBeInTheDocument();
-      
-      const kofiIframe = document.getElementById('kofiframe');
-      expect(kofiIframe).toBeInTheDocument();
     });
   });
 
@@ -291,6 +233,18 @@ describe('Contribute Component', () => {
         expect(window.open).toHaveBeenCalledWith(url, '_blank');
       });
     });
+
+    it('should open Stripe donation link', () => {
+      renderWithRouter(<Contribute />);
+      
+      const stripeButton = screen.getByText('Donate via Stripe');
+      fireEvent.click(stripeButton);
+      
+      expect(window.open).toHaveBeenCalledWith(
+        'https://buy.stripe.com/6oU5kF8MzcKqgU18EPfUQ07',
+        '_blank'
+      );
+    });
   });
 
   describe('Accessibility', () => {
@@ -324,13 +278,8 @@ describe('Contribute Component', () => {
       // Verify the component is mounted
       expect(screen.getByText('Support the Project')).toBeInTheDocument();
       
-      // Unmount component - should not throw errors or leave behind scripts
+      // Unmount component - should not throw errors
       expect(() => unmount()).not.toThrow();
-      
-      // Since we're using iframe instead of dynamic scripts, 
-      // there should be no Ko-fi scripts in the document
-      const scriptCount = document.querySelectorAll('script[src*="ko-fi"]').length;
-      expect(scriptCount).toBe(0);
     });
   });
 }); 
