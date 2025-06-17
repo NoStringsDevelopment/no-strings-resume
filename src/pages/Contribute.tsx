@@ -7,19 +7,14 @@ const Contribute = () => {
   const contributionWays = [{
     icon: Code,
     title: "Code Contributions",
-    description: (
-      <>
+    description: <>
         Help improve the codebase by submitting pull requests for new features, bug fixes, or improvements. 
         You can also help build{' '}
-        <button 
-          onClick={() => navigate('/integrations')} 
-          className="text-blue-600 hover:text-blue-800 underline font-medium"
-        >
+        <button onClick={() => navigate('/integrations')} className="text-blue-600 hover:text-blue-800 underline font-medium">
           new integrations
         </button>
         {' '}for popular services.
-      </>
-    ),
+      </>,
     action: "View Repository",
     link: "https://github.com/NoStringsDevelopment/no-strings-resume"
   }, {
@@ -54,9 +49,7 @@ const Contribute = () => {
               <span className="text-xl font-bold text-gray-900 hidden sm:block">No Strings Resume</span>
             </Button>
             <nav className="flex items-center space-x-4">
-              <Button size="lg" onClick={() => navigate('/edit')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" data-testid="start-building-btn">
-                Start Building
-              </Button>
+              
             </nav>
           </div>
         </div>
