@@ -17,7 +17,8 @@ import ProjectsEditor from "@/components/editor/ProjectsEditor";
 import AwardsEditor from "@/components/editor/AwardsEditor";
 import LanguagesEditor from "@/components/editor/LanguagesEditor";
 import AdditionalSectionsEditor from "@/components/editor/AdditionalSectionsEditor";
-import { exportResumeAsJson, importResumeData, downloadFile } from "@/utils/importExport";
+import { importResumeData } from "@/utils/importExport";
+import { exportAsBackup, importFromBackup } from "@/utils/backupUtils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ResumeEditor = () => {
@@ -46,30 +47,71 @@ const ResumeEditor = () => {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const importResult = importResumeData(content);
         
-        dispatch({ type: 'SET_RESUME_DATA', payload: importResult.resumeData });
+        // Try backup import first
+        const backupResult = importFromBackup(content);
         
-        setImportValidation({
-          hasErrors: importResult.hasErrors,
-          errors: importResult.validationErrors,
-          invalidFieldsCount: importResult.nonConformingData?.invalidFields?.length || 0
-        });
+        if (backupResult.isExtended) {
+          // It's a backup file - handle extended format
+          if (backupResult.isValid && backupResult.resumeData) {
+            dispatch({ type: 'SET_RESUME_DATA', payload: backupResult.resumeData });
+            
+            setImportValidation({
+              hasErrors: backupResult.warnings.length > 0,
+              errors: backupResult.warnings,
+              invalidFieldsCount: 0
+            });
 
-        if (importResult.hasErrors) {
-          toast({
-            title: "Import Completed with Issues",
-            description: `Resume imported but ${importResult.validationErrors.length} validation issues found. See details below.`,
-            variant: "default"
-          });
+            toast({
+              title: "Backup Restored Successfully",
+              description: "Resume backup restored with all visibility settings preserved."
+            });
+          } else {
+            toast({
+              title: "Backup Restore Failed",
+              description: `Invalid backup file: ${backupResult.errors.join(', ')}`,
+              variant: "destructive"
+            });
+          }
         } else {
-          toast({
-            title: "Import Successful",
-            description: "Resume data has been imported and validated successfully."
+          // Not a backup file, treat as JSON Resume and populate extensions with defaults
+          const importResult = importResumeData(content);
+          
+          if (importResult.hasErrors && importResult.validationErrors.some(error => 
+            error.includes('Invalid resume format') || error.includes('unsupported')
+          )) {
+            // Fundamental format issues
+            toast({
+              title: "Import Failed",
+              description: "File format not supported. Please import a valid JSON Resume or backup file.",
+              variant: "destructive"
+            });
+            return;
+          }
+          
+          dispatch({ type: 'SET_RESUME_DATA', payload: importResult.resumeData });
+          
+          setImportValidation({
+            hasErrors: importResult.hasErrors,
+            errors: importResult.validationErrors,
+            invalidFieldsCount: importResult.nonConformingData?.invalidFields?.length || 0
           });
+
+          if (importResult.hasErrors) {
+            toast({
+              title: "JSON Resume Imported with Issues",
+              description: `Resume imported with default visibility settings. ${importResult.validationErrors.length} validation issues found.`,
+              variant: "default"
+            });
+          } else {
+            toast({
+              title: "JSON Resume Imported Successfully",
+              description: "Resume imported with default visibility settings applied."
+            });
+          }
         }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to import resume data. Please check the file format.";
+        const errorMessage = error instanceof Error ? error.message : "Failed to import file. Please check the format.";
         toast({
           title: "Import Failed",
           description: errorMessage,
@@ -80,12 +122,11 @@ const ResumeEditor = () => {
     reader.readAsText(file);
   };
 
-  const handleExportJson = () => {
-    const jsonContent = exportResumeAsJson(state.resumeData);
-    downloadFile(jsonContent, 'resume.json', 'application/json');
+  const handleBackup = () => {
+    exportAsBackup(state.resumeData);
     toast({
       title: "Backup Successful",
-      description: "Resume exported as JSON Resume format."
+      description: "Resume backed up with all visibility settings preserved."
     });
   };
 
@@ -207,7 +248,7 @@ const ResumeEditor = () => {
               <Button 
                 variant="ghost"
                 size="sm"
-                onClick={handleExportJson}
+                onClick={handleBackup}
                 className="flex items-center space-x-1"
                 title="Backup"
                 data-testid="backup-button"
@@ -398,7 +439,7 @@ const ResumeEditor = () => {
                 <Button 
                   variant="ghost"
                   size="sm"
-                  onClick={handleExportJson}
+                  onClick={handleBackup}
                   title="Backup"
                   data-testid="backup-button-mobile"
                 >
