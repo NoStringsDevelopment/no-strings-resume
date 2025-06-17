@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Github, MessageSquare, Heart, Code, Bug, FileText, Check } from "lucide-react";
+import { Github, MessageSquare, Heart, Code, Bug, FileText, Check, ExternalLink } from "lucide-react";
+
 const Contribute = () => {
   const navigate = useNavigate();
   const contributionWays = [{
@@ -36,7 +38,9 @@ const Contribute = () => {
     action: "Join Discussions",
     link: "https://github.com/NoStringsDevelopment/no-strings-resume/discussions"
   }];
+  
   const supportFeatures = ["Support ongoing development and maintenance", "Help cover hosting and infrastructure costs", "Enable new features and improvements"];
+  
   return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
@@ -72,11 +76,11 @@ const Contribute = () => {
         </div>
       </section>
 
-      {/* Support Section - Improved layout with better spacing and centering */}
+      {/* Support Section - Updated with Stripe payment */}
       <section className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-8 items-start max-w-7xl mx-auto">
-            {/* Left Column - Content with better centering and padding */}
+          <div className="grid lg:grid-cols-2 gap-8 items-center max-w-7xl mx-auto">
+            {/* Left Column - Content */}
             <div className="flex flex-col justify-center h-full px-4 lg:px-8">
               <div className="text-center lg:text-left max-w-lg mx-auto lg:mx-0">
                 <Heart className="w-16 h-16 text-red-500 mx-auto lg:mx-0 mb-6" />
@@ -96,13 +100,42 @@ const Contribute = () => {
               </div>
             </div>
             
-            {/* Right Column - Ko-fi Widget with improved sizing */}
+            {/* Right Column - Stripe Payment */}
             <div className="flex justify-center lg:justify-end">
-              <div className="w-full max-w-lg bg-white rounded-xl shadow-lg overflow-hidden">
-                <iframe id='kofiframe' src='https://ko-fi.com/leej3/?hidefeed=true&widget=true&embed=true&preview=true' className="border-none w-full" height="750" title="Support on Ko-fi" style={{
-                minHeight: '700px',
-                maxHeight: '800px'
-              }} scrolling="auto" />
+              <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
+                <div className="text-center space-y-6">
+                  <h3 className="text-2xl font-bold text-gray-900">Make a Donation</h3>
+                  <p className="text-gray-600">
+                    Support the development of No Strings Resume with a secure payment via Stripe.
+                  </p>
+                  
+                  {/* QR Code */}
+                  <div className="flex justify-center">
+                    <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-4">
+                      <img 
+                        src="/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png" 
+                        alt="QR Code for donation" 
+                        className="w-48 h-48 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-gray-500">Scan with your phone to donate</p>
+                  
+                  {/* Stripe Button */}
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={() => window.open('https://buy.stripe.com/6oU5kF8MzcKqgU18EPfUQ07', '_blank')}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 rounded-lg transition-all duration-200"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Donate via Stripe
+                    </Button>
+                    <p className="text-xs text-gray-500">
+                      Secure payment processing • No account required
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -157,4 +190,5 @@ const Contribute = () => {
       </footer>
     </div>;
 };
+
 export default Contribute;
