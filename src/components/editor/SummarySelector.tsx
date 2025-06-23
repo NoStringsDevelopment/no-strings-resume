@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,7 @@ export const SummarySelector: React.FC = () => {
   const [currentTarget, setCurrentTarget] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const targetInputRef = useRef<HTMLInputElement>(null);
-  const lastSavedRef = useRef<{ target: string; summary: string }>({ target: '', summary: '' });
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   const summaries = state.resumeData.summaries || [];
   const activeSummaryId = state.resumeData.activeSummaryId;
@@ -31,25 +32,18 @@ export const SummarySelector: React.FC = () => {
     }
   }, [activeSummary]);
 
-  // Save when component unmounts or when target/summary changes
+  // Save when component unmounts
   useEffect(() => {
-    const shouldSave = currentTarget.trim() && 
-                      basics.summary.trim() && 
-                      (lastSavedRef.current.target !== currentTarget || 
-                       lastSavedRef.current.summary !== basics.summary);
-    
-    if (shouldSave) {
-      saveSummaryForTarget(currentTarget, basics.summary);
-      lastSavedRef.current = { target: currentTarget, summary: basics.summary };
-    }
-
     return () => {
-      // Save current state when component unmounts
-      if (currentTarget.trim() && basics.summary.trim()) {
-        saveSummaryForTarget(currentTarget, basics.summary);
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      // Save current state when component unmounts if both fields have meaningful content
+      if (currentTarget.trim().length > 2 && basics.summary.trim().length > 10) {
+        saveSummaryForTarget(currentTarget.trim(), basics.summary.trim());
       }
     };
-  }, [currentTarget, basics.summary]);
+  }, []);
 
   const updateBasicsSummary = (value: string) => {
     dispatch({ 
@@ -64,9 +58,9 @@ export const SummarySelector: React.FC = () => {
       return;
     }
 
-    // Save current summary if we have one
-    if (currentTarget && basics.summary) {
-      saveSummaryForTarget(currentTarget, basics.summary);
+    // Save current summary if we have meaningful content
+    if (currentTarget.trim().length > 2 && basics.summary.trim().length > 10) {
+      saveSummaryForTarget(currentTarget.trim(), basics.summary.trim());
     }
 
     // Load summary for new target
@@ -95,27 +89,33 @@ export const SummarySelector: React.FC = () => {
   };
 
   const handleTargetInputExit = () => {
-    if (currentTarget.trim() && basics.summary.trim()) {
-      saveSummaryForTarget(currentTarget, basics.summary);
+    const trimmedTarget = currentTarget.trim();
+    const trimmedSummary = basics.summary.trim();
+    
+    if (trimmedTarget.length > 2 && trimmedSummary.length > 10) {
+      saveSummaryForTarget(trimmedTarget, trimmedSummary);
     }
     setIsEditing(false);
   };
 
   const saveSummaryForTarget = (target: string, summary: string) => {
-    if (!target.trim() || !summary.trim()) return;
+    // Only save if both target and summary have meaningful content
+    if (!target || target.length < 3 || !summary || summary.length < 10) return;
 
     const existingSummary = summaries.find(s => s.target === target);
     
     if (existingSummary) {
-      // Update existing summary
-      dispatch({
-        type: 'UPDATE_SUMMARY',
-        payload: {
-          ...existingSummary,
-          summary,
-          lastUsed: new Date().toISOString()
-        }
-      });
+      // Only update if the summary has actually changed
+      if (existingSummary.summary !== summary) {
+        dispatch({
+          type: 'UPDATE_SUMMARY',
+          payload: {
+            ...existingSummary,
+            summary,
+            lastUsed: new Date().toISOString()
+          }
+        });
+      }
     } else {
       // Create new summary
       const newSummary: NamedSummary = {
@@ -141,12 +141,16 @@ export const SummarySelector: React.FC = () => {
   const handleSummaryChange = (value: string) => {
     updateBasicsSummary(value);
     
-    // Auto-save to current target if we have one
-    if (currentTarget.trim()) {
-      // Debounce the save to avoid too many updates
-      setTimeout(() => {
-        saveSummaryForTarget(currentTarget, value);
-      }, 500);
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Debounced auto-save with meaningful content check
+    if (currentTarget.trim().length > 2 && value.trim().length > 10) {
+      saveTimeoutRef.current = setTimeout(() => {
+        saveSummaryForTarget(currentTarget.trim(), value.trim());
+      }, 1000); // Increased debounce time to prevent too many saves
     }
   };
 
@@ -168,7 +172,12 @@ export const SummarySelector: React.FC = () => {
     });
   };
 
-  const availableTargets = summaries.map(s => s.target).sort();
+  // Filter out incomplete or duplicate targets
+  const availableTargets = summaries
+    .map(s => s.target)
+    .filter(target => target && target.length > 2)
+    .filter((target, index, arr) => arr.indexOf(target) === index)
+    .sort();
 
   return (
     <TooltipProvider>
@@ -216,7 +225,9 @@ export const SummarySelector: React.FC = () => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === 'Tab') {
                       handleTargetInputExit();
-                      handleTargetChange(currentTarget);
+                      if (currentTarget.trim()) {
+                        handleTargetChange(currentTarget);
+                      }
                     }
                   }}
                   placeholder="e.g., Senior Software Engineer at Tech Startups"
