@@ -163,23 +163,34 @@ export const SummarySelector: React.FC = () => {
 
     const targetToDelete = activeSummary.target;
 
+    // Get remaining summaries before deletion
+    const remainingSummaries = summaries.filter(s => s.id !== activeSummary.id);
+    
+    // Delete the current summary
     dispatch({
       type: 'DELETE_SUMMARY',
       payload: activeSummary.id
     });
 
-    // Find another target to switch to instead of clearing everything
-    const remainingSummaries = summaries.filter(s => s.id !== activeSummary.id);
-    
+    // Switch to any existing target if available
     if (remainingSummaries.length > 0) {
-      // Sort by lastUsed (most recent first) and pick the first one
-      const sortedSummaries = remainingSummaries.sort((a, b) => {
-        const dateA = new Date(a.lastUsed || a.createdAt).getTime();
-        const dateB = new Date(b.lastUsed || b.createdAt).getTime();
-        return dateB - dateA;
-      });
+      // Try to get the most recently used one, but fallback to any available
+      let nextSummary = remainingSummaries.find(s => s.lastUsed);
+      if (nextSummary) {
+        // Sort by lastUsed if we have timestamps
+        const sortedSummaries = remainingSummaries
+          .filter(s => s.lastUsed)
+          .sort((a, b) => {
+            const dateA = new Date(a.lastUsed || a.createdAt).getTime();
+            const dateB = new Date(b.lastUsed || b.createdAt).getTime();
+            return dateB - dateA;
+          });
+        nextSummary = sortedSummaries[0] || remainingSummaries[0];
+      } else {
+        // Just pick the first one if no lastUsed timestamps
+        nextSummary = remainingSummaries[0];
+      }
       
-      const nextSummary = sortedSummaries[0];
       setCurrentTarget(nextSummary.target);
       updateBasicsSummary(nextSummary.summary);
       
