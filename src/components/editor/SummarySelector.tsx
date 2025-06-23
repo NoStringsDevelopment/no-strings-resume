@@ -32,7 +32,7 @@ export const SummarySelector: React.FC = () => {
     }
   }, [activeSummary]);
 
-  // Save when component unmounts
+  // Save when component unmounts or when switching sections
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
@@ -44,6 +44,22 @@ export const SummarySelector: React.FC = () => {
       }
     };
   }, []);
+
+  // Auto-save when target or summary changes (debounced)
+  useEffect(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    const trimmedTarget = currentTarget.trim();
+    const trimmedSummary = basics.summary.trim();
+    
+    if (trimmedTarget.length > 2 && trimmedSummary.length > 10) {
+      saveTimeoutRef.current = setTimeout(() => {
+        saveSummaryForTarget(trimmedTarget, trimmedSummary);
+      }, 1500);
+    }
+  }, [currentTarget, basics.summary]);
 
   const updateBasicsSummary = (value: string) => {
     dispatch({ 
@@ -140,44 +156,65 @@ export const SummarySelector: React.FC = () => {
 
   const handleSummaryChange = (value: string) => {
     updateBasicsSummary(value);
-    
-    // Clear existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    
-    // Debounced auto-save with meaningful content check
-    if (currentTarget.trim().length > 2 && value.trim().length > 10) {
-      saveTimeoutRef.current = setTimeout(() => {
-        saveSummaryForTarget(currentTarget.trim(), value.trim());
-      }, 1000); // Increased debounce time to prevent too many saves
-    }
   };
 
   const handleDeleteTarget = () => {
     if (!activeSummary) return;
+
+    const targetToDelete = activeSummary.target;
 
     dispatch({
       type: 'DELETE_SUMMARY',
       payload: activeSummary.id
     });
 
-    // Clear current state
-    setCurrentTarget('');
-    updateBasicsSummary('');
+    // Find another target to switch to instead of clearing everything
+    const remainingSummaries = summaries.filter(s => s.id !== activeSummary.id);
+    
+    if (remainingSummaries.length > 0) {
+      // Sort by lastUsed (most recent first) and pick the first one
+      const sortedSummaries = remainingSummaries.sort((a, b) => {
+        const dateA = new Date(a.lastUsed || a.createdAt).getTime();
+        const dateB = new Date(b.lastUsed || b.createdAt).getTime();
+        return dateB - dateA;
+      });
+      
+      const nextSummary = sortedSummaries[0];
+      setCurrentTarget(nextSummary.target);
+      updateBasicsSummary(nextSummary.summary);
+      
+      dispatch({
+        type: 'SET_ACTIVE_SUMMARY',
+        payload: nextSummary.id
+      });
+      
+      // Update last used timestamp for the newly selected summary
+      dispatch({
+        type: 'UPDATE_SUMMARY',
+        payload: { ...nextSummary, lastUsed: new Date().toISOString() }
+      });
+    } else {
+      // Only clear if no other summaries exist
+      setCurrentTarget('');
+      updateBasicsSummary('');
+    }
     
     toast({
       title: "Target Deleted",
-      description: `Deleted "${activeSummary.target}" summary.`
+      description: `Deleted "${targetToDelete}" summary.`
     });
   };
 
-  // Filter out incomplete or duplicate targets
+  // Filter out incomplete or duplicate targets, sorted by most recently used
   const availableTargets = summaries
+    .filter(s => s.target && s.target.length > 2)
+    .sort((a, b) => {
+      const dateA = new Date(a.lastUsed || a.createdAt).getTime();
+      const dateB = new Date(b.lastUsed || b.createdAt).getTime();
+      return dateB - dateA;
+    })
     .map(s => s.target)
-    .filter(target => target && target.length > 2)
-    .filter((target, index, arr) => arr.indexOf(target) === index)
-    .sort();
+    .filter((target, index, arr) => arr.indexOf(target) === index);
 
   return (
     <TooltipProvider>
