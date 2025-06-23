@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,7 @@ export const SummarySelector: React.FC = () => {
   const { toast } = useToast();
   const [currentTarget, setCurrentTarget] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const targetInputRef = useRef<HTMLInputElement>(null);
 
   const summaries = state.resumeData.summaries || [];
   const activeSummaryId = state.resumeData.activeSummaryId;
@@ -29,6 +30,16 @@ export const SummarySelector: React.FC = () => {
       setCurrentTarget(activeSummary.target);
     }
   }, [activeSummary]);
+
+  // Save when component unmounts or target changes
+  useEffect(() => {
+    return () => {
+      // Save current state when component unmounts
+      if (currentTarget.trim() && basics.summary.trim()) {
+        saveSummaryForTarget(currentTarget, basics.summary);
+      }
+    };
+  }, []);
 
   const updateBasicsSummary = (value: string) => {
     dispatch({ 
@@ -71,6 +82,13 @@ export const SummarySelector: React.FC = () => {
     }
 
     setCurrentTarget(newTarget);
+  };
+
+  const handleTargetInputExit = () => {
+    if (currentTarget.trim() && basics.summary.trim()) {
+      saveSummaryForTarget(currentTarget, basics.summary);
+    }
+    setIsEditing(false);
   };
 
   const saveSummaryForTarget = (target: string, summary: string) => {
@@ -180,17 +198,15 @@ export const SummarySelector: React.FC = () => {
                 </Select>
               ) : (
                 <Input
+                  ref={targetInputRef}
                   id="target"
                   value={currentTarget}
                   onChange={(e) => setCurrentTarget(e.target.value)}
-                  onBlur={(e) => {
-                    handleTargetChange(e.target.value);
-                    setIsEditing(false);
-                  }}
+                  onBlur={handleTargetInputExit}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'Enter' || e.key === 'Tab') {
+                      handleTargetInputExit();
                       handleTargetChange(currentTarget);
-                      setIsEditing(false);
                     }
                   }}
                   placeholder="e.g., Senior Software Engineer at Tech Startups"
