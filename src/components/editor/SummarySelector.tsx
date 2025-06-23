@@ -183,7 +183,10 @@ export const SummarySelector: React.FC = () => {
                   id="target"
                   value={currentTarget}
                   onChange={(e) => setCurrentTarget(e.target.value)}
-                  onBlur={(e) => handleTargetChange(e.target.value)}
+                  onBlur={(e) => {
+                    handleTargetChange(e.target.value);
+                    setIsEditing(false);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleTargetChange(currentTarget);
