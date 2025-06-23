@@ -207,20 +207,6 @@ export const SummarySelector: React.FC = () => {
                 </Button>
               )}
               
-              {isEditing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    handleTargetChange(currentTarget);
-                    setIsEditing(false);
-                  }}
-                  data-testid="save-target-button"
-                >
-                  Save
-                </Button>
-              )}
-              
               {activeSummary && (
                 <Button
                   variant="outline"
@@ -234,14 +220,6 @@ export const SummarySelector: React.FC = () => {
               )}
             </div>
           </div>
-
-          {activeSummary && (
-            <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-              <p className="text-sm text-blue-700">
-                Current target: <span className="font-medium">{activeSummary.target}</span>
-              </p>
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label htmlFor="summary">Professional Summary</Label>
