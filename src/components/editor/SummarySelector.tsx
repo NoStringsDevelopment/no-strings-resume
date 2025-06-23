@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -133,24 +132,42 @@ export const SummarySelector: React.FC = () => {
         });
       }
     } else {
-      // Create new summary
-      const newSummary: NamedSummary = {
-        id: Date.now().toString(),
-        target,
-        summary,
-        createdAt: new Date().toISOString(),
-        lastUsed: new Date().toISOString()
-      };
+      // Create new summary only if target doesn't already exist
+      const duplicateTarget = summaries.find(s => s.target.toLowerCase() === target.toLowerCase());
+      if (duplicateTarget) {
+        // Update existing summary with same target instead of creating duplicate
+        dispatch({
+          type: 'UPDATE_SUMMARY',
+          payload: {
+            ...duplicateTarget,
+            summary,
+            lastUsed: new Date().toISOString()
+          }
+        });
+        dispatch({
+          type: 'SET_ACTIVE_SUMMARY',
+          payload: duplicateTarget.id
+        });
+      } else {
+        // Create new summary
+        const newSummary: NamedSummary = {
+          id: Date.now().toString(),
+          target,
+          summary,
+          createdAt: new Date().toISOString(),
+          lastUsed: new Date().toISOString()
+        };
 
-      dispatch({
-        type: 'ADD_SUMMARY',
-        payload: newSummary
-      });
+        dispatch({
+          type: 'ADD_SUMMARY',
+          payload: newSummary
+        });
 
-      dispatch({
-        type: 'SET_ACTIVE_SUMMARY',
-        payload: newSummary.id
-      });
+        dispatch({
+          type: 'SET_ACTIVE_SUMMARY',
+          payload: newSummary.id
+        });
+      }
     }
   };
 
@@ -216,7 +233,7 @@ export const SummarySelector: React.FC = () => {
     });
   };
 
-  // Filter out incomplete or duplicate targets, sorted by most recently used
+  // Filter out incomplete targets and remove duplicates, sorted by most recently used
   const availableTargets = summaries
     .filter(s => s.target && s.target.length > 2)
     .sort((a, b) => {
@@ -225,7 +242,10 @@ export const SummarySelector: React.FC = () => {
       return dateB - dateA;
     })
     .map(s => s.target)
-    .filter((target, index, arr) => arr.indexOf(target) === index);
+    .filter((target, index, arr) => {
+      // Remove duplicates by checking if this is the first occurrence of this target (case-insensitive)
+      return arr.findIndex(t => t.toLowerCase() === target.toLowerCase()) === index;
+    });
 
   return (
     <TooltipProvider>
