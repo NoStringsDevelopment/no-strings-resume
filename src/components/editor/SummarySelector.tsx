@@ -1,14 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit2, Trash2, Target, FileText } from 'lucide-react';
+import { Target, Trash2, X } from 'lucide-react';
 import { useResume } from '@/context/ResumeContext';
 import { NamedSummary } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
@@ -16,18 +14,20 @@ import { useToast } from '@/hooks/use-toast';
 export const SummarySelector: React.FC = () => {
   const { state, dispatch } = useResume();
   const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSummary, setEditingSummary] = useState<NamedSummary | null>(null);
-  const [newSummary, setNewSummary] = useState({
-    name: '',
-    target: '',
-    summary: ''
-  });
+  const [currentTarget, setCurrentTarget] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const summaries = state.resumeData.summaries || [];
   const activeSummaryId = state.resumeData.activeSummaryId;
   const activeSummary = summaries.find(s => s.id === activeSummaryId);
   const { basics } = state.resumeData;
+
+  // Initialize current target from active summary or empty
+  useEffect(() => {
+    if (activeSummary) {
+      setCurrentTarget(activeSummary.target);
+    }
+  }, [activeSummary]);
 
   const updateBasicsSummary = (value: string) => {
     dispatch({ 
@@ -36,310 +36,257 @@ export const SummarySelector: React.FC = () => {
     });
   };
 
-  const handleCreateSummary = () => {
-    if (!newSummary.name.trim() || !newSummary.target.trim() || !newSummary.summary.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all fields to create a summary.",
-        variant: "destructive"
-      });
+  const handleTargetChange = (newTarget: string) => {
+    if (!newTarget.trim()) {
+      setCurrentTarget('');
       return;
     }
 
-    const summary: NamedSummary = {
-      id: Date.now().toString(),
-      name: newSummary.name,
-      target: newSummary.target,
-      summary: newSummary.summary,
-      createdAt: new Date().toISOString(),
-      lastUsed: new Date().toISOString()
-    };
-
-    dispatch({
-      type: 'ADD_SUMMARY',
-      payload: summary
-    });
-
-    // Update the current summary in basics
-    updateBasicsSummary(newSummary.summary);
-
-    setNewSummary({ name: '', target: '', summary: '' });
-    setIsDialogOpen(false);
-    
-    toast({
-      title: "Summary Created",
-      description: `Created "${newSummary.name}" summary and applied it to your resume.`
-    });
-  };
-
-  const handleUpdateSummary = () => {
-    if (!editingSummary || !newSummary.name.trim() || !newSummary.target.trim() || !newSummary.summary.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all fields to update the summary.",
-        variant: "destructive"
-      });
-      return;
+    // Save current summary if we have one
+    if (currentTarget && basics.summary) {
+      saveSummaryForTarget(currentTarget, basics.summary);
     }
 
-    const updatedSummary: NamedSummary = {
-      ...editingSummary,
-      name: newSummary.name,
-      target: newSummary.target,
-      summary: newSummary.summary,
-      lastUsed: new Date().toISOString()
-    };
-
-    dispatch({
-      type: 'UPDATE_SUMMARY',
-      payload: updatedSummary
-    });
-
-    // If this is the active summary, update basics
-    if (activeSummaryId === editingSummary.id) {
-      updateBasicsSummary(newSummary.summary);
-    }
-
-    setEditingSummary(null);
-    setNewSummary({ name: '', target: '', summary: '' });
-    setIsDialogOpen(false);
-    
-    toast({
-      title: "Summary Updated",
-      description: `Updated "${newSummary.name}" summary.`
-    });
-  };
-
-  const handleSelectSummary = (summaryId: string) => {
-    const summary = summaries.find(s => s.id === summaryId);
-    if (summary) {
+    // Load summary for new target
+    const existingSummary = summaries.find(s => s.target === newTarget);
+    if (existingSummary) {
+      updateBasicsSummary(existingSummary.summary);
       dispatch({
         type: 'SET_ACTIVE_SUMMARY',
-        payload: summaryId
+        payload: existingSummary.id
       });
       
-      updateBasicsSummary(summary.summary);
-
       // Update last used timestamp
       dispatch({
         type: 'UPDATE_SUMMARY',
-        payload: { ...summary, lastUsed: new Date().toISOString() }
+        payload: { ...existingSummary, lastUsed: new Date().toISOString() }
       });
-
-      toast({
-        title: "Summary Applied",
-        description: `Applied "${summary.name}" summary to your resume.`
-      });
-    }
-  };
-
-  const handleDeleteSummary = (summaryId: string) => {
-    const summary = summaries.find(s => s.id === summaryId);
-    if (summary) {
+    } else {
+      // Clear summary for new target
+      updateBasicsSummary('');
       dispatch({
-        type: 'DELETE_SUMMARY',
-        payload: summaryId
+        type: 'SET_ACTIVE_SUMMARY',
+        payload: undefined
+      });
+    }
+
+    setCurrentTarget(newTarget);
+  };
+
+  const saveSummaryForTarget = (target: string, summary: string) => {
+    if (!target.trim() || !summary.trim()) return;
+
+    const existingSummary = summaries.find(s => s.target === target);
+    
+    if (existingSummary) {
+      // Update existing summary
+      dispatch({
+        type: 'UPDATE_SUMMARY',
+        payload: {
+          ...existingSummary,
+          summary,
+          lastUsed: new Date().toISOString()
+        }
+      });
+    } else {
+      // Create new summary
+      const newSummary: NamedSummary = {
+        id: Date.now().toString(),
+        target,
+        summary,
+        createdAt: new Date().toISOString(),
+        lastUsed: new Date().toISOString()
+      };
+
+      dispatch({
+        type: 'ADD_SUMMARY',
+        payload: newSummary
       });
 
-      // If this was the active summary, clear the active summary
-      if (activeSummaryId === summaryId) {
-        dispatch({
-          type: 'SET_ACTIVE_SUMMARY',
-          payload: undefined
-        });
-      }
-
-      toast({
-        title: "Summary Deleted",
-        description: `Deleted "${summary.name}" summary.`
+      dispatch({
+        type: 'SET_ACTIVE_SUMMARY',
+        payload: newSummary.id
       });
     }
   };
 
-  const startEdit = (summary: NamedSummary) => {
-    setEditingSummary(summary);
-    setNewSummary({
-      name: summary.name,
-      target: summary.target,
-      summary: summary.summary
-    });
-    setIsDialogOpen(true);
+  const handleSummaryChange = (value: string) => {
+    updateBasicsSummary(value);
+    
+    // Auto-save to current target if we have one
+    if (currentTarget.trim()) {
+      // Debounce the save to avoid too many updates
+      setTimeout(() => {
+        saveSummaryForTarget(currentTarget, value);
+      }, 500);
+    }
   };
 
-  const resetDialog = () => {
-    setEditingSummary(null);
-    setNewSummary({ name: '', target: '', summary: '' });
-    setIsDialogOpen(false);
+  const handleDeleteTarget = () => {
+    if (!activeSummary) return;
+
+    dispatch({
+      type: 'DELETE_SUMMARY',
+      payload: activeSummary.id
+    });
+
+    // Clear current state
+    setCurrentTarget('');
+    updateBasicsSummary('');
+    
+    toast({
+      title: "Target Deleted",
+      description: `Deleted "${activeSummary.target}" summary.`
+    });
   };
+
+  const handleClearTarget = () => {
+    setCurrentTarget('');
+    updateBasicsSummary('');
+    dispatch({
+      type: 'SET_ACTIVE_SUMMARY',
+      payload: undefined
+    });
+  };
+
+  const availableTargets = summaries.map(s => s.target).sort();
 
   return (
     <Card data-testid="summary-selector">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Target className="w-5 h-5" />
-            <span>Summary</span>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={resetDialog}>
-            <DialogTrigger asChild>
-              <Button size="sm" data-testid="add-summary-button">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Named Summary
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingSummary ? 'Edit Named Summary' : 'Create Named Summary'}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="summary-name">Summary Name</Label>
-                  <Input
-                    id="summary-name"
-                    value={newSummary.name}
-                    onChange={(e) => setNewSummary({ ...newSummary, name: e.target.value })}
-                    placeholder="e.g., 'Tech Startup Focus', 'Enterprise Sales Role'"
-                    data-testid="summary-name-input"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="summary-target">Target Role/Company</Label>
-                  <Input
-                    id="summary-target"
-                    value={newSummary.target}
-                    onChange={(e) => setNewSummary({ ...newSummary, target: e.target.value })}
-                    placeholder="e.g., 'Senior Software Engineer at Tech Startups'"
-                    data-testid="summary-target-input"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="summary-text">Summary</Label>
-                  <Textarea
-                    id="summary-text"
-                    value={newSummary.summary}
-                    onChange={(e) => setNewSummary({ ...newSummary, summary: e.target.value })}
-                    placeholder="Write your targeted professional summary..."
-                    rows={4}
-                    data-testid="summary-text-input"
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={resetDialog}>
-                    Cancel
-                  </Button>
-                  <Button onClick={editingSummary ? handleUpdateSummary : handleCreateSummary}>
-                    {editingSummary ? 'Update Summary' : 'Create Summary'}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+        <CardTitle className="flex items-center space-x-2">
+          <Target className="w-5 h-5" />
+          <span>Summary</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="direct" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="direct">
-              <FileText className="w-4 h-4 mr-2" />
-              Direct Edit
-            </TabsTrigger>
-            <TabsTrigger value="named">
-              <Target className="w-4 h-4 mr-2" />
-              Named Summaries ({summaries.length})
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="direct" className="space-y-4">
-            <div>
-              <Label htmlFor="summary">Professional Summary</Label>
-              <Textarea
-                id="summary"
-                value={basics.summary}
-                onChange={(e) => updateBasicsSummary(e.target.value)}
-                placeholder="Brief professional summary highlighting your key strengths and experience..."
-                rows={4}
-                spellCheck={true}
-                data-testid="summary-input"
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                Edit your summary directly or use named summaries for different target roles.
-              </p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="named" className="space-y-4">
-            {summaries.length > 0 ? (
-              <>
-                <div>
-                  <Label>Select Active Summary</Label>
-                  <Select value={activeSummaryId || ''} onValueChange={handleSelectSummary}>
-                    <SelectTrigger data-testid="summary-selector-dropdown">
-                      <SelectValue placeholder="Choose a summary to apply" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {summaries.map((summary) => (
-                        <SelectItem key={summary.id} value={summary.id}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{summary.name}</span>
-                            <span className="text-sm text-gray-500">{summary.target}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {activeSummary && (
-                  <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                    <p className="text-sm font-medium text-blue-900">Active: {activeSummary.name}</p>
-                    <p className="text-sm text-blue-700">{activeSummary.target}</p>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label>Manage Named Summaries</Label>
-                  <div className="space-y-2">
-                    {summaries.map((summary) => (
-                      <div key={summary.id} className="flex items-center justify-between p-2 border rounded-lg">
-                        <div className="flex-1">
-                          <p className="font-medium">{summary.name}</p>
-                          <p className="text-sm text-gray-500">{summary.target}</p>
-                        </div>
-                        <div className="flex space-x-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => startEdit(summary)}
-                            data-testid={`edit-summary-${summary.id}`}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteSummary(summary.id)}
-                            className="text-red-600 hover:text-red-700"
-                            data-testid={`delete-summary-${summary.id}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="target">Target Role/Company</Label>
+          <div className="flex space-x-2">
+            {availableTargets.length > 0 && !isEditing ? (
+              <Select value={currentTarget} onValueChange={handleTargetChange}>
+                <SelectTrigger className="flex-1" data-testid="target-selector-dropdown">
+                  <SelectValue placeholder="Select a target or type a new one" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTargets.map((target) => (
+                    <SelectItem key={target} value={target}>
+                      {target}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Target className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p className="mb-2">No named summaries created yet</p>
-                <p className="text-sm">Create targeted summaries for different roles or companies</p>
-              </div>
+              <Input
+                id="target"
+                value={currentTarget}
+                onChange={(e) => setCurrentTarget(e.target.value)}
+                onBlur={(e) => handleTargetChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleTargetChange(currentTarget);
+                    setIsEditing(false);
+                  }
+                }}
+                placeholder="e.g., Senior Software Engineer at Tech Startups"
+                className="flex-1"
+                data-testid="target-input"
+              />
             )}
-          </TabsContent>
-        </Tabs>
+            
+            {availableTargets.length > 0 && !isEditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                data-testid="edit-target-button"
+              >
+                Edit
+              </Button>
+            )}
+            
+            {isEditing && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  handleTargetChange(currentTarget);
+                  setIsEditing(false);
+                }}
+                data-testid="save-target-button"
+              >
+                Save
+              </Button>
+            )}
+            
+            {currentTarget && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearTarget}
+                data-testid="clear-target-button"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {activeSummary && (
+          <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+            <p className="text-sm text-blue-700">
+              Current target: <span className="font-medium">{activeSummary.target}</span>
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDeleteTarget}
+              className="text-red-600 hover:text-red-700"
+              data-testid="delete-target-button"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="summary">Professional Summary</Label>
+          <Textarea
+            id="summary"
+            value={basics.summary}
+            onChange={(e) => handleSummaryChange(e.target.value)}
+            placeholder="Brief professional summary highlighting your key strengths and experience..."
+            rows={4}
+            spellCheck={true}
+            data-testid="summary-input"
+          />
+          <p className="text-sm text-gray-500">
+            {currentTarget 
+              ? `Summary will be saved for "${currentTarget}"`
+              : "Enter a target above to save this summary for future use"
+            }
+          </p>
+        </div>
+
+        {availableTargets.length > 0 && (
+          <div className="space-y-2">
+            <Label>Quick Switch</Label>
+            <div className="flex flex-wrap gap-2">
+              {availableTargets.map((target) => (
+                <Button
+                  key={target}
+                  variant={currentTarget === target ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleTargetChange(target)}
+                  className="text-xs"
+                  data-testid={`quick-switch-${target}`}
+                >
+                  {target}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
