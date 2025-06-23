@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +17,7 @@ export const SummarySelector: React.FC = () => {
   const [currentTarget, setCurrentTarget] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const targetInputRef = useRef<HTMLInputElement>(null);
+  const lastSavedRef = useRef<{ target: string; summary: string }>({ target: '', summary: '' });
 
   const summaries = state.resumeData.summaries || [];
   const activeSummaryId = state.resumeData.activeSummaryId;
@@ -31,15 +31,25 @@ export const SummarySelector: React.FC = () => {
     }
   }, [activeSummary]);
 
-  // Save when component unmounts or target changes
+  // Save when component unmounts or when target/summary changes
   useEffect(() => {
+    const shouldSave = currentTarget.trim() && 
+                      basics.summary.trim() && 
+                      (lastSavedRef.current.target !== currentTarget || 
+                       lastSavedRef.current.summary !== basics.summary);
+    
+    if (shouldSave) {
+      saveSummaryForTarget(currentTarget, basics.summary);
+      lastSavedRef.current = { target: currentTarget, summary: basics.summary };
+    }
+
     return () => {
       // Save current state when component unmounts
       if (currentTarget.trim() && basics.summary.trim()) {
         saveSummaryForTarget(currentTarget, basics.summary);
       }
     };
-  }, []);
+  }, [currentTarget, basics.summary]);
 
   const updateBasicsSummary = (value: string) => {
     dispatch({ 
