@@ -3,7 +3,6 @@ import { useResume } from "@/context/ResumeContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { SummarySelector } from "./SummarySelector";
@@ -145,29 +144,8 @@ export default function BasicEditor() {
         </CardContent>
       </Card>
 
-      {/* Summary Selector Component */}
+      {/* Single unified Summary component */}
       <SummarySelector />
-
-      {/* Fallback Summary Textarea for direct editing */}
-      <Card data-testid="summary-card">
-        <CardHeader>
-          <CardTitle>Summary (Direct Edit)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <Label htmlFor="summary">Summary</Label>
-            <Textarea
-              id="summary"
-              value={basics.summary}
-              onChange={(e) => updateBasics('summary', e.target.value)}
-              placeholder="Brief professional summary..."
-              rows={4}
-              spellCheck={true}
-              data-testid="summary-input"
-            />
-          </div>
-        </CardContent>
-      </Card>
 
       <Card data-testid="location-card">
         <CardHeader>

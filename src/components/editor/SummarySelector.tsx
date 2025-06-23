@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit2, Trash2, Target } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Edit2, Trash2, Target, FileText } from 'lucide-react';
 import { useResume } from '@/context/ResumeContext';
 import { NamedSummary } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +27,14 @@ export const SummarySelector: React.FC = () => {
   const summaries = state.resumeData.summaries || [];
   const activeSummaryId = state.resumeData.activeSummaryId;
   const activeSummary = summaries.find(s => s.id === activeSummaryId);
+  const { basics } = state.resumeData;
+
+  const updateBasicsSummary = (value: string) => {
+    dispatch({ 
+      type: 'UPDATE_BASICS', 
+      payload: { summary: value } 
+    });
+  };
 
   const handleCreateSummary = () => {
     if (!newSummary.name.trim() || !newSummary.target.trim() || !newSummary.summary.trim()) {
@@ -52,10 +61,7 @@ export const SummarySelector: React.FC = () => {
     });
 
     // Update the current summary in basics
-    dispatch({
-      type: 'UPDATE_BASICS',
-      payload: { summary: newSummary.summary }
-    });
+    updateBasicsSummary(newSummary.summary);
 
     setNewSummary({ name: '', target: '', summary: '' });
     setIsDialogOpen(false);
@@ -91,10 +97,7 @@ export const SummarySelector: React.FC = () => {
 
     // If this is the active summary, update basics
     if (activeSummaryId === editingSummary.id) {
-      dispatch({
-        type: 'UPDATE_BASICS',
-        payload: { summary: newSummary.summary }
-      });
+      updateBasicsSummary(newSummary.summary);
     }
 
     setEditingSummary(null);
@@ -115,10 +118,7 @@ export const SummarySelector: React.FC = () => {
         payload: summaryId
       });
       
-      dispatch({
-        type: 'UPDATE_BASICS',
-        payload: { summary: summary.summary }
-      });
+      updateBasicsSummary(summary.summary);
 
       // Update last used timestamp
       dispatch({
@@ -178,19 +178,19 @@ export const SummarySelector: React.FC = () => {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Target className="w-5 h-5" />
-            <span>Summary Manager</span>
+            <span>Summary</span>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={resetDialog}>
             <DialogTrigger asChild>
               <Button size="sm" data-testid="add-summary-button">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Summary
+                Add Named Summary
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>
-                  {editingSummary ? 'Edit Summary' : 'Create New Summary'}
+                  {editingSummary ? 'Edit Named Summary' : 'Create Named Summary'}
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
@@ -238,75 +238,108 @@ export const SummarySelector: React.FC = () => {
           </Dialog>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {summaries.length > 0 ? (
-          <>
+      <CardContent>
+        <Tabs defaultValue="direct" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="direct">
+              <FileText className="w-4 h-4 mr-2" />
+              Direct Edit
+            </TabsTrigger>
+            <TabsTrigger value="named">
+              <Target className="w-4 h-4 mr-2" />
+              Named Summaries ({summaries.length})
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="direct" className="space-y-4">
             <div>
-              <Label>Select Active Summary</Label>
-              <Select value={activeSummaryId || ''} onValueChange={handleSelectSummary}>
-                <SelectTrigger data-testid="summary-selector-dropdown">
-                  <SelectValue placeholder="Choose a summary to apply" />
-                </SelectTrigger>
-                <SelectContent>
-                  {summaries.map((summary) => (
-                    <SelectItem key={summary.id} value={summary.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{summary.name}</span>
-                        <span className="text-sm text-gray-500">{summary.target}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="summary">Professional Summary</Label>
+              <Textarea
+                id="summary"
+                value={basics.summary}
+                onChange={(e) => updateBasicsSummary(e.target.value)}
+                placeholder="Brief professional summary highlighting your key strengths and experience..."
+                rows={4}
+                spellCheck={true}
+                data-testid="summary-input"
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Edit your summary directly or use named summaries for different target roles.
+              </p>
             </div>
-            
-            {activeSummary && (
-              <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                <p className="text-sm font-medium text-blue-900">Active: {activeSummary.name}</p>
-                <p className="text-sm text-blue-700">{activeSummary.target}</p>
+          </TabsContent>
+          
+          <TabsContent value="named" className="space-y-4">
+            {summaries.length > 0 ? (
+              <>
+                <div>
+                  <Label>Select Active Summary</Label>
+                  <Select value={activeSummaryId || ''} onValueChange={handleSelectSummary}>
+                    <SelectTrigger data-testid="summary-selector-dropdown">
+                      <SelectValue placeholder="Choose a summary to apply" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {summaries.map((summary) => (
+                        <SelectItem key={summary.id} value={summary.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{summary.name}</span>
+                            <span className="text-sm text-gray-500">{summary.target}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {activeSummary && (
+                  <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                    <p className="text-sm font-medium text-blue-900">Active: {activeSummary.name}</p>
+                    <p className="text-sm text-blue-700">{activeSummary.target}</p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label>Manage Named Summaries</Label>
+                  <div className="space-y-2">
+                    {summaries.map((summary) => (
+                      <div key={summary.id} className="flex items-center justify-between p-2 border rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium">{summary.name}</p>
+                          <p className="text-sm text-gray-500">{summary.target}</p>
+                        </div>
+                        <div className="flex space-x-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEdit(summary)}
+                            data-testid={`edit-summary-${summary.id}`}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteSummary(summary.id)}
+                            className="text-red-600 hover:text-red-700"
+                            data-testid={`delete-summary-${summary.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Target className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="mb-2">No named summaries created yet</p>
+                <p className="text-sm">Create targeted summaries for different roles or companies</p>
               </div>
             )}
-
-            <div className="space-y-2">
-              <Label>Manage Summaries</Label>
-              <div className="space-y-2">
-                {summaries.map((summary) => (
-                  <div key={summary.id} className="flex items-center justify-between p-2 border rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-medium">{summary.name}</p>
-                      <p className="text-sm text-gray-500">{summary.target}</p>
-                    </div>
-                    <div className="flex space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => startEdit(summary)}
-                        data-testid={`edit-summary-${summary.id}`}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteSummary(summary.id)}
-                        className="text-red-600 hover:text-red-700"
-                        data-testid={`delete-summary-${summary.id}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Target className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="mb-2">No summaries created yet</p>
-            <p className="text-sm">Create targeted summaries for different roles or companies</p>
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
