@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect, ReactNode, useContext } from 'react';
-import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary } from '@/types/resume';
 import { getDefaultResumeData } from '@/utils/defaultData';
 import { normalizeResumeData, normalizeStoredData } from '@/utils/dataHelpers';
 
@@ -21,6 +21,11 @@ type ResumeAction =
   | { type: 'SET_LOADING'; payload: boolean }
   // Basics actions
   | { type: 'UPDATE_BASICS'; payload: Partial<Basics> }
+  // Summary management actions
+  | { type: 'ADD_SUMMARY'; payload: NamedSummary }
+  | { type: 'UPDATE_SUMMARY'; payload: NamedSummary }
+  | { type: 'DELETE_SUMMARY'; payload: string }
+  | { type: 'SET_ACTIVE_SUMMARY'; payload: string | undefined }
   // Skills actions
   | { type: 'UPDATE_SKILLS'; payload: Skill[] }
   | { type: 'ADD_SKILL'; payload: Skill }
@@ -85,6 +90,62 @@ const addToHistory = (state: ResumeState, newResumeData: ResumeData) => {
 
 const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState => {
   switch (action.type) {
+    case 'ADD_SUMMARY': {
+      const updatedData = {
+        ...state.resumeData,
+        summaries: [...(state.resumeData.summaries || []), action.payload],
+        activeSummaryId: action.payload.id
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'UPDATE_SUMMARY': {
+      const updatedData = {
+        ...state.resumeData,
+        summaries: (state.resumeData.summaries || []).map(summary =>
+          summary.id === action.payload.id ? action.payload : summary
+        )
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'DELETE_SUMMARY': {
+      const updatedData = {
+        ...state.resumeData,
+        summaries: (state.resumeData.summaries || []).filter(summary => summary.id !== action.payload),
+        activeSummaryId: state.resumeData.activeSummaryId === action.payload ? undefined : state.resumeData.activeSummaryId
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'SET_ACTIVE_SUMMARY': {
+      const updatedData = {
+        ...state.resumeData,
+        activeSummaryId: action.payload
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
     case 'UPDATE_RESUME':
     case 'SET_RESUME_DATA': {
       // Normalize data before storing
@@ -141,6 +202,8 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
         languages: [],
         interests: [],
         references: [],
+        summaries: [],
+        activeSummaryId: undefined,
       };
       // Normalize cleared data to ensure consistency
       const normalizedData = normalizeResumeData(clearedData);
@@ -753,10 +816,9 @@ export const ResumeProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   );
 };
 
-// Add back the useResume hook that components are expecting
 export const useResume = () => {
   const context = useContext(ResumeContext);
-  if (context === null) {
+  if (!context) {
     throw new Error('useResume must be used within a ResumeProvider');
   }
   return context;

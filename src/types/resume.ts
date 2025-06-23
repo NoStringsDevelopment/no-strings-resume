@@ -19,6 +19,19 @@ export interface ResumeData {
   
   // Extension: non-conforming data that needs manual review
   nonConformingData?: NonConformingData;
+  
+  // Extension: multiple named summaries
+  summaries?: NamedSummary[];
+  activeSummaryId?: string;
+}
+
+export interface NamedSummary {
+  id: string;
+  name: string;
+  target: string;
+  summary: string;
+  createdAt: string;
+  lastUsed?: string;
 }
 
 export interface NonConformingData {

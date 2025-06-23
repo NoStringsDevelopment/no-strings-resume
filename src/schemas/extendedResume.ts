@@ -1,8 +1,8 @@
 // Extended Resume Schema with clean separation between standard JSON Resume and extensions
 // This schema preserves JSON Resume v1.2.1 compatibility while adding app-specific extensions
 
-export const EXTENDED_RESUME_SCHEMA_VERSION = "1.0.0";
-export const SUPPORTED_SCHEMA_VERSIONS = ["1.0.0"];
+export const EXTENDED_RESUME_SCHEMA_VERSION = "1.1.0";
+export const SUPPORTED_SCHEMA_VERSIONS = ["1.0.0", "1.1.0"];
 
 // Standard JSON Resume Schema (unchanged, for reference)
 import { 
@@ -31,7 +31,22 @@ import {
  * EXAMPLE MIGRATIONS:
  * v1.0.0 -> v1.1.0: Add new optional field (backwards compatible)
  * v1.1.0 -> v2.0.0: Change data structure (need migration function)
+ * 
+ * CHANGELOG:
+ * v1.1.0: Added summaries collection for multiple named summaries
  */
+
+/**
+ * Named summary for different target roles/companies
+ */
+export interface NamedSummary {
+  id: string;
+  name: string;
+  target: string;
+  summary: string;
+  createdAt: string;
+  lastUsed?: string;
+}
 
 /**
  * Extended Resume format that preserves JSON Resume compatibility
@@ -76,6 +91,12 @@ export interface Extensions {
   
   // App metadata (edit counts, last saved, etc.)
   app?: AppMetadata;
+  
+  // Multiple named summaries (v1.1.0+)
+  summaries?: NamedSummary[];
+  
+  // Current active summary ID for display
+  activeSummaryId?: string;
   
   // Future extensions can be added here without breaking changes
   // theme?: ThemeExtensions;
@@ -234,7 +255,10 @@ export function getDefaultExtensions(): Extensions {
     app: {
       editCount: 0,
       templateVersion: "1.0.0"
-    }
+    },
+    
+    summaries: [],
+    activeSummaryId: undefined
   };
 }
 
@@ -350,4 +374,4 @@ export function getAppVersion(): string {
   } catch {
     return "1.0.0";
   }
-} 
+}
