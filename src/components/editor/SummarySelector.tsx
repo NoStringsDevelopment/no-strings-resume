@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, Trash2, X } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Target, Trash2, Info } from 'lucide-react';
 import { useResume } from '@/context/ResumeContext';
 import { NamedSummary } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
@@ -62,8 +63,7 @@ export const SummarySelector: React.FC = () => {
         payload: { ...existingSummary, lastUsed: new Date().toISOString() }
       });
     } else {
-      // Clear summary for new target
-      updateBasicsSummary('');
+      // Don't clear summary for new target - preserve current content
       dispatch({
         type: 'SET_ACTIVE_SUMMARY',
         payload: undefined
@@ -140,154 +140,123 @@ export const SummarySelector: React.FC = () => {
     });
   };
 
-  const handleClearTarget = () => {
-    setCurrentTarget('');
-    updateBasicsSummary('');
-    dispatch({
-      type: 'SET_ACTIVE_SUMMARY',
-      payload: undefined
-    });
-  };
-
   const availableTargets = summaries.map(s => s.target).sort();
 
   return (
-    <Card data-testid="summary-selector">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Target className="w-5 h-5" />
-          <span>Summary</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="target">Target Role/Company</Label>
-          <div className="flex space-x-2">
-            {availableTargets.length > 0 && !isEditing ? (
-              <Select value={currentTarget} onValueChange={handleTargetChange}>
-                <SelectTrigger className="flex-1" data-testid="target-selector-dropdown">
-                  <SelectValue placeholder="Select a target or type a new one" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTargets.map((target) => (
-                    <SelectItem key={target} value={target}>
-                      {target}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                id="target"
-                value={currentTarget}
-                onChange={(e) => setCurrentTarget(e.target.value)}
-                onBlur={(e) => handleTargetChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+    <TooltipProvider>
+      <Card data-testid="summary-selector">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Target className="w-5 h-5" />
+            <span>Summary</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="target">Target Role/Company</Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Enter a target above to save this summary for future use</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex space-x-2">
+              {availableTargets.length > 0 && !isEditing ? (
+                <Select value={currentTarget} onValueChange={handleTargetChange}>
+                  <SelectTrigger className="flex-1" data-testid="target-selector-dropdown">
+                    <SelectValue placeholder="Select a target or type a new one" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTargets.map((target) => (
+                      <SelectItem key={target} value={target}>
+                        {target}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  id="target"
+                  value={currentTarget}
+                  onChange={(e) => setCurrentTarget(e.target.value)}
+                  onBlur={(e) => handleTargetChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleTargetChange(currentTarget);
+                      setIsEditing(false);
+                    }
+                  }}
+                  placeholder="e.g., Senior Software Engineer at Tech Startups"
+                  className="flex-1"
+                  data-testid="target-input"
+                />
+              )}
+              
+              {availableTargets.length > 0 && !isEditing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  data-testid="edit-target-button"
+                >
+                  Edit
+                </Button>
+              )}
+              
+              {isEditing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
                     handleTargetChange(currentTarget);
                     setIsEditing(false);
-                  }
-                }}
-                placeholder="e.g., Senior Software Engineer at Tech Startups"
-                className="flex-1"
-                data-testid="target-input"
-              />
-            )}
-            
-            {availableTargets.length > 0 && !isEditing && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                data-testid="edit-target-button"
-              >
-                Edit
-              </Button>
-            )}
-            
-            {isEditing && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  handleTargetChange(currentTarget);
-                  setIsEditing(false);
-                }}
-                data-testid="save-target-button"
-              >
-                Save
-              </Button>
-            )}
-            
-            {currentTarget && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClearTarget}
-                data-testid="clear-target-button"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {activeSummary && (
-          <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-            <p className="text-sm text-blue-700">
-              Current target: <span className="font-medium">{activeSummary.target}</span>
-            </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDeleteTarget}
-              className="text-red-600 hover:text-red-700"
-              data-testid="delete-target-button"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <Label htmlFor="summary">Professional Summary</Label>
-          <Textarea
-            id="summary"
-            value={basics.summary}
-            onChange={(e) => handleSummaryChange(e.target.value)}
-            placeholder="Brief professional summary highlighting your key strengths and experience..."
-            rows={4}
-            spellCheck={true}
-            data-testid="summary-input"
-          />
-          <p className="text-sm text-gray-500">
-            {currentTarget 
-              ? `Summary will be saved for "${currentTarget}"`
-              : "Enter a target above to save this summary for future use"
-            }
-          </p>
-        </div>
-
-        {availableTargets.length > 0 && (
-          <div className="space-y-2">
-            <Label>Quick Switch</Label>
-            <div className="flex flex-wrap gap-2">
-              {availableTargets.map((target) => (
-                <Button
-                  key={target}
-                  variant={currentTarget === target ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleTargetChange(target)}
-                  className="text-xs"
-                  data-testid={`quick-switch-${target}`}
+                  }}
+                  data-testid="save-target-button"
                 >
-                  {target}
+                  Save
                 </Button>
-              ))}
+              )}
+              
+              {activeSummary && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteTarget}
+                  className="text-red-600 hover:text-red-700"
+                  data-testid="delete-target-button"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {activeSummary && (
+            <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+              <p className="text-sm text-blue-700">
+                Current target: <span className="font-medium">{activeSummary.target}</span>
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="summary">Professional Summary</Label>
+            <Textarea
+              id="summary"
+              value={basics.summary}
+              onChange={(e) => handleSummaryChange(e.target.value)}
+              placeholder="Brief professional summary highlighting your key strengths and experience..."
+              rows={4}
+              spellCheck={true}
+              data-testid="summary-input"
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 };
