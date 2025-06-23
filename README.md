@@ -211,6 +211,18 @@ Modern minimalist design with lots of white space, clean lines, and intuitive ic
 - Contextual help and tooltips
 - Keyboard shortcuts for power users
 
+### Responsive Element Architecture
+- **Single Responsive Elements**: One DOM element per logical UI component, not separate mobile/desktop versions
+- **Unique Test IDs**: Each logical element has one test ID across all screen sizes for consistent testing
+- **Progressive Disclosure**: Use CSS classes to show/hide text content based on breakpoints
+- **Elimination of Duplicates**: No duplicate buttons or controls that create testing ambiguity
+- **Benefits**: 
+  - Avoids Playwright "strict mode violations" from multiple matching elements
+  - Simplifies state management (no syncing across duplicate elements)
+  - Easier maintenance with changes applied in one place
+  - Better accessibility (screen readers encounter each element once)
+  - Consistent user experience across device types
+
 ## Import/Export Functionality
 
 ### Import Capabilities

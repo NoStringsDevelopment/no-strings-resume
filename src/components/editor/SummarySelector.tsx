@@ -11,6 +11,15 @@ import { useResume } from '@/context/ResumeContext';
 import { NamedSummary } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
 
+// Generate a unique ID with fallback for older browsers
+const generateUniqueId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for older browsers
+  return 'summary-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+};
+
 export const SummarySelector: React.FC = () => {
   const { state, dispatch } = useResume();
   const { toast } = useToast();
@@ -117,7 +126,13 @@ export const SummarySelector: React.FC = () => {
     // Only save if both target and summary have meaningful content
     if (!target || target.length < 3 || !summary || summary.length < 10) return;
 
-    const existingSummary = summaries.find(s => s.target === target);
+    // Normalize target for consistent comparison
+    const normalizedTarget = target.trim();
+    
+    // Find existing summary by target (case-insensitive)
+    const existingSummary = summaries.find(s => 
+      s.target.toLowerCase() === normalizedTarget.toLowerCase()
+    );
     
     if (existingSummary) {
       // Only update if the summary has actually changed
@@ -126,48 +141,31 @@ export const SummarySelector: React.FC = () => {
           type: 'UPDATE_SUMMARY',
           payload: {
             ...existingSummary,
+            target: normalizedTarget, // Update with normalized target
             summary,
             lastUsed: new Date().toISOString()
           }
         });
       }
     } else {
-      // Create new summary only if target doesn't already exist
-      const duplicateTarget = summaries.find(s => s.target.toLowerCase() === target.toLowerCase());
-      if (duplicateTarget) {
-        // Update existing summary with same target instead of creating duplicate
-        dispatch({
-          type: 'UPDATE_SUMMARY',
-          payload: {
-            ...duplicateTarget,
-            summary,
-            lastUsed: new Date().toISOString()
-          }
-        });
-        dispatch({
-          type: 'SET_ACTIVE_SUMMARY',
-          payload: duplicateTarget.id
-        });
-      } else {
-        // Create new summary
-        const newSummary: NamedSummary = {
-          id: Date.now().toString(),
-          target,
-          summary,
-          createdAt: new Date().toISOString(),
-          lastUsed: new Date().toISOString()
-        };
+      // Create new summary with unique ID
+      const newSummary: NamedSummary = {
+        id: generateUniqueId(),
+        target: normalizedTarget,
+        summary,
+        createdAt: new Date().toISOString(),
+        lastUsed: new Date().toISOString()
+      };
 
-        dispatch({
-          type: 'ADD_SUMMARY',
-          payload: newSummary
-        });
+      dispatch({
+        type: 'ADD_SUMMARY',
+        payload: newSummary
+      });
 
-        dispatch({
-          type: 'SET_ACTIVE_SUMMARY',
-          payload: newSummary.id
-        });
-      }
+      dispatch({
+        type: 'SET_ACTIVE_SUMMARY',
+        payload: newSummary.id
+      });
     }
   };
 
@@ -266,7 +264,7 @@ export const SummarySelector: React.FC = () => {
                   <Info className="w-4 h-4 text-gray-400 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Enter a target above to save this summary for future use</p>
+                  <p>Enter a target name to save this summary for future use</p>
                 </TooltipContent>
               </Tooltip>
             </div>

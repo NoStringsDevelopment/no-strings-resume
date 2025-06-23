@@ -2,6 +2,7 @@ import React, { createContext, useReducer, useEffect, ReactNode, useContext } fr
 import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary } from '@/types/resume';
 import { getDefaultResumeData } from '@/utils/defaultData';
 import { normalizeResumeData, normalizeStoredData } from '@/utils/dataHelpers';
+import { deduplicateSummaries } from '@/utils/dataHelpers';
 
 interface ResumeState {
   resumeData: ResumeData;
@@ -91,18 +92,47 @@ const addToHistory = (state: ResumeState, newResumeData: ResumeData) => {
 const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState => {
   switch (action.type) {
     case 'ADD_SUMMARY': {
-      const updatedData = {
-        ...state.resumeData,
-        summaries: [...(state.resumeData.summaries || []), action.payload],
-        activeSummaryId: action.payload.id
-      };
-      const normalizedData = normalizeResumeData(updatedData);
-      const historyUpdate = addToHistory(state, normalizedData);
-      return {
-        ...state,
-        resumeData: normalizedData,
-        ...historyUpdate
-      };
+      // Prevent duplicate targets (case-insensitive)
+      const existingSummaries = state.resumeData.summaries || [];
+      const duplicateExists = existingSummaries.some(s => 
+        s.target.toLowerCase() === action.payload.target.toLowerCase()
+      );
+      
+      if (duplicateExists) {
+        // Update existing instead of adding duplicate
+        const updatedData = {
+          ...state.resumeData,
+          summaries: existingSummaries.map(summary =>
+            summary.target.toLowerCase() === action.payload.target.toLowerCase() 
+              ? { ...action.payload, id: summary.id } // Keep original ID
+              : summary
+          ),
+          activeSummaryId: existingSummaries.find(s => 
+            s.target.toLowerCase() === action.payload.target.toLowerCase()
+          )?.id
+        };
+        const normalizedData = normalizeResumeData(updatedData);
+        const historyUpdate = addToHistory(state, normalizedData);
+        return {
+          ...state,
+          resumeData: normalizedData,
+          ...historyUpdate
+        };
+      } else {
+        // Add new summary
+        const updatedData = {
+          ...state.resumeData,
+          summaries: [...existingSummaries, action.payload],
+          activeSummaryId: action.payload.id
+        };
+        const normalizedData = normalizeResumeData(updatedData);
+        const historyUpdate = addToHistory(state, normalizedData);
+        return {
+          ...state,
+          resumeData: normalizedData,
+          ...historyUpdate
+        };
+      }
     }
     case 'UPDATE_SUMMARY': {
       const updatedData = {
@@ -761,6 +791,11 @@ export const ResumeProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         if (savedData) {
           const normalizedData = normalizeStoredData(savedData);
           if (normalizedData) {
+            // Clean up any duplicate summaries that might exist
+            if (normalizedData.summaries && normalizedData.summaries.length > 0) {
+              normalizedData.summaries = deduplicateSummaries(normalizedData.summaries);
+            }
+            
             dispatch({ type: 'LOAD_RESUME', payload: normalizedData });
             dispatch({ type: 'SET_LOADING', payload: false });
             return;

@@ -41,7 +41,6 @@ import {
  */
 export interface NamedSummary {
   id: string;
-  name: string;
   target: string;
   summary: string;
   createdAt: string;

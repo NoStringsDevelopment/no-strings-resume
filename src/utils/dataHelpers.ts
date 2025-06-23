@@ -1,4 +1,4 @@
-import { ResumeData, SectionVisibility } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary } from '@/types/resume';
 
 /**
  * Default section visibility configuration
@@ -168,4 +168,36 @@ export function normalizeStoredData(jsonString: string): ResumeData | null {
     console.error('Failed to parse stored data:', error);
     return null;
   }
+}
+
+/**
+ * Cleans up duplicate summaries by merging them based on target (case-insensitive)
+ * Keeps the most recently used version
+ */
+export function deduplicateSummaries(summaries: NamedSummary[]): NamedSummary[] {
+  if (!summaries || summaries.length === 0) return [];
+
+  const uniqueSummaries = new Map<string, NamedSummary>();
+  
+  summaries.forEach(summary => {
+    const normalizedTarget = summary.target.toLowerCase();
+    const existing = uniqueSummaries.get(normalizedTarget);
+    
+    if (!existing) {
+      uniqueSummaries.set(normalizedTarget, summary);
+    } else {
+      // Keep the one with the most recent lastUsed timestamp
+      const existingDate = new Date(existing.lastUsed || existing.createdAt).getTime();
+      const currentDate = new Date(summary.lastUsed || summary.createdAt).getTime();
+      
+      if (currentDate > existingDate) {
+        uniqueSummaries.set(normalizedTarget, {
+          ...summary,
+          target: existing.target // Preserve original casing from first entry
+        });
+      }
+    }
+  });
+  
+  return Array.from(uniqueSummaries.values());
 } 

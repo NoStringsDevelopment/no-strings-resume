@@ -181,9 +181,11 @@ const ResumeEditor = () => {
       {/* Header */}
       <header className="bg-white border-b shadow-sm sticky top-0 z-10" data-testid="editor-header">
         <div className="container mx-auto px-4 py-3">
-          {/* Desktop Layout - Single Row */}
-          <div className="hidden lg:flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+          {/* Responsive Layout */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
+            
+            {/* Brand and Status Row */}
+            <div className="flex items-center justify-between lg:justify-start lg:space-x-4">
               <div className="flex items-center space-x-2">
                 <Button 
                   variant="ghost"
@@ -194,180 +196,22 @@ const ResumeEditor = () => {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
-                  <span className="font-semibold text-gray-900 hidden xl:block">No Strings Resume</span>
+                  <span className="font-semibold text-gray-900 hidden sm:block lg:hidden xl:block">No Strings Resume</span>
                 </Button>
-              </div>
-              <div className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium hidden xl:block">
-                Edit Mode
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-1">
-              {/* History Actions */}
-              <Button 
-                variant="ghost"
-                size="sm"
-                onClick={handleUndo}
-                disabled={!canUndo}
-                className="flex items-center space-x-1"
-                title="Undo"
-                data-testid="undo-button"
-              >
-                <Undo className="w-4 h-4" />
-                <span className="hidden xl:block">Undo</span>
-              </Button>
-              
-              <Button 
-                variant="ghost"
-                size="sm"
-                onClick={handleRedo}
-                disabled={!canRedo}
-                className="flex items-center space-x-1"
-                title="Redo"
-                data-testid="redo-button"
-              >
-                <Redo className="w-4 h-4" />
-                <span className="hidden xl:block">Redo</span>
-              </Button>
-              
-              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
-              
-              {/* File Actions */}
-              <Button 
-                variant="ghost"
-                size="sm"
-                onClick={handleImport}
-                className="flex items-center space-x-1"
-                title="Import"
-                data-testid="import-button"
-              >
-                <Upload className="w-4 h-4" />
-                <span className="hidden xl:block">Import</span>
-              </Button>
-              
-              <Button 
-                variant="ghost"
-                size="sm"
-                onClick={handleBackup}
-                className="flex items-center space-x-1"
-                title="Backup"
-                data-testid="backup-button"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden xl:block">Backup</span>
-              </Button>
-              
-              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
-              
-              {/* Data Actions */}
-              <Button 
-                variant="ghost"
-                size="sm"
-                onClick={handleClearAll}
-                className="flex items-center space-x-1 text-red-600 hover:text-red-700"
-                title="Clear All"
-                data-testid="clear-button"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span className="hidden xl:block">Clear</span>
-              </Button>
-              
-              <Button 
-                variant="ghost"
-                size="sm"
-                onClick={handleResetToDefault}
-                className="flex items-center space-x-1"
-                title="Reset to Default"
-                data-testid="reset-button"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span className="hidden xl:block">Reset</span>
-              </Button>
-              
-              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
-              
-              {/* Preview Toggle */}
-              <div className="flex items-center space-x-2 mr-2">
-                <Checkbox 
-                  id="preview-toggle"
-                  checked={isPreviewVisible}
-                  onCheckedChange={togglePreview}
-                  data-testid="preview-toggle"
-                />
-                <label 
-                  htmlFor="preview-toggle" 
-                  className="text-sm font-medium cursor-pointer hidden xl:block"
-                >
-                  Preview
-                </label>
-              </div>
-              
-              <div className="w-px h-6 bg-gray-300 mr-1 hidden xl:block" />
-              
-              {/* Navigation Actions */}
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/integrations')}
-                className="flex items-center space-x-1"
-                data-testid="integrations-button"
-              >
-                <Zap className="w-4 h-4" />
-                <span className="hidden xl:block">Integrations</span>
-              </Button>
-              
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/theme')}
-                className="flex items-center space-x-1"
-                data-testid="theme-button"
-              >
-                <Palette className="w-4 h-4" />
-                <span className="hidden xl:block">Theme</span>
-              </Button>
-              
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/view')}
-                className="flex items-center space-x-1"
-                data-testid="view-button"
-              >
-                <Eye className="w-4 h-4" />
-                <span className="hidden xl:block">View</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile/Tablet Layout - Three Rows */}
-          <div className="lg:hidden space-y-3">
-            {/* First Row - Branding */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="ghost"
-                  onClick={() => navigate('/')}
-                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
-                  data-testid="home-button-mobile"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="font-semibold text-gray-900 hidden sm:block">No Strings Resume</span>
-                </Button>
-                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
-                  Edit
+                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs lg:text-sm rounded-full font-medium lg:hidden xl:block">
+                  Edit{" "}
+                  <span className="hidden lg:inline xl:inline">Mode</span>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-1">
+              {/* Navigation Actions - Mobile */}
+              <div className="flex items-center space-x-1 lg:hidden">
                 <Button 
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/integrations')}
                   className="flex items-center space-x-1"
-                  data-testid="integrations-button-mobile"
+                  data-testid="integrations-button"
                 >
                   <Zap className="w-4 h-4" />
                   <span className="hidden sm:inline">Integrations</span>
@@ -378,7 +222,7 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={() => navigate('/theme')}
                   className="flex items-center space-x-1"
-                  data-testid="theme-button-mobile"
+                  data-testid="theme-button"
                 >
                   <Palette className="w-4 h-4" />
                   <span className="hidden sm:inline">Theme</span>
@@ -389,7 +233,7 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={() => navigate('/view')}
                   className="flex items-center space-x-1"
-                  data-testid="view-button-mobile"
+                  data-testid="view-button"
                 >
                   <Eye className="w-4 h-4" />
                   <span className="hidden sm:inline">View</span>
@@ -397,8 +241,9 @@ const ResumeEditor = () => {
               </div>
             </div>
 
-            {/* Second Row - Action Buttons */}
-            <div className="flex items-center justify-between space-x-1">
+            {/* Actions Row */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-end gap-1 lg:space-x-1">
+              
               {/* History Actions */}
               <div className="flex items-center space-x-1">
                 <Button 
@@ -406,10 +251,12 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={handleUndo}
                   disabled={!canUndo}
+                  className="flex items-center space-x-1"
                   title="Undo"
-                  data-testid="undo-button-mobile"
+                  data-testid="undo-button"
                 >
                   <Undo className="w-4 h-4" />
+                  <span className="hidden xl:block">Undo</span>
                 </Button>
                 
                 <Button 
@@ -417,76 +264,127 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={handleRedo}
                   disabled={!canRedo}
+                  className="flex items-center space-x-1"
                   title="Redo"
-                  data-testid="redo-button-mobile"
+                  data-testid="redo-button"
                 >
                   <Redo className="w-4 h-4" />
+                  <span className="hidden xl:block">Redo</span>
                 </Button>
               </div>
-
+              
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
+              
               {/* File Actions */}
               <div className="flex items-center space-x-1">
                 <Button 
                   variant="ghost"
                   size="sm"
                   onClick={handleImport}
+                  className="flex items-center space-x-1"
                   title="Import"
-                  data-testid="import-button-mobile"
+                  data-testid="import-button"
                 >
                   <Upload className="w-4 h-4" />
+                  <span className="hidden xl:block">Import</span>
                 </Button>
                 
                 <Button 
                   variant="ghost"
                   size="sm"
                   onClick={handleBackup}
+                  className="flex items-center space-x-1"
                   title="Backup"
-                  data-testid="backup-button-mobile"
+                  data-testid="backup-button"
                 >
                   <Download className="w-4 h-4" />
+                  <span className="hidden xl:block">Backup</span>
                 </Button>
               </div>
-
+              
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
+              
               {/* Data Actions */}
               <div className="flex items-center space-x-1">
                 <Button 
                   variant="ghost"
                   size="sm"
                   onClick={handleClearAll}
-                  className="text-red-600 hover:text-red-700"
+                  className="flex items-center space-x-1 text-red-600 hover:text-red-700"
                   title="Clear All"
-                  data-testid="clear-button-mobile"
+                  data-testid="clear-button"
                 >
                   <Trash2 className="w-4 h-4" />
+                  <span className="hidden xl:block">Clear</span>
                 </Button>
                 
                 <Button 
                   variant="ghost"
                   size="sm"
                   onClick={handleResetToDefault}
+                  className="flex items-center space-x-1"
                   title="Reset to Default"
-                  data-testid="reset-button-mobile"
+                  data-testid="reset-button"
                 >
                   <RotateCcw className="w-4 h-4" />
+                  <span className="hidden xl:block">Reset</span>
                 </Button>
               </div>
-            </div>
-
-            {/* Third Row - Preview Toggle */}
-            <div className="flex items-center justify-center">
+              
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
+              
+              {/* Preview Toggle */}
               <div className="flex items-center space-x-2">
                 <Checkbox 
-                  id="preview-toggle-mobile"
+                  id="preview-toggle"
                   checked={isPreviewVisible}
                   onCheckedChange={togglePreview}
-                  data-testid="preview-toggle-mobile"
+                  data-testid="preview-toggle"
                 />
                 <label 
-                  htmlFor="preview-toggle-mobile" 
-                  className="text-sm font-medium cursor-pointer"
+                  htmlFor="preview-toggle" 
+                  className="text-sm font-medium cursor-pointer hidden lg:block"
                 >
                   Preview
                 </label>
+              </div>
+              
+              <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
+              
+              {/* Navigation Actions - Desktop */}
+              <div className="hidden lg:flex items-center space-x-1">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/integrations')}
+                  className="flex items-center space-x-1"
+                  data-testid="integrations-button"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span className="hidden xl:block">Integrations</span>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/theme')}
+                  className="flex items-center space-x-1"
+                  data-testid="theme-button"
+                >
+                  <Palette className="w-4 h-4" />
+                  <span className="hidden xl:block">Theme</span>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/view')}
+                  className="flex items-center space-x-1"
+                  data-testid="view-button"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span className="hidden xl:block">View</span>
+                </Button>
               </div>
             </div>
           </div>
