@@ -44,7 +44,7 @@ export const SummarySelector: React.FC = () => {
     };
   }, []);
 
-  // Auto-save when target or summary changes (debounced)
+  // Auto-save when target or summary changes (longer debounce for summary persistence)
   useEffect(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -56,7 +56,7 @@ export const SummarySelector: React.FC = () => {
     if (trimmedTarget.length > 2 && trimmedSummary.length > 10) {
       saveTimeoutRef.current = setTimeout(() => {
         saveSummaryForTarget(trimmedTarget, trimmedSummary);
-      }, 1500);
+      }, 3000); // Extended from 1500ms to 3000ms for better undo/redo persistence
     }
   }, [currentTarget, basics.summary]);
 
@@ -172,6 +172,7 @@ export const SummarySelector: React.FC = () => {
   };
 
   const handleSummaryChange = (value: string) => {
+    // Direct update without immediate history entry for better undo/redo
     updateBasicsSummary(value);
   };
 
