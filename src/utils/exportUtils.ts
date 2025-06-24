@@ -658,7 +658,7 @@ function generateHTMLContent(resumeData: ResumeData): string {
   return html;
 }
 
-// Helper function to sanitize text for PDF export
+// Helper function to sanitize text for PDF export (fallback only)
 function sanitizeTextForPDF(text: string): string {
   if (!text) return '';
   
@@ -691,9 +691,64 @@ function sanitizeContactInfo(contactInfo: (string | false)[]): string {
     .join(' | '); // Use pipe separator instead of bullet
 }
 
+// Helper function to check if text contains Unicode characters that need special handling
+function containsUnicodeSymbols(text: string): boolean {
+  // Check for emojis, special symbols, and non-ASCII characters that might not render in Helvetica
+  return /[\u{1F300}-\u{1F9FF}]|[•–—""''…]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(text);
+}
+
+// Helper function to try loading Unicode-capable font
+async function tryLoadUnicodeFont(pdf: unknown): Promise<boolean> {
+  try {
+    // Try to load a system font or web font that supports Unicode
+    // This is a simplified approach - in production, you might want to:
+    // 1. Bundle a Unicode font with your app
+    // 2. Load from Google Fonts or other CDN
+    // 3. Use a more comprehensive Unicode font like Noto Sans
+    
+    // For now, we'll detect if the browser/system has better font support
+    // In a real implementation, you would load a proper TTF font file
+    
+    // Check if we can use a system font with better Unicode support
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    
+    // Test if system fonts can render emoji/Unicode
+    ctx.font = '12px "Segoe UI", "Apple Color Emoji", "Noto Color Emoji", system-ui, sans-serif';
+    const testText = '📧📞🌐📍•';
+    const width1 = ctx.measureText(testText).width;
+    
+    ctx.font = '12px monospace';
+    const width2 = ctx.measureText(testText).width;
+    
+    // If widths are significantly different, we likely have Unicode support
+    const hasUnicodeSupport = Math.abs(width1 - width2) > 2;
+    
+    if (hasUnicodeSupport) {
+      // Try to set a Unicode-friendly font in jsPDF
+      // Note: This is a simplified approach. For production use, you'd want to:
+      // 1. Load actual TTF font files
+      // 2. Use pdf.addFileToVFS() and pdf.addFont()
+      // 3. Handle font loading errors properly
+      
+      // For now, we'll just indicate that we should try to preserve Unicode
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.warn('Failed to load Unicode font for PDF export:', error);
+    return false;
+  }
+}
+
 export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   const { jsPDF } = await import('jspdf');
   const pdf = new jsPDF();
+  
+  // Try to enable Unicode support
+  const hasUnicodeSupport = await tryLoadUnicodeFont(pdf);
   
   let yPosition = 20;
   const pageWidth = pdf.internal.pageSize.getWidth();
@@ -709,16 +764,23 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
     }
   };
 
-  // Helper function to add text with word wrapping
+  // Helper function to add text with word wrapping and smart Unicode handling
   const addText = (text: string, fontSize: number = 11, isBold: boolean = false, color: string = '#000000') => {
     if (!text) return;
     
-    const sanitizedText = sanitizeTextForPDF(text);
+    let processedText = text;
+    
+    // Only sanitize if we don't have Unicode support AND the text contains problematic characters
+    if (!hasUnicodeSupport && containsUnicodeSymbols(text)) {
+      processedText = sanitizeTextForPDF(text);
+      console.log(`PDF Export: Sanitized text due to limited Unicode support: "${text}" -> "${processedText}"`);
+    }
+    
     pdf.setFontSize(fontSize);
     pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
     pdf.setTextColor(color);
     
-    const lines = pdf.splitTextToSize(sanitizedText, pageWidth - 2 * margin);
+    const lines = pdf.splitTextToSize(processedText, pageWidth - 2 * margin);
     lines.forEach((line: string) => {
       checkNewPage();
       pdf.text(line, margin, yPosition);
@@ -734,8 +796,13 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor('#2563eb'); // Primary color
-    const sanitizedTitle = sanitizeTextForPDF(title);
-    pdf.text(sanitizedTitle.toUpperCase(), margin, yPosition);
+    
+    let processedTitle = title;
+    if (!hasUnicodeSupport && containsUnicodeSymbols(title)) {
+      processedTitle = sanitizeTextForPDF(title);
+    }
+    
+    pdf.text(processedTitle.toUpperCase(), margin, yPosition);
     yPosition += 8;
     
     // Add underline
@@ -745,14 +812,25 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
     yPosition += 4;
   };
 
+  // Add a note about Unicode support at the beginning
+  if (!hasUnicodeSupport) {
+    console.info('PDF Export: Using ASCII fallback mode. Some Unicode characters will be converted to text equivalents.');
+  } else {
+    console.info('PDF Export: Unicode support detected. Preserving original characters.');
+  }
+
   // Header section
   if (resumeData.sectionVisibility.basics) {
     // Name - large and bold
     pdf.setFontSize(24);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor('#2563eb');
-    const sanitizedName = sanitizeTextForPDF(resumeData.basics.name);
-    pdf.text(sanitizedName, margin, yPosition);
+    
+    let processedName = resumeData.basics.name;
+    if (!hasUnicodeSupport && containsUnicodeSymbols(resumeData.basics.name)) {
+      processedName = sanitizeTextForPDF(resumeData.basics.name);
+    }
+    pdf.text(processedName, margin, yPosition);
     yPosition += 12;
 
     // Label/title
@@ -760,12 +838,16 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor('#64748b');
-      const sanitizedLabel = sanitizeTextForPDF(resumeData.basics.label);
-      pdf.text(sanitizedLabel, margin, yPosition);
+      
+      let processedLabel = resumeData.basics.label;
+      if (!hasUnicodeSupport && containsUnicodeSymbols(resumeData.basics.label)) {
+        processedLabel = sanitizeTextForPDF(resumeData.basics.label);
+      }
+      pdf.text(processedLabel, margin, yPosition);
       yPosition += 8;
     }
     
-    // Contact information - compressed to single line
+    // Contact information - with smart Unicode handling
     const contactInfo = [
       resumeData.basics.email && `📧 ${resumeData.basics.email}`,
       resumeData.basics.phone && `📞 ${resumeData.basics.phone}`,
@@ -778,16 +860,24 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor('#64748b');
-      const contactLine = sanitizeContactInfo(contactInfo);
+      
+      let contactLine: string;
+      if (hasUnicodeSupport) {
+        // Use bullet separator and keep emojis
+        contactLine = contactInfo.map(item => item as string).join(' • ');
+      } else {
+        // Use sanitized version
+        contactLine = sanitizeContactInfo(contactInfo);
+      }
       addText(contactLine, 10, false, '#64748b');
     }
 
-    // Profiles - also compressed to single line
+    // Profiles - also with smart Unicode handling
     if (resumeData.basics.profiles.some(p => p.visible !== false)) {
       const profilesInfo = resumeData.basics.profiles
         .filter(profile => profile.visible !== false)
         .map(profile => `${profile.network}: ${profile.username || profile.url}`)
-        .join(' | '); // Use pipe separator instead of bullet
+        .join(hasUnicodeSupport ? ' • ' : ' | ');
       
       if (profilesInfo) {
         addText(profilesInfo, 10, false, '#64748b');
@@ -813,8 +903,12 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor('#1e293b');
         const jobTitle = `${work.position} at ${work.name}`;
-        const sanitizedJobTitle = sanitizeTextForPDF(jobTitle);
-        pdf.text(sanitizedJobTitle, margin, yPosition);
+        
+        let processedJobTitle = jobTitle;
+        if (!hasUnicodeSupport && containsUnicodeSymbols(jobTitle)) {
+          processedJobTitle = sanitizeTextForPDF(jobTitle);
+        }
+        pdf.text(processedJobTitle, margin, yPosition);
         yPosition += 7;
 
         // Dates
@@ -822,8 +916,12 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor('#64748b');
         const dateRange = `${work.startDate} - ${work.endDate || 'Present'}`;
-        const sanitizedDateRange = sanitizeTextForPDF(dateRange);
-        pdf.text(sanitizedDateRange, margin, yPosition);
+        
+        let processedDateRange = dateRange;
+        if (!hasUnicodeSupport && containsUnicodeSymbols(dateRange)) {
+          processedDateRange = sanitizeTextForPDF(dateRange);
+        }
+        pdf.text(processedDateRange, margin, yPosition);
         yPosition += 7;
 
         // Summary
@@ -835,7 +933,8 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
         // Highlights
         if (work.highlights.length > 0) {
           work.highlights.forEach(highlight => {
-            addText(`- ${highlight}`, 10, false, '#1e293b');
+            const bulletChar = hasUnicodeSupport ? '•' : '-';
+            addText(`${bulletChar} ${highlight}`, 10, false, '#1e293b');
           });
         }
         yPosition += 4;

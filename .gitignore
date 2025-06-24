@@ -1,4 +1,5 @@
 # Logs
+tests/e2e/temp
 test-results
 playwright-report
 logs

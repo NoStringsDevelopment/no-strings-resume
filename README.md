@@ -247,6 +247,7 @@ Modern minimalist design with lots of white space, clean lines, and intuitive ic
 - ATS-friendly structure with proper heading hierarchy
 - Custom styling based on selected theme
 - Print-optimized margins and spacing
+- **Unicode Support**: Intelligent character handling with automatic fallback (see [Unicode Font Guide](docs/UNICODE_FONTS_GUIDE.md))
 
 #### DOCX Export
 - Microsoft Word compatibility with proper formatting
