@@ -19,57 +19,30 @@ const ThemeEditor = () => {
       {/* Header */}
       <header className="bg-white border-b shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3">
-          {/* Responsive Layout */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
+          {/* Single Responsive Layout */}
+          <div className="flex items-center justify-between">
             
-            {/* Brand and Status Row */}
-            <div className="flex items-center justify-between lg:justify-start lg:space-x-4">
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="ghost"
-                  onClick={() => navigate('/')}
-                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
-                  data-testid="home-button"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="font-semibold text-gray-900 hidden sm:block lg:hidden xl:block">No Strings Resume</span>
-                </Button>
-                <div className="px-2 py-1 bg-purple-100 text-purple-800 text-xs lg:text-sm rounded-full font-medium lg:hidden xl:block">
-                  Theme{" "}
-                  <span className="hidden lg:inline xl:inline">Mode</span>
+            {/* Brand Section */}
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="ghost"
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
+                data-testid="home-button"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
                 </div>
-              </div>
-              
-              {/* Navigation Actions - Mobile */}
-              <div className="flex items-center space-x-1 lg:hidden">
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/edit')}
-                  className="flex items-center space-x-1"
-                  data-testid="edit-button"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span className="hidden sm:inline">Edit</span>
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/view')}
-                  className="flex items-center space-x-1"
-                  data-testid="view-button"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span className="hidden sm:inline">View</span>
-                </Button>
+                <span className="font-semibold text-gray-900 hidden sm:block lg:hidden xl:block">No Strings Resume</span>
+              </Button>
+              <div className="px-2 py-1 bg-purple-100 text-purple-800 text-xs lg:text-sm rounded-full font-medium lg:hidden xl:block">
+                Theme{" "}
+                <span className="hidden lg:inline xl:inline">Mode</span>
               </div>
             </div>
 
-            {/* Actions Row */}
-            <div className="flex items-center justify-center lg:justify-end space-x-4">
+            {/* Actions Section */}
+            <div className="flex items-center space-x-3">
               {/* Preview Toggle */}
               <div className="flex items-center space-x-2">
                 <Checkbox 
@@ -80,16 +53,16 @@ const ThemeEditor = () => {
                 />
                 <label 
                   htmlFor="preview-toggle" 
-                  className="text-sm font-medium cursor-pointer"
+                  className="text-sm font-medium cursor-pointer hidden sm:block"
                 >
                   Preview
                 </label>
               </div>
               
-              <div className="w-px h-6 bg-gray-300 mx-1 hidden lg:block" />
+              <div className="w-px h-6 bg-gray-300 hidden sm:block" />
               
-              {/* Navigation Actions - Desktop */}
-              <div className="hidden lg:flex items-center space-x-1">
+              {/* Navigation Actions - Single Responsive Set */}
+              <div className="flex items-center space-x-1">
                 <Button 
                   variant="outline"
                   size="sm"
@@ -98,7 +71,7 @@ const ThemeEditor = () => {
                   data-testid="edit-button"
                 >
                   <Edit className="w-4 h-4" />
-                  <span className="hidden xl:block">Edit</span>
+                  <span className="hidden sm:inline xl:block">Edit</span>
                 </Button>
                 
                 <Button 
@@ -109,7 +82,7 @@ const ThemeEditor = () => {
                   data-testid="view-button"
                 >
                   <Eye className="w-4 h-4" />
-                  <span className="hidden xl:block">View</span>
+                  <span className="hidden sm:inline xl:block">View</span>
                 </Button>
               </div>
             </div>
