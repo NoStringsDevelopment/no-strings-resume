@@ -658,6 +658,39 @@ function generateHTMLContent(resumeData: ResumeData): string {
   return html;
 }
 
+// Helper function to sanitize text for PDF export
+function sanitizeTextForPDF(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Replace emoji characters with text equivalents
+    .replace(/📧/g, 'Email:')
+    .replace(/📞/g, 'Phone:')
+    .replace(/🌐/g, 'Website:')
+    .replace(/📍/g, 'Location:')
+    .replace(/📱/g, 'Mobile:')
+    // Replace bullet points with ASCII dash
+    .replace(/•/g, '-')
+    // Replace other common problematic characters
+    .replace(/'/g, "'")  // curly single quote
+    .replace(/'/g, "'")  // curly single quote
+    .replace(/"/g, '"')  // curly double quote left
+    .replace(/"/g, '"')  // curly double quote right
+    .replace(/–/g, '-')  // en dash
+    .replace(/—/g, '--') // em dash
+    .replace(/…/g, '...') // ellipsis
+    // Keep accented characters as they should work with jsPDF
+    .trim();
+}
+
+// Helper function to clean contact info array
+function sanitizeContactInfo(contactInfo: (string | false)[]): string {
+  return contactInfo
+    .filter(Boolean)
+    .map(item => sanitizeTextForPDF(item as string))
+    .join(' | '); // Use pipe separator instead of bullet
+}
+
 export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   const { jsPDF } = await import('jspdf');
   const pdf = new jsPDF();
@@ -678,11 +711,14 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
 
   // Helper function to add text with word wrapping
   const addText = (text: string, fontSize: number = 11, isBold: boolean = false, color: string = '#000000') => {
+    if (!text) return;
+    
+    const sanitizedText = sanitizeTextForPDF(text);
     pdf.setFontSize(fontSize);
     pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
     pdf.setTextColor(color);
     
-    const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
+    const lines = pdf.splitTextToSize(sanitizedText, pageWidth - 2 * margin);
     lines.forEach((line: string) => {
       checkNewPage();
       pdf.text(line, margin, yPosition);
@@ -691,12 +727,15 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   };
 
   const addSectionHeader = (title: string) => {
+    if (!title) return;
+    
     yPosition += sectionSpacing;
     checkNewPage(12);
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor('#2563eb'); // Primary color
-    pdf.text(title.toUpperCase(), margin, yPosition);
+    const sanitizedTitle = sanitizeTextForPDF(title);
+    pdf.text(sanitizedTitle.toUpperCase(), margin, yPosition);
     yPosition += 8;
     
     // Add underline
@@ -712,7 +751,8 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
     pdf.setFontSize(24);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor('#2563eb');
-    pdf.text(resumeData.basics.name, margin, yPosition);
+    const sanitizedName = sanitizeTextForPDF(resumeData.basics.name);
+    pdf.text(sanitizedName, margin, yPosition);
     yPosition += 12;
 
     // Label/title
@@ -720,7 +760,8 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor('#64748b');
-      pdf.text(resumeData.basics.label, margin, yPosition);
+      const sanitizedLabel = sanitizeTextForPDF(resumeData.basics.label);
+      pdf.text(sanitizedLabel, margin, yPosition);
       yPosition += 8;
     }
     
@@ -737,7 +778,7 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor('#64748b');
-      const contactLine = contactInfo.join(' • ');
+      const contactLine = sanitizeContactInfo(contactInfo);
       addText(contactLine, 10, false, '#64748b');
     }
 
@@ -746,7 +787,7 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       const profilesInfo = resumeData.basics.profiles
         .filter(profile => profile.visible !== false)
         .map(profile => `${profile.network}: ${profile.username || profile.url}`)
-        .join(' • ');
+        .join(' | '); // Use pipe separator instead of bullet
       
       if (profilesInfo) {
         addText(profilesInfo, 10, false, '#64748b');
@@ -772,14 +813,17 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor('#1e293b');
         const jobTitle = `${work.position} at ${work.name}`;
-        pdf.text(jobTitle, margin, yPosition);
+        const sanitizedJobTitle = sanitizeTextForPDF(jobTitle);
+        pdf.text(sanitizedJobTitle, margin, yPosition);
         yPosition += 7;
 
         // Dates
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor('#64748b');
-        pdf.text(`${work.startDate} - ${work.endDate || 'Present'}`, margin, yPosition);
+        const dateRange = `${work.startDate} - ${work.endDate || 'Present'}`;
+        const sanitizedDateRange = sanitizeTextForPDF(dateRange);
+        pdf.text(sanitizedDateRange, margin, yPosition);
         yPosition += 7;
 
         // Summary
@@ -791,7 +835,7 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
         // Highlights
         if (work.highlights.length > 0) {
           work.highlights.forEach(highlight => {
-            addText(`• ${highlight}`, 10, false, '#1e293b');
+            addText(`- ${highlight}`, 10, false, '#1e293b');
           });
         }
         yPosition += 4;
