@@ -39,7 +39,7 @@ export const LinkedInImportGuide = ({ onClose }: LinkedInImportGuideProps) => {
             <div>
               <p className="font-medium">Select data to export</p>
               <p className="text-sm text-gray-600 mt-1">
-                Choose: Profile, Positions, Education, Skills, Languages, and Certifications
+                <strong>Important:</strong> Select "Download larger data archive" option to get all required sections: Profile, Positions, Education, Skills, Languages, and Certifications
               </p>
             </div>
           </div>
@@ -93,11 +93,9 @@ export const LinkedInImportGuide = ({ onClose }: LinkedInImportGuideProps) => {
           <div className="flex items-start space-x-2">
             <Download className="w-4 h-4 text-blue-600 mt-0.5" />
             <div className="text-sm">
-              <p className="font-medium text-blue-900">Supported file formats:</p>
+              <p className="font-medium text-blue-900">Required format:</p>
               <p className="text-blue-700 mt-1">
-                • LinkedIn data export ZIP files (.zip)<br />
-                • JSON Resume format (.json)<br />
-                • Resume backup files (.json)
+                LinkedIn data export ZIP file containing the full data archive
               </p>
             </div>
           </div>
