@@ -19,7 +19,10 @@ import LanguagesEditor from "@/components/editor/LanguagesEditor";
 import AdditionalSectionsEditor from "@/components/editor/AdditionalSectionsEditor";
 import { importResumeData } from "@/utils/importExport";
 import { exportAsBackup, importFromBackup } from "@/utils/backupUtils";
+import { parseLinkedInZip } from "@/utils/linkedinParser";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LinkedInImportGuide } from "@/components/LinkedInImportGuide";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const ResumeEditor = () => {
   const navigate = useNavigate();
@@ -39,10 +42,56 @@ const ResumeEditor = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Check if it's a ZIP file (potential LinkedIn export)
+    if (file.type === 'application/zip' || file.name.toLowerCase().endsWith('.zip')) {
+      try {
+        toast({
+          title: "Processing LinkedIn Export",
+          description: "Analyzing ZIP file contents..."
+        });
+
+        const linkedinResult = await parseLinkedInZip(file);
+        
+        if (linkedinResult.hasErrors && linkedinResult.validationErrors.some(error => 
+          error.includes('does not appear to contain LinkedIn export data')
+        )) {
+          toast({
+            title: "Import Failed",
+            description: "ZIP file does not contain recognizable LinkedIn export data.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        dispatch({ type: 'SET_RESUME_DATA', payload: linkedinResult.resumeData });
+        
+        setImportValidation({
+          hasErrors: linkedinResult.hasErrors,
+          errors: linkedinResult.validationErrors,
+          invalidFieldsCount: 0
+        });
+
+        toast({
+          title: "LinkedIn Data Imported",
+          description: `Successfully processed ${linkedinResult.processedFiles.length} LinkedIn data files.`
+        });
+        
+        return;
+      } catch (error) {
+        toast({
+          title: "LinkedIn Import Failed",
+          description: `Error processing LinkedIn ZIP: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // Handle JSON files (existing logic)
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -282,7 +331,7 @@ const ResumeEditor = () => {
                   size="sm"
                   onClick={handleImport}
                   className="flex items-center space-x-1"
-                  title="Import"
+                  title="Import JSON Resume, backup file, or LinkedIn export ZIP"
                   data-testid="import-button"
                 >
                   <Upload className="w-4 h-4" />
@@ -300,6 +349,22 @@ const ResumeEditor = () => {
                   <Download className="w-4 h-4" />
                   <span className="hidden xl:block">Backup</span>
                 </Button>
+                
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-blue-600 hover:text-blue-800 p-1"
+                      title="How to import from LinkedIn"
+                    >
+                      LinkedIn?
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="absolute top-full right-0 z-50 mt-2">
+                    <LinkedInImportGuide />
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
               
               <div className="w-px h-6 bg-gray-300 mx-1 hidden xl:block" />
@@ -492,7 +557,7 @@ const ResumeEditor = () => {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".json"
+        accept=".json,.zip"
         onChange={handleFileChange}
         className="hidden"
         data-testid="file-input"
