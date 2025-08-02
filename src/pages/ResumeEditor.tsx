@@ -247,7 +247,19 @@ const ResumeEditor = () => {
                   </div>
                   <span className="font-semibold text-gray-900 hidden sm:block lg:hidden xl:block">No Strings Resume</span>
                 </Button>
-                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs lg:text-sm rounded-full font-medium lg:hidden xl:block">
+              </div>
+              
+              {/* Edit Mode Badge - Centered on Desktop */}
+              <div className="hidden lg:flex lg:flex-1 lg:justify-center">
+                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs lg:text-sm rounded-full font-medium">
+                  Edit{" "}
+                  <span className="hidden lg:inline xl:inline">Mode</span>
+                </div>
+              </div>
+              
+              {/* Mobile Edit Mode Badge */}
+              <div className="lg:hidden">
+                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs lg:text-sm rounded-full font-medium">
                   Edit{" "}
                   <span className="hidden lg:inline xl:inline">Mode</span>
                 </div>
