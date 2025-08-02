@@ -58,24 +58,149 @@ function parseCSV(csvContent: string): any[] {
   const lines = csvContent.split('\n');
   if (lines.length < 2) return [];
   
-  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+  // Parse headers with robust CSV parsing
+  const headers = parseCSVLine(lines[0]);
   const results = [];
   
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
     
-    const values = line.split(',').map(v => v.replace(/"/g, '').trim());
+    // Parse values with robust CSV parsing
+    const values = parseCSVLine(line);
     const row: any = {};
     
     headers.forEach((header, index) => {
-      row[header] = values[index] || '';
+      // Normalize header to camelCase property name
+      const normalizedHeader = normalizeColumnName(header);
+      row[normalizedHeader] = values[index] || '';
     });
     
     results.push(row);
   }
   
   return results;
+}
+
+function normalizeColumnName(header: string): string {
+  const normalizedHeader = header.trim();
+  
+  // Map LinkedIn export column names to expected property names
+  const columnMappings: { [key: string]: string } = {
+    // Profile mappings
+    'First Name': 'firstName',
+    'first name': 'firstName',
+    'firstname': 'firstName',
+    'Last Name': 'lastName',
+    'last name': 'lastName',
+    'lastname': 'lastName',
+    'Headline': 'headline',
+    'headline': 'headline',
+    'Summary': 'summary',
+    'summary': 'summary',
+    'Email Address': 'emailAddress',
+    'email address': 'emailAddress',
+    'email': 'emailAddress',
+    'Geo Location': 'geoLocation',
+    'geo location': 'geoLocation',
+    'location': 'geoLocation',
+    'Industry': 'industry',
+    'industry': 'industry',
+    
+    // Position mappings
+    'Company Name': 'companyName',
+    'company name': 'companyName',
+    'company': 'companyName',
+    'Title': 'title',
+    'title': 'title',
+    'Description': 'description',
+    'description': 'description',
+    'Location': 'location',
+    'Started On': 'startDate',
+    'started on': 'startDate',
+    'start date': 'startDate',
+    'startdate': 'startDate',
+    'Finished On': 'endDate',
+    'finished on': 'endDate',
+    'end date': 'endDate',
+    'enddate': 'endDate',
+    
+    // Education mappings
+    'School Name': 'schoolName',
+    'school name': 'schoolName',
+    'school': 'schoolName',
+    'Degree Name': 'degreeName',
+    'degree name': 'degreeName',
+    'degree': 'degreeName',
+    'Field Of Study': 'fieldOfStudy',
+    'field of study': 'fieldOfStudy',
+    'field': 'fieldOfStudy',
+    
+    // Skills mappings
+    'Name': 'name',
+    'name': 'name',
+    'Endorsement Count': 'endorsementCount',
+    'endorsement count': 'endorsementCount',
+    'endorsements': 'endorsementCount',
+    
+    // Language mappings
+    'Proficiency': 'proficiency',
+    'proficiency': 'proficiency',
+    
+    // Certification mappings
+    'Authority': 'authority',
+    'authority': 'authority',
+    'URL': 'url',
+    'url': 'url'
+  };
+  
+  // Check for exact matches first
+  if (columnMappings[normalizedHeader]) {
+    return columnMappings[normalizedHeader];
+  }
+  
+  // If no exact match, convert to camelCase for unknown columns
+  return normalizedHeader
+    .replace(/[^\w\s]/g, '') // Remove special characters
+    .replace(/\s+(.)/g, (_, char) => char.toUpperCase()) // Convert spaces to camelCase
+    .replace(/^\w/, char => char.toLowerCase()); // Ensure first letter is lowercase
+}
+
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  let i = 0;
+  
+  while (i < line.length) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+        // Escaped quote inside quoted field
+        current += '"';
+        i += 2;
+      } else {
+        // Toggle quote state
+        inQuotes = !inQuotes;
+        i++;
+      }
+    } else if (char === ',' && !inQuotes) {
+      // Field separator outside quotes
+      result.push(current.trim());
+      current = '';
+      i++;
+    } else {
+      // Regular character
+      current += char;
+      i++;
+    }
+  }
+  
+  // Add the last field
+  result.push(current.trim());
+  
+  return result;
 }
 
 function convertLinkedInDate(linkedinDate: string): string {
