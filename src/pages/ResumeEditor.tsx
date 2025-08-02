@@ -235,11 +235,11 @@ const ResumeEditor = () => {
             
             {/* Brand and Status Row */}
             <div className="flex items-center justify-between lg:justify-start lg:space-x-4">
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col items-start space-y-1">
                 <Button 
                   variant="ghost"
                   onClick={() => navigate('/')}
-                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
+                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 p-1"
                   data-testid="home-button"
                 >
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
@@ -247,21 +247,10 @@ const ResumeEditor = () => {
                   </div>
                   <span className="font-semibold text-gray-900 hidden sm:block lg:hidden xl:block">No Strings Resume</span>
                 </Button>
-              </div>
-              
-              {/* Edit Mode Badge - Centered on Desktop */}
-              <div className="hidden lg:flex lg:flex-1 lg:justify-center">
-                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs lg:text-sm rounded-full font-medium">
-                  Edit{" "}
-                  <span className="hidden lg:inline xl:inline">Mode</span>
-                </div>
-              </div>
-              
-              {/* Mobile Edit Mode Badge */}
-              <div className="lg:hidden">
-                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs lg:text-sm rounded-full font-medium">
-                  Edit{" "}
-                  <span className="hidden lg:inline xl:inline">Mode</span>
+                
+                {/* Edit Mode Badge - Below Logo */}
+                <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                  Edit Mode
                 </div>
               </div>
               

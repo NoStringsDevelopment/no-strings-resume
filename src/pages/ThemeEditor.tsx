@@ -23,11 +23,11 @@ const ThemeEditor = () => {
           <div className="flex items-center justify-between">
             
             {/* Brand Section */}
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col items-start space-y-1">
               <Button 
                 variant="ghost"
                 onClick={() => navigate('/')}
-                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700"
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 p-1"
                 data-testid="home-button"
               >
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
@@ -35,9 +35,10 @@ const ThemeEditor = () => {
                 </div>
                 <span className="font-semibold text-gray-900 hidden sm:block lg:hidden xl:block">No Strings Resume</span>
               </Button>
-              <div className="px-2 py-1 bg-purple-100 text-purple-800 text-xs lg:text-sm rounded-full font-medium lg:hidden xl:block">
-                Theme{" "}
-                <span className="hidden lg:inline xl:inline">Mode</span>
+              
+              {/* Theme Mode Badge - Below Logo */}
+              <div className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
+                Theme Mode
               </div>
             </div>
 
