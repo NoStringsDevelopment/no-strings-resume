@@ -154,7 +154,8 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
   const { sectionVisibility } = resumeData;
   
   // Helper function to convert hex color to Word format (remove #)
-  const formatColorForWord = (hexColor: string): string => {
+  const formatColorForWord = (hexColor: string | undefined): string => {
+    if (!hexColor) return '000000'; // Default to black if color is undefined
     return hexColor.replace('#', '');
   };
 
@@ -176,7 +177,7 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
     
     const rPrStyle = styles[style];
     const isHeading = style.startsWith('heading');
-    const fontFamily = isHeading ? theme.fonts.heading : theme.fonts.body;
+    const fontFamily = isHeading ? (theme.fonts?.heading || 'Arial') : (theme.fonts?.body || 'Arial');
     
     return `
     <w:p>

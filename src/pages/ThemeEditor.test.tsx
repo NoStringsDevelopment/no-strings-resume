@@ -134,8 +134,7 @@ describe('ThemeEditor', () => {
     
     expect(screen.getByTestId('home-button')).toBeInTheDocument();
     expect(screen.getByText('No Strings Resume')).toBeInTheDocument(); // Single responsive layout
-    expect(screen.getByText('Theme')).toBeInTheDocument();
-    expect(screen.getByText('Mode')).toBeInTheDocument();
+    expect(screen.getByText('Theme Mode')).toBeInTheDocument();
   });
 
   it('renders navigation buttons in correct order', () => {
