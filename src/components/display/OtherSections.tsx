@@ -62,7 +62,7 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
               
               return (
                 <div key={index} data-testid={`resume-project-${index}`}>
-                  <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                  <h4 className="text-lg font-semibold" style={{ color: 'var(--color-secondary)' }}>
                     {project.name}
                   </h4>
                   <p style={{ color: 'var(--color-text)' }}>{project.description}</p>
@@ -109,7 +109,7 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
                 <div key={index} data-testid={`resume-volunteer-${index}`}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                      <h4 className="text-lg font-semibold" style={{ color: 'var(--color-secondary)' }}>
                         {vol.position}
                       </h4>
                       <p className="font-medium" style={{ color: 'var(--color-accent)' }}>
@@ -152,7 +152,7 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
               <div key={index} data-testid={`resume-award-${index}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                    <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
                       {award.title}
                     </h4>
                     <p style={{ color: 'var(--color-accent)' }}>{award.awarder}</p>
@@ -185,7 +185,7 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
               <div key={index} data-testid={`resume-certificate-${index}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                    <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
                       {cert.name}
                     </h4>
                     <p style={{ color: 'var(--color-accent)' }}>{cert.issuer}</p>
@@ -213,7 +213,7 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
               <div key={index} data-testid={`resume-publication-${index}`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                    <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
                       {pub.name}
                     </h4>
                     <p style={{ color: 'var(--color-accent)' }}>{pub.publisher}</p>
@@ -272,7 +272,7 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
               
               return (
                 <div key={index} data-testid={`resume-interest-${index}`}>
-                  <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                  <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
                     {interest.name}
                   </h4>
                   {visibleKeywords.length > 0 && (
@@ -298,7 +298,7 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
             .filter(ref => ref.visible !== false)
             .map((ref, index) => (
               <div key={index} data-testid={`resume-reference-${index}`}>
-                <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
                   {ref.name}
                 </h4>
                 <p className="text-sm" style={{ color: 'var(--color-text)' }}>

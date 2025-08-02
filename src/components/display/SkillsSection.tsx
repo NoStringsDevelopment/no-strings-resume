@@ -24,7 +24,7 @@ export const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, isVisible 
           
           return (
             <div key={index} data-testid={`resume-skill-${index}`}>
-              <h4 className="font-semibold" style={{ color: 'var(--color-text)' }}>
+              <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
                 {skill.name} {skill.level && `(${skill.level})`}
               </h4>
               {visibleKeywords.length > 0 && (

@@ -27,7 +27,7 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ work, isVisible }) => 
             <div key={index} data-testid={`resume-work-${index}`}>
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                  <h4 className="text-lg font-semibold" style={{ color: 'var(--color-secondary)' }}>
                     {work.position}
                   </h4>
                   <p className="text-base font-medium" style={{ color: 'var(--color-accent)' }}>

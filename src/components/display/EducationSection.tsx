@@ -27,7 +27,7 @@ export const EducationSection: React.FC<EducationSectionProps> = ({ education, i
             <div key={index} data-testid={`resume-education-${index}`}>
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                  <h4 className="text-lg font-semibold" style={{ color: 'var(--color-secondary)' }}>
                     {edu.studyType} {edu.area && `in ${edu.area}`}
                   </h4>
                   <p className="font-medium" style={{ color: 'var(--color-accent)' }}>
