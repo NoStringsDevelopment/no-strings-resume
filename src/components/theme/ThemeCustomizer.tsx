@@ -74,22 +74,37 @@ export const ThemeCustomizer = () => {
             <ColorPicker 
               color={themeState.currentTheme.colors.primary}
               onChange={(color) => updateThemeColors({ primary: color })}
-              label="Primary Color"
+              label="Name & Headings"
             />
             <ColorPicker 
               color={themeState.currentTheme.colors.secondary}
               onChange={(color) => updateThemeColors({ secondary: color })}
-              label="Secondary Color"
+              label="Professional Title"
             />
             <ColorPicker 
               color={themeState.currentTheme.colors.accent}
               onChange={(color) => updateThemeColors({ accent: color })}
-              label="Accent Color"
+              label="Companies & Organizations"
             />
             <ColorPicker 
               color={themeState.currentTheme.colors.text}
               onChange={(color) => updateThemeColors({ text: color })}
-              label="Text Color"
+              label="Body Text"
+            />
+            <ColorPicker 
+              color={themeState.currentTheme.colors.textSecondary}
+              onChange={(color) => updateThemeColors({ textSecondary: color })}
+              label="Secondary Text"
+            />
+            <ColorPicker 
+              color={themeState.currentTheme.colors.background}
+              onChange={(color) => updateThemeColors({ background: color })}
+              label="Background"
+            />
+            <ColorPicker 
+              color={themeState.currentTheme.colors.border}
+              onChange={(color) => updateThemeColors({ border: color })}
+              label="Borders & Lines"
             />
           </div>
         </CardContent>

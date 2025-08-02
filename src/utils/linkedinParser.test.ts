@@ -33,6 +33,10 @@ class MockFile implements File {
     return '';
   }
 
+  async bytes(): Promise<Uint8Array> {
+    return new Uint8Array(this.data);
+  }
+
   async arrayBuffer(): Promise<ArrayBuffer> {
     return Promise.resolve(this.data);
   }
@@ -41,8 +45,13 @@ class MockFile implements File {
     return new TextDecoder().decode(this.data);
   }
 
-  async stream(): Promise<ReadableStream<Uint8Array>> {
-    throw new Error('Not implemented');
+  stream(): ReadableStream<Uint8Array> {
+    return new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array(this.data));
+        controller.close();
+      }
+    });
   }
 
   slice(start?: number, end?: number, contentType?: string): Blob {
@@ -115,8 +124,8 @@ describe('LinkedIn Parser', () => {
         'Profile.csv': new TextEncoder().encode('Name,Company\n"John, Jr.","ACME, Inc."')
       };
 
-      mockedUnzip.mockImplementation((_, callback) => {
-        callback(null, mockFiles);
+      mockedUnzip.mockImplementation(() => {
+        return () => {};
       });
 
       // The test will validate that parsing works correctly
@@ -130,6 +139,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       expect(true).toBe(true); // Placeholder - actual validation happens in integration test
@@ -146,6 +156,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -166,6 +177,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -187,6 +199,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -207,6 +220,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -227,6 +241,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -249,6 +264,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -270,6 +286,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -286,7 +303,10 @@ describe('LinkedIn Parser', () => {
   describe('Error Handling', () => {
     it('should handle ZIP extraction errors', async () => {
       mockedUnzip.mockImplementation((_, callback) => {
-        callback(new Error('Failed to extract ZIP'), null);
+        const error = new Error('Failed to extract ZIP') as any;
+        error.code = 1;
+        callback(error, null);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -306,6 +326,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -331,6 +352,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
@@ -353,6 +375,7 @@ describe('LinkedIn Parser', () => {
 
       mockedUnzip.mockImplementation((_, callback) => {
         callback(null, mockFiles);
+        return () => {};
       });
 
       const mockData = createMockZipData();
