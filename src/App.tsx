@@ -23,7 +23,7 @@ const App = () => (
         <ResumeProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
+          <BrowserRouter basename={import.meta.env.PROD ? '/no-strings-resume' : ''}>
             <div className="min-h-screen bg-gray-50">
               <Routes>
                 <Route path="/" element={<Landing />} />
