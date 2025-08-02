@@ -67,7 +67,7 @@ describe('ThemeContext', () => {
     );
 
     expect(screen.getByTestId('current-theme-id')).toHaveTextContent('modern');
-    expect(screen.getByTestId('current-theme-name')).toHaveTextContent('Modern Gray');
+    expect(screen.getByTestId('current-theme-name')).toHaveTextContent('Modern Teal');
   });
 
   it('updates theme and saves to localStorage', () => {

@@ -80,10 +80,10 @@ describe('ThemeCustomizer', () => {
     render(<ThemeCustomizer />);
     
     expect(screen.getByText('Colors')).toBeInTheDocument();
-    expect(screen.getByText('Primary Color')).toBeInTheDocument();
-    expect(screen.getByText('Secondary Color')).toBeInTheDocument();
-    expect(screen.getByText('Accent Color')).toBeInTheDocument();
-    expect(screen.getByText('Text Color')).toBeInTheDocument();
+    expect(screen.getByText('Name & Headings')).toBeInTheDocument();
+    expect(screen.getByText('Professional Title')).toBeInTheDocument();
+    expect(screen.getByText('Companies & Organizations')).toBeInTheDocument();
+    expect(screen.getByText('Body Text')).toBeInTheDocument();
   });
 
   it('renders typography customization section', () => {
