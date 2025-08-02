@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,6 +33,54 @@ export const SummarySelector: React.FC = () => {
   const activeSummary = summaries.find(s => s.id === activeSummaryId);
   const { basics } = state.resumeData;
 
+  // Define saveSummaryForTarget function before useEffects that reference it
+  const saveSummaryForTarget = useCallback((target: string, summary: string) => {
+    // Only save if both target and summary have meaningful content
+    if (!target || target.length < 3 || !summary || summary.length < 10) return;
+
+    // Normalize target for consistent comparison
+    const normalizedTarget = target.trim();
+    
+    // Find existing summary by target (case-insensitive)
+    const existingSummary = summaries.find(s => 
+      s.target.toLowerCase() === normalizedTarget.toLowerCase()
+    );
+    
+    if (existingSummary) {
+      // Only update if the summary has actually changed
+      if (existingSummary.summary !== summary) {
+        dispatch({
+          type: 'UPDATE_SUMMARY',
+          payload: {
+            ...existingSummary,
+            target: normalizedTarget, // Update with normalized target
+            summary,
+            lastUsed: new Date().toISOString()
+          }
+        });
+      }
+    } else {
+      // Create new summary with unique ID
+      const newSummary: NamedSummary = {
+        id: generateUniqueId(),
+        target: normalizedTarget,
+        summary,
+        createdAt: new Date().toISOString(),
+        lastUsed: new Date().toISOString()
+      };
+
+      dispatch({
+        type: 'ADD_SUMMARY',
+        payload: newSummary
+      });
+
+      dispatch({
+        type: 'SET_ACTIVE_SUMMARY',
+        payload: newSummary.id
+      });
+    }
+  }, [summaries, dispatch]);
+
   // Initialize current target from active summary or empty
   useEffect(() => {
     if (activeSummary) {
@@ -51,7 +99,7 @@ export const SummarySelector: React.FC = () => {
         saveSummaryForTarget(currentTarget.trim(), basics.summary.trim());
       }
     };
-  }, []);
+  }, [basics.summary, currentTarget, saveSummaryForTarget]);
 
   // Auto-save when target or summary changes (longer debounce for summary persistence)
   useEffect(() => {
@@ -67,7 +115,7 @@ export const SummarySelector: React.FC = () => {
         saveSummaryForTarget(trimmedTarget, trimmedSummary);
       }, 3000); // Extended from 1500ms to 3000ms for better undo/redo persistence
     }
-  }, [currentTarget, basics.summary]);
+  }, [currentTarget, basics.summary, saveSummaryForTarget]);
 
   const updateBasicsSummary = (value: string) => {
     dispatch({ 
@@ -120,53 +168,6 @@ export const SummarySelector: React.FC = () => {
       saveSummaryForTarget(trimmedTarget, trimmedSummary);
     }
     setIsEditing(false);
-  };
-
-  const saveSummaryForTarget = (target: string, summary: string) => {
-    // Only save if both target and summary have meaningful content
-    if (!target || target.length < 3 || !summary || summary.length < 10) return;
-
-    // Normalize target for consistent comparison
-    const normalizedTarget = target.trim();
-    
-    // Find existing summary by target (case-insensitive)
-    const existingSummary = summaries.find(s => 
-      s.target.toLowerCase() === normalizedTarget.toLowerCase()
-    );
-    
-    if (existingSummary) {
-      // Only update if the summary has actually changed
-      if (existingSummary.summary !== summary) {
-        dispatch({
-          type: 'UPDATE_SUMMARY',
-          payload: {
-            ...existingSummary,
-            target: normalizedTarget, // Update with normalized target
-            summary,
-            lastUsed: new Date().toISOString()
-          }
-        });
-      }
-    } else {
-      // Create new summary with unique ID
-      const newSummary: NamedSummary = {
-        id: generateUniqueId(),
-        target: normalizedTarget,
-        summary,
-        createdAt: new Date().toISOString(),
-        lastUsed: new Date().toISOString()
-      };
-
-      dispatch({
-        type: 'ADD_SUMMARY',
-        payload: newSummary
-      });
-
-      dispatch({
-        type: 'SET_ACTIVE_SUMMARY',
-        payload: newSummary.id
-      });
-    }
   };
 
   const handleSummaryChange = (value: string) => {

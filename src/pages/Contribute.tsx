@@ -120,8 +120,8 @@ const Contribute = () => {
               <div className="flex justify-center mb-8">
                 <div className="bg-white rounded-2xl p-6 shadow-lg">
                   <img 
-                    src="/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png" 
-                    alt="QR Code for donation" 
+                    src="/placeholder.svg" 
+                    alt="QR Code for donation (placeholder)" 
                     className="w-48 h-48 rounded-lg"
                   />
                 </div>

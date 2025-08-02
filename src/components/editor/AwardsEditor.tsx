@@ -22,7 +22,7 @@ const AwardsEditor = () => {
     dispatch({ type: 'ADD_AWARD', payload: newAward });
   };
 
-  const updateAward = (index: number, field: keyof Award, value: any) => {
+  const updateAward = (index: number, field: keyof Award, value: string | boolean | undefined) => {
     dispatch({ 
       type: 'UPDATE_AWARD', 
       payload: { index, data: { [field]: value } }

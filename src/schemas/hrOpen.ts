@@ -1,4 +1,6 @@
 // HR Open LER-RS schema mapping utilities
+import { ResumeData } from '../types/resume';
+
 export interface HROpenResume {
   type: string;
   narratives?: Narrative[];
@@ -21,8 +23,8 @@ export interface Narrative {
 }
 
 export interface JobType {
-  JDXjobDescription?: any;
-  positionOpening?: any;
+  JDXjobDescription?: unknown;
+  positionOpening?: unknown;
 }
 
 export interface ResumePersonBase {
@@ -122,7 +124,7 @@ export interface Attachment {
   mimeType?: string;
 }
 
-export function convertHROpenToJsonResume(hrOpen: HROpenResume): any {
+export function convertHROpenToJsonResume(hrOpen: HROpenResume): ResumeData {
   const person = hrOpen.person;
   const name = person?.name?.formatted || 
                `${person?.name?.given || ''} ${person?.name?.family || ''}`.trim();

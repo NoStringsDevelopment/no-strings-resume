@@ -21,7 +21,7 @@ const DEFAULT_SECTION_VISIBILITY: SectionVisibility = {
 /**
  * Ensures all array items have a 'visible' property, defaults to true if missing
  */
-function ensureItemsHaveVisibility<T extends Record<string, any>>(items: T[]): Array<T & { visible: boolean }> {
+function ensureItemsHaveVisibility<T extends Record<string, unknown>>(items: T[]): Array<T & { visible: boolean }> {
   return items.map(item => ({
     ...item,
     visible: item.visible !== false // defaults to true unless explicitly false
@@ -31,7 +31,7 @@ function ensureItemsHaveVisibility<T extends Record<string, any>>(items: T[]): A
 /**
  * Ensures all required arrays exist and are properly typed
  */
-function ensureArraysExist(data: any): ResumeData {
+function ensureArraysExist(data: unknown): ResumeData {
   return {
     ...data,
     work: Array.isArray(data.work) ? data.work : [],
@@ -51,7 +51,7 @@ function ensureArraysExist(data: any): ResumeData {
 /**
  * Ensures basics object exists with all required properties
  */
-function ensureBasicsExist(data: any): ResumeData {
+function ensureBasicsExist(data: unknown): ResumeData {
   const basics = data.basics || {};
   const location = basics.location || {};
   
@@ -82,7 +82,7 @@ function ensureBasicsExist(data: any): ResumeData {
  * Normalizes resume data to ensure all required properties exist and are properly typed
  * This is the central function that should be called whenever data is loaded from any source
  */
-export function normalizeResumeData(data: any): ResumeData {
+export function normalizeResumeData(data: unknown): ResumeData {
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid resume data: expected object');
   }
@@ -123,7 +123,7 @@ export function normalizeResumeData(data: any): ResumeData {
 /**
  * Validates that the data structure is compatible with our resume format
  */
-export function validateResumeData(data: any): { isValid: boolean; errors: string[] } {
+export function validateResumeData(data: unknown): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   
   if (!data || typeof data !== 'object') {

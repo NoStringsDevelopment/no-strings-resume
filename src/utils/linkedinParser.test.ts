@@ -303,7 +303,7 @@ describe('LinkedIn Parser', () => {
   describe('Error Handling', () => {
     it('should handle ZIP extraction errors', async () => {
       mockedUnzip.mockImplementation((_, callback) => {
-        const error = new Error('Failed to extract ZIP') as any;
+        const error = new Error('Failed to extract ZIP') as Error & { code: number };
         error.code = 1;
         callback(error, null);
         return () => {};

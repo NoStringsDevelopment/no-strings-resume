@@ -689,7 +689,7 @@ describe('DOCX Export Error Handling', () => {
         primary: undefined,
         accent: undefined
       }
-    } as any;
+    } as Theme;
 
     await expect(exportAsDOCX(testResumeData, incompleteTheme)).resolves.not.toThrow();
   });

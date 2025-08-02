@@ -32,19 +32,19 @@ export function exportResumeAsJson(resumeData: ResumeData): string {
   return JSON.stringify(cleanData, null, 2);
 }
 
-function safeArrayEnsure(value: any): any[] {
+function safeArrayEnsure(value: unknown): unknown[] {
   if (Array.isArray(value)) return value;
   if (value === null || value === undefined) return [];
   return [value];
 }
 
-function safeStringEnsure(value: any): string {
+function safeStringEnsure(value: unknown): string {
   if (typeof value === 'string') return value;
   if (value === null || value === undefined) return '';
   return String(value);
 }
 
-function validateAndCleanWorkExperience(work: any, invalidFields: InvalidField[]): any {
+function validateAndCleanWorkExperience(work: unknown, invalidFields: InvalidField[]): unknown {
   const cleaned = {
     name: safeStringEnsure(work.name),
     location: safeStringEnsure(work.location),
@@ -71,7 +71,7 @@ function validateAndCleanWorkExperience(work: any, invalidFields: InvalidField[]
   return cleaned;
 }
 
-function validateAndCleanEducation(education: any, invalidFields: InvalidField[]): any {
+function validateAndCleanEducation(education: unknown, invalidFields: InvalidField[]): unknown {
   const cleaned = {
     institution: safeStringEnsure(education.institution),
     url: safeStringEnsure(education.url),
@@ -96,7 +96,7 @@ function validateAndCleanEducation(education: any, invalidFields: InvalidField[]
   return cleaned;
 }
 
-function validateAndCleanSkills(skill: any, invalidFields: InvalidField[]): any {
+function validateAndCleanSkills(skill: unknown, invalidFields: InvalidField[]): unknown {
   const cleaned = {
     name: safeStringEnsure(skill.name),
     level: safeStringEnsure(skill.level),
@@ -116,7 +116,7 @@ function validateAndCleanSkills(skill: any, invalidFields: InvalidField[]): any 
   return cleaned;
 }
 
-function validateJsonResumeStructure(data: any): boolean {
+function validateJsonResumeStructure(data: unknown): boolean {
   // Basic validation for JSON Resume format
   if (!data || typeof data !== 'object') return false;
   
@@ -134,7 +134,7 @@ function validateJsonResumeStructure(data: any): boolean {
   return true;
 }
 
-function validateHROpenStructure(data: any): boolean {
+function validateHROpenStructure(data: unknown): boolean {
   // Basic validation for HR Open format
   if (!data || typeof data !== 'object') return false;
   
@@ -191,10 +191,10 @@ export function importResumeData(jsonString: string): ImportResult {
           visible: profile.visible !== false
         }))
       },
-      work: safeArrayEnsure(parsed.work).map((work: any) => validateAndCleanWorkExperience(work, invalidFields)),
-      education: safeArrayEnsure(parsed.education).map((edu: any) => validateAndCleanEducation(edu, invalidFields)),
-      skills: safeArrayEnsure(parsed.skills).map((skill: any) => validateAndCleanSkills(skill, invalidFields)),
-      projects: safeArrayEnsure(parsed.projects).map((project: any) => ({
+          work: safeArrayEnsure(parsed.work).map((work: unknown) => validateAndCleanWorkExperience(work, invalidFields)),
+    education: safeArrayEnsure(parsed.education).map((edu: unknown) => validateAndCleanEducation(edu, invalidFields)),
+    skills: safeArrayEnsure(parsed.skills).map((skill: unknown) => validateAndCleanSkills(skill, invalidFields)),
+    projects: safeArrayEnsure(parsed.projects).map((project: unknown) => ({
         name: safeStringEnsure(project.name),
         description: safeStringEnsure(project.description),
         highlights: safeArrayEnsure(project.highlights).map(h => safeStringEnsure(h)),
@@ -207,21 +207,21 @@ export function importResumeData(jsonString: string): ImportResult {
         type: safeStringEnsure(project.type),
         visible: project.visible !== false
       })),
-      awards: safeArrayEnsure(parsed.awards).map((award: any) => ({
+      awards: safeArrayEnsure(parsed.awards).map((award: unknown) => ({
         title: safeStringEnsure(award.title),
         date: safeStringEnsure(award.date),
         awarder: safeStringEnsure(award.awarder),
         summary: safeStringEnsure(award.summary),
         visible: award.visible !== false
       })),
-      certificates: safeArrayEnsure(parsed.certificates).map((cert: any) => ({
+      certificates: safeArrayEnsure(parsed.certificates).map((cert: unknown) => ({
         name: safeStringEnsure(cert.name),
         date: safeStringEnsure(cert.date),
         issuer: safeStringEnsure(cert.issuer),
         url: safeStringEnsure(cert.url),
         visible: cert.visible !== false
       })),
-      publications: safeArrayEnsure(parsed.publications).map((pub: any) => ({
+      publications: safeArrayEnsure(parsed.publications).map((pub: unknown) => ({
         name: safeStringEnsure(pub.name),
         publisher: safeStringEnsure(pub.publisher),
         releaseDate: safeStringEnsure(pub.releaseDate),
@@ -229,22 +229,22 @@ export function importResumeData(jsonString: string): ImportResult {
         summary: safeStringEnsure(pub.summary),
         visible: pub.visible !== false
       })),
-      languages: safeArrayEnsure(parsed.languages).map((lang: any) => ({
+      languages: safeArrayEnsure(parsed.languages).map((lang: unknown) => ({
         language: safeStringEnsure(lang.language),
         fluency: safeStringEnsure(lang.fluency),
         visible: lang.visible !== false
       })),
-      interests: safeArrayEnsure(parsed.interests).map((interest: any) => ({
+      interests: safeArrayEnsure(parsed.interests).map((interest: unknown) => ({
         name: safeStringEnsure(interest.name),
         keywords: safeArrayEnsure(interest.keywords).map(k => safeStringEnsure(k)),
         visible: interest.visible !== false
       })),
-      references: safeArrayEnsure(parsed.references).map((ref: any) => ({
+      references: safeArrayEnsure(parsed.references).map((ref: unknown) => ({
         name: safeStringEnsure(ref.name),
         reference: safeStringEnsure(ref.reference),
         visible: ref.visible !== false
       })),
-      volunteer: safeArrayEnsure(parsed.volunteer).map((vol: any) => ({
+      volunteer: safeArrayEnsure(parsed.volunteer).map((vol: unknown) => ({
         organization: safeStringEnsure(vol.organization),
         position: safeStringEnsure(vol.position),
         url: safeStringEnsure(vol.url),

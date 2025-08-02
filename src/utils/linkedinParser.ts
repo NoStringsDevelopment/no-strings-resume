@@ -54,7 +54,7 @@ interface LinkedInCertification {
   url?: string;
 }
 
-function parseCSV(csvContent: string): any[] {
+function parseCSV(csvContent: string): Record<string, string>[] {
   const lines = csvContent.split('\n');
   if (lines.length < 2) return [];
   
@@ -68,7 +68,7 @@ function parseCSV(csvContent: string): any[] {
     
     // Parse values with robust CSV parsing
     const values = parseCSVLine(line);
-    const row: any = {};
+    const row: Record<string, string> = {};
     
     headers.forEach((header, index) => {
       // Normalize header to camelCase property name

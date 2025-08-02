@@ -28,7 +28,7 @@ const LanguagesEditor = () => {
     dispatch({ type: 'ADD_LANGUAGE', payload: newLanguage });
   };
 
-  const updateLanguage = (index: number, field: keyof Language, value: any) => {
+  const updateLanguage = (index: number, field: keyof Language, value: string | boolean | undefined) => {
     dispatch({ 
       type: 'UPDATE_LANGUAGE', 
       payload: { index, data: { [field]: value } }

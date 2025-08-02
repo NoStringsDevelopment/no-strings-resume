@@ -180,9 +180,9 @@ describe('Contribute Component', () => {
     it('should have QR code for donations', () => {
       renderWithRouter(<Contribute />);
       
-      const qrImage = screen.getByAltText('QR Code for donation');
+      const qrImage = screen.getByAltText('QR Code for donation (placeholder)');
       expect(qrImage).toBeInTheDocument();
-      expect(qrImage).toHaveAttribute('src', '/lovable-uploads/1f54020b-4df9-44ba-8e84-d9a7e3e38564.png');
+      expect(qrImage).toHaveAttribute('src', '/placeholder.svg');
     });
   });
 

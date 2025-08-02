@@ -2,6 +2,9 @@ import React, { ReactNode } from 'react';
 import { render, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ResumeProvider, useResume } from './ResumeContext';
+import type { ResumeData } from '@/types/resume';
+
+type TestResumeState = { resumeData: ResumeData; history: ResumeData[]; currentHistoryIndex: number; historyIndex: number; isLoading: boolean };
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -19,7 +22,7 @@ Object.defineProperty(window, 'localStorage', {
 global.fetch = vi.fn();
 
 // Test component to access context
-const TestComponent = ({ onStateChange }: { onStateChange?: (state: any) => void }) => {
+const TestComponent = ({ onStateChange }: { onStateChange?: (state: TestResumeState) => void }) => {
   const { state } = useResume();
   
   React.useEffect(() => {
@@ -51,13 +54,13 @@ describe('ResumeContext Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLocalStorage.getItem.mockReturnValue(null);
-    (global.fetch as any).mockResolvedValue({
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false
     });
   });
 
   it('should initialize with normalized default data', async () => {
-    let capturedState: any;
+    let capturedState: TestResumeState;
     
     await act(async () => {
       renderWithProvider(
@@ -96,7 +99,7 @@ describe('ResumeContext Integration', () => {
 
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(storedData));
 
-    let capturedState: any;
+    let capturedState: TestResumeState;
     
     await act(async () => {
       renderWithProvider(
@@ -124,12 +127,12 @@ describe('ResumeContext Integration', () => {
     };
 
     mockLocalStorage.getItem.mockReturnValue(null);
-    (global.fetch as any).mockResolvedValue({
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(resumeJsonData)
     });
 
-    let capturedState: any;
+    let capturedState: TestResumeState;
     
     await act(async () => {
       renderWithProvider(
@@ -151,11 +154,11 @@ describe('ResumeContext Integration', () => {
 
   it('should handle invalid localStorage data gracefully', async () => {
     mockLocalStorage.getItem.mockReturnValue('{ invalid json }');
-    (global.fetch as any).mockResolvedValue({
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false
     });
 
-    let capturedState: any;
+    let capturedState: TestResumeState;
     
     await act(async () => {
       renderWithProvider(
@@ -195,7 +198,7 @@ describe('ResumeContext Integration', () => {
 
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(dataWithoutVisibility));
 
-    let capturedState: any;
+    let capturedState: TestResumeState;
     
     await act(async () => {
       renderWithProvider(
@@ -231,7 +234,7 @@ describe('ResumeContext Integration', () => {
 
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(dataWithMixedVisibility));
 
-    let capturedState: any;
+    let capturedState: TestResumeState;
     
     await act(async () => {
       renderWithProvider(
