@@ -153,23 +153,41 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
   let content = '';
   const { sectionVisibility } = resumeData;
   
-  const createParagraph = (text: string, style: 'heading1' | 'heading2' | 'heading3' | 'normal' | 'contact' = 'normal') => {
+  // Helper function to convert hex color to Word format (remove #)
+  const formatColorForWord = (hexColor: string): string => {
+    return hexColor.replace('#', '');
+  };
+
+  // Convert theme font sizes and spacing
+  const baseFontSize = Math.round(theme.typography.fontSize * 2); // Convert to half-points (Word format)
+  const headingFontSize = Math.round(baseFontSize * 1.5);
+  const largeFontSize = Math.round(baseFontSize * 2);
+  
+  const createParagraph = (text: string, style: 'heading1' | 'heading2' | 'heading3' | 'normal' | 'contact' | 'jobTitle' | 'company' = 'normal') => {
     const styles = {
-      heading1: '<w:pStyle w:val="Heading1"/>',
-      heading2: '<w:pStyle w:val="Heading2"/>',
-      heading3: '<w:pStyle w:val="Heading3"/>',
-      normal: '',
-      contact: '<w:color w:val="666666"/><w:sz w:val="18"/>'
+      heading1: `<w:pStyle w:val="Heading1"/><w:color w:val="${formatColorForWord(theme.colors.primary)}"/><w:sz w:val="${largeFontSize}"/><w:szCs w:val="${largeFontSize}"/><w:b/>`,
+      heading2: `<w:pStyle w:val="Heading2"/><w:color w:val="${formatColorForWord(theme.colors.secondary)}"/><w:sz w:val="${headingFontSize}"/><w:szCs w:val="${headingFontSize}"/><w:b/>`,
+      heading3: `<w:pStyle w:val="Heading3"/><w:color w:val="${formatColorForWord(theme.colors.primary)}"/><w:sz w:val="${headingFontSize}"/><w:szCs w:val="${headingFontSize}"/><w:b/>`,
+      normal: `<w:color w:val="${formatColorForWord(theme.colors.text)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/>`,
+      contact: `<w:color w:val="${formatColorForWord(theme.colors.textSecondary)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/>`,
+      jobTitle: `<w:color w:val="${formatColorForWord(theme.colors.text)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/><w:b/>`,
+      company: `<w:color w:val="${formatColorForWord(theme.colors.accent)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/><w:b/>`
     };
+    
+    const rPrStyle = styles[style];
+    const isHeading = style.startsWith('heading');
+    const fontFamily = isHeading ? theme.fonts.heading : theme.fonts.body;
     
     return `
     <w:p>
       <w:pPr>
-        ${styles[style]}
+        ${isHeading ? `<w:pStyle w:val="${style.charAt(0).toUpperCase() + style.slice(1)}"/>` : ''}
+        <w:spacing w:after="${isHeading ? '160' : '120'}"/>
       </w:pPr>
       <w:r>
         <w:rPr>
-          ${styles[style]}
+          ${rPrStyle}
+          <w:rFonts w:ascii="${fontFamily}" w:hAnsi="${fontFamily}" w:cs="${fontFamily}"/>
         </w:rPr>
         <w:t>${text}</w:t>
       </w:r>
@@ -223,13 +241,14 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
 
   // Work Experience with visibility filtering
   if (sectionVisibility.work && resumeData.work.some(w => w.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += '<w:p><w:pPr><w:spacing w:before="400"/></w:pPr></w:p>';
     content += createParagraph('WORK EXPERIENCE', 'heading3');
     
     resumeData.work
       .filter(work => work.visible !== false)
       .forEach(work => {
-        content += createParagraph(`${work.position} at ${work.name}`, 'normal');
+        content += createParagraph(`${work.position}`, 'jobTitle');
+        content += createParagraph(`${work.name}`, 'company');
         content += createParagraph(`${work.startDate} - ${work.endDate || 'Present'}`, 'contact');
         
         if (work.summary) {
@@ -242,21 +261,21 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
           content += createParagraph(`• ${getHighlightContent(highlight)}`);
         });
         
-        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
+        content += '<w:p><w:pPr><w:spacing w:after="200"/></w:pPr></w:p>';
       });
   }
 
   // Education with course visibility filtering
   if (sectionVisibility.education && resumeData.education.some(e => e.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += '<w:p><w:pPr><w:spacing w:before="400"/></w:pPr></w:p>';
     content += createParagraph('EDUCATION', 'heading3');
     
     resumeData.education
       .filter(edu => edu.visible !== false)
       .forEach(edu => {
         const degree = `${edu.studyType}${edu.area ? ` in ${edu.area}` : ''}`;
-        content += createParagraph(degree, 'normal');
-        content += createParagraph(edu.institution, 'contact');
+        content += createParagraph(degree, 'jobTitle');
+        content += createParagraph(edu.institution, 'company');
         content += createParagraph(`${edu.startDate} - ${edu.endDate || 'Present'}`, 'contact');
         
         if (edu.score) {
@@ -270,13 +289,13 @@ function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
           content += createParagraph(`Relevant Courses: ${courseNames.join(', ')}`, 'contact');
         }
         
-        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
+        content += '<w:p><w:pPr><w:spacing w:after="200"/></w:pPr></w:p>';
       });
   }
 
   // Skills
   if (sectionVisibility.skills && resumeData.skills.some(s => s.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
+    content += '<w:p><w:pPr><w:spacing w:before="400"/></w:pPr></w:p>';
     content += createParagraph('SKILLS', 'heading3');
     
     resumeData.skills
