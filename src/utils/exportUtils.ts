@@ -11,6 +11,81 @@ import {
   getRoleName 
 } from '@/utils/visibilityHelpers';
 
+// Utility function to generate consistent filenames across all export formats
+export function generateExportFilename(
+  resumeData: ResumeData, 
+  extension: string, 
+  variant?: string,
+  includeTime: boolean = false
+): string {
+  // Extract first and last name from full name
+  const fullName = resumeData.basics.name || 'resume';
+  const nameParts = fullName.trim().split(/\s+/);
+  const firstName = nameParts[0] || 'unknown';
+  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+  
+  // Get target role/company from active summary
+  let targetRole = '';
+  if (resumeData.activeSummaryId && resumeData.summaries) {
+    const activeSummary = resumeData.summaries.find(s => s.id === resumeData.activeSummaryId);
+    if (activeSummary && activeSummary.target.trim()) {
+      targetRole = activeSummary.target.trim();
+    }
+  }
+  
+  // Sanitize strings for filename (remove special characters, replace spaces with hyphens)
+  const sanitize = (str: string): string => {
+    return str
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  };
+  
+  const sanitizedFirstName = sanitize(firstName);
+  const sanitizedLastName = sanitize(lastName);
+  const sanitizedTargetRole = targetRole ? sanitize(targetRole) : '';
+  const sanitizedVariant = variant ? sanitize(variant) : '';
+  
+  // Build filename parts
+  const parts: string[] = [];
+  
+  // Name part
+  if (sanitizedLastName) {
+    parts.push(`${sanitizedFirstName}-${sanitizedLastName}`);
+  } else {
+    parts.push(sanitizedFirstName);
+  }
+  
+  // Fixed "resume" part
+  parts.push('resume');
+  
+  // Target role/company (optional)
+  if (sanitizedTargetRole) {
+    parts.push(sanitizedTargetRole);
+  }
+  
+  // Variant (optional)
+  if (sanitizedVariant) {
+    parts.push(sanitizedVariant);
+  }
+  
+  // Date part
+  const now = new Date();
+  const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
+  parts.push(date);
+  
+  // Time part (optional)
+  if (includeTime) {
+    const time = now.toISOString().split('T')[1].replace(/[:.]/g, '').substring(0, 6); // HHMMSS
+    parts.push(time);
+  }
+  
+  // Join parts and add extension
+  return `${parts.join('-')}.${extension}`;
+}
+
 // Convert JSON Resume to HR-Open format
 export function convertToHROpen(resumeData: ResumeData): Record<string, unknown> {
   return {
@@ -95,15 +170,15 @@ export function convertToHROpen(resumeData: ResumeData): Record<string, unknown>
 
 export function exportAsJsonResume(resumeData: ResumeData) {
   const jsonContent = exportResumeAsJson(resumeData);
-  const timestamp = new Date().toISOString().split('T')[0];
-  downloadFile(jsonContent, `resume-${timestamp}.json`, 'application/json');
+  const filename = generateExportFilename(resumeData, 'json', undefined, true);
+  downloadFile(jsonContent, filename, 'application/json');
 }
 
 export function exportAsHROpen(resumeData: ResumeData) {
   const hrOpenData = convertToHROpen(resumeData);
   const jsonContent = JSON.stringify(hrOpenData, null, 2);
-  const timestamp = new Date().toISOString().split('T')[0];
-  downloadFile(jsonContent, `resume-hropen-${timestamp}.json`, 'application/json');
+  const filename = generateExportFilename(resumeData, 'json', 'hropen', true);
+  downloadFile(jsonContent, filename, 'application/json');
 }
 
 export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
@@ -136,13 +211,13 @@ export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
   zip.file('word/document.xml', docxContent);
 
   const blob = zip.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  const timestamp = new Date().toISOString().split('T')[0];
+  const filename = generateExportFilename(resumeData, 'docx', undefined, true);
   
   // Create download link
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `resume-${timestamp}.docx`;
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -520,8 +595,8 @@ export function exportAsHTML(resumeData: ResumeData, theme: Theme) {
 </body>
 </html>`;
 
-  const timestamp = new Date().toISOString().split('T')[0];
-  downloadFile(htmlContent, `resume-${timestamp}.html`, 'text/html');
+  const filename = generateExportFilename(resumeData, 'html', undefined, true);
+  downloadFile(htmlContent, filename, 'text/html');
 }
 
 function generateHTMLContent(resumeData: ResumeData): string {
@@ -1039,6 +1114,6 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       });
   }
 
-  const timestamp = new Date().toISOString().split('T')[0];
-  pdf.save(`resume-${timestamp}.pdf`);
+  const filename = generateExportFilename(resumeData, 'pdf', undefined, true);
+  pdf.save(filename);
 }

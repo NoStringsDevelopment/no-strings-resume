@@ -11,6 +11,7 @@ import {
   getAppVersion
 } from '@/schemas/extendedResume';
 import { downloadFile } from '@/utils/importExport';
+import { generateExportFilename } from '@/utils/exportUtils';
 import { 
   getHighlightContent,
   getKeywordName,
@@ -366,8 +367,8 @@ export function convertFromExtendedFormat(extendedData: ExtendedResumeData): Res
 export function exportAsBackup(resumeData: ResumeData) {
   const extendedData = convertToExtendedFormat(resumeData);
   const jsonContent = JSON.stringify(extendedData, null, 2);
-  const timestamp = new Date().toISOString().split('T')[0];
-  downloadFile(jsonContent, `resume-backup-${timestamp}.json`, 'application/json');
+  const filename = generateExportFilename(resumeData, 'json', 'backup', true);
+  downloadFile(jsonContent, filename, 'application/json');
 }
 
 /**

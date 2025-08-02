@@ -373,7 +373,7 @@ describe('backupUtils', () => {
       expect(mockDownloadFile).toHaveBeenCalledOnce();
       const [content, filename, mimeType] = mockDownloadFile.mock.calls[0];
       
-      expect(filename).toMatch(/^resume-backup-\d{4}-\d{2}-\d{2}\.json$/);
+      expect(filename).toMatch(/^[\w-]+-resume-backup-\d{4}-\d{2}-\d{2}-\d{6}\.json$/);
       expect(mimeType).toBe('application/json');
       
       // Verify content is valid JSON and extended format
