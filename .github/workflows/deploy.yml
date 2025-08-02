@@ -70,8 +70,6 @@ jobs:
       
     - name: Build for production
       run: npm run build
-      env:
-        GITHUB_PAGES: true
       
     - name: Setup Pages
       uses: actions/configure-pages@v4
