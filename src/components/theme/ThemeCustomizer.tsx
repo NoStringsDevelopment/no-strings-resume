@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/context/ThemeContext";
+import { useResume } from "@/context/ResumeContext";
 import { Theme, ThemeColors, ThemeTypography } from "@/types/resume";
 import { useCallback } from "react";
 
@@ -31,6 +32,7 @@ const ColorPicker = ({ color, onChange, label }: ColorPickerProps) => (
 
 export const ThemeCustomizer = () => {
   const { themeState, setTheme } = useTheme();
+  const { state, dispatch } = useResume();
 
   const updateTheme = useCallback((updates: Partial<Theme>) => {
     const updatedTheme = { ...themeState.currentTheme, ...updates };
@@ -64,6 +66,89 @@ export const ThemeCustomizer = () => {
 
   return (
     <div className="space-y-6">
+      {/* Icon Configuration - Moved to top for better UX */}
+      {state.resumeData.icon?.data && state.resumeData.icon?.position && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Icon Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Distance from Top (px)</Label>
+                  <div className="px-2">
+                    <Slider
+                      value={[state.resumeData.icon?.position?.top || 20]}
+                      onValueChange={([value]) => dispatch({
+                        type: 'UPDATE_ICON',
+                        payload: {
+                          ...state.resumeData.icon!,
+                          position: { 
+                            ...state.resumeData.icon!.position,
+                            top: value 
+                          }
+                        }
+                      })}
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="w-full"
+                    />
+                    <div className="text-sm text-gray-500 mt-1">{state.resumeData.icon?.position?.top || 20}px</div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Distance from Right (px)</Label>
+                  <div className="px-2">
+                    <Slider
+                      value={[state.resumeData.icon?.position?.right || 20]}
+                      onValueChange={([value]) => dispatch({
+                        type: 'UPDATE_ICON',
+                        payload: {
+                          ...state.resumeData.icon!,
+                          position: { 
+                            ...state.resumeData.icon!.position,
+                            right: value 
+                          }
+                        }
+                      })}
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="w-full"
+                    />
+                    <div className="text-sm text-gray-500 mt-1">{state.resumeData.icon?.position?.right || 20}px</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Icon Size (px)</Label>
+                <div className="px-2">
+                  <Slider
+                    value={[state.resumeData.icon?.size || 60]}
+                    onValueChange={([value]) => dispatch({
+                      type: 'UPDATE_ICON',
+                      payload: {
+                        ...state.resumeData.icon!,
+                        size: value
+                      }
+                    })}
+                    min={20}
+                    max={150}
+                    step={5}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-gray-500 mt-1">{state.resumeData.icon?.size || 60}px</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Color Customization */}
       <Card>
         <CardHeader>

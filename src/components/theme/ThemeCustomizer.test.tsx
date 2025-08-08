@@ -71,6 +71,59 @@ vi.mock('@/context/ThemeContext', () => ({
   })
 }));
 
+// Mock the useResume hook
+vi.mock('@/context/ResumeContext', () => ({
+  useResume: () => ({
+    state: {
+      resumeData: {
+        basics: {
+          name: 'Test User',
+          label: 'Test Label',
+          email: 'test@test.com',
+          phone: '123-456-7890',
+          url: 'https://test.com',
+          summary: 'Test summary',
+          image: '',
+          location: {
+            address: '',
+            postalCode: '',
+            city: '',
+            countryCode: '',
+            region: ''
+          },
+          profiles: []
+        },
+        work: [],
+        education: [],
+        skills: [],
+        projects: [],
+        awards: [],
+        certificates: [],
+        publications: [],
+        languages: [],
+        interests: [],
+        references: [],
+        volunteer: [],
+        sectionVisibility: {
+          basics: true,
+          work: true,
+          education: true,
+          skills: true,
+          projects: true,
+          awards: true,
+          certificates: true,
+          publications: true,
+          languages: true,
+          interests: true,
+          references: true,
+          volunteer: true
+        }
+      }
+    },
+    dispatch: vi.fn()
+  })
+}));
+
 describe('ThemeCustomizer', () => {
   beforeEach(() => {
     vi.clearAllMocks();

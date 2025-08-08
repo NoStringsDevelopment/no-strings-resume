@@ -23,6 +23,18 @@ export interface ResumeData {
   // Extension: multiple named summaries
   summaries?: NamedSummary[];
   activeSummaryId?: string;
+  
+  // Extension: icon settings
+  icon?: IconSettings;
+}
+
+export interface IconSettings {
+  data: string; // base64 encoded image
+  position: {
+    top: number; // distance from top in pixels
+    right: number; // distance from right in pixels
+  };
+  size: number; // size in pixels (maintains aspect ratio)
 }
 
 export interface NamedSummary {

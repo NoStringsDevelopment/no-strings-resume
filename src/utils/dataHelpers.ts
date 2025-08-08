@@ -1,4 +1,4 @@
-import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings } from '@/types/resume';
 
 /**
  * Default section visibility configuration
@@ -49,6 +49,37 @@ function ensureArraysExist(data: unknown): ResumeData {
 }
 
 /**
+ * Migrates old icon structure (with width/height) to new structure (with single size)
+ */
+function migrateIconStructure(data: any): any {
+  if (!data.icon) return data;
+  
+  const icon = data.icon;
+  
+  // If icon already has the new structure, return as is
+  if (typeof icon.size === 'number') {
+    return data;
+  }
+  
+  // Migrate from old structure to new
+  if (icon.size && typeof icon.size === 'object' && (icon.size.width || icon.size.height)) {
+    // Use the average of width and height, or the width if only one is present
+    const newSize = icon.size.width || icon.size.height || 60;
+    
+    return {
+      ...data,
+      icon: {
+        data: icon.data,
+        position: icon.position || { top: 20, right: 20 },
+        size: newSize
+      }
+    };
+  }
+  
+  return data;
+}
+
+/**
  * Ensures basics object exists with all required properties
  */
 function ensureBasicsExist(data: unknown): ResumeData {
@@ -90,6 +121,9 @@ export function normalizeResumeData(data: unknown): ResumeData {
   // Start with ensuring basic structure exists
   let normalized = ensureBasicsExist(data);
   normalized = ensureArraysExist(normalized);
+  
+  // Migrate old icon structure if present
+  normalized = migrateIconStructure(normalized);
 
   // Normalize all arrays to ensure visibility properties
   const normalizedData: ResumeData = {

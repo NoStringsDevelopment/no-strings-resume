@@ -95,13 +95,29 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
       data-testid="resume-renderer"
     >
       <div 
-        className="bg-white shadow-lg max-w-4xl mx-auto" 
+        className="bg-white shadow-lg max-w-4xl mx-auto relative" 
         style={{ 
           fontFamily: 'var(--font-family)', 
           fontSize: 'var(--font-size)',
           lineHeight: 'var(--line-height)'
         }}
       >
+        {/* Icon rendering - maintains aspect ratio with single size value */}
+        {resumeData.icon?.data && resumeData.icon.position && resumeData.icon.size && (
+          <img 
+            src={resumeData.icon.data}
+            alt="Resume icon"
+            className="absolute"
+            style={{
+              top: `${resumeData.icon.position.top || 20}px`,
+              right: `${resumeData.icon.position.right || 20}px`,
+              width: `${resumeData.icon.size || 60}px`,
+              height: `${resumeData.icon.size || 60}px`,
+              objectFit: 'contain'
+            }}
+          />
+        )}
+        
         <ResumeHeader basics={basics} isVisible={sectionVisibility.basics} />
 
         <div className="p-8" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>

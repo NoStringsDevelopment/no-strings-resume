@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect, ReactNode, useContext } from 'react';
-import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings } from '@/types/resume';
 import { getDefaultResumeData } from '@/utils/defaultData';
 import { normalizeResumeData, normalizeStoredData } from '@/utils/dataHelpers';
 import { deduplicateSummaries } from '@/utils/dataHelpers';
@@ -73,7 +73,9 @@ type ResumeAction =
   | { type: 'UPDATE_AWARD'; payload: { index: number; data: Partial<Award> } }
   | { type: 'REMOVE_AWARD'; payload: number }
   // Section visibility actions
-  | { type: 'UPDATE_SECTION_VISIBILITY'; payload: Partial<SectionVisibility> };
+  | { type: 'UPDATE_SECTION_VISIBILITY'; payload: Partial<SectionVisibility> }
+  // Icon actions
+  | { type: 'UPDATE_ICON'; payload: IconSettings | undefined };
 
 const addToHistory = (state: ResumeState, newResumeData: ResumeData) => {
   const newHistory = state.history.slice(0, state.currentHistoryIndex + 1);
@@ -521,6 +523,19 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
       const updatedData = {
         ...state.resumeData,
         basics: { ...state.resumeData.basics, ...action.payload }
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'UPDATE_ICON': {
+      const updatedData = {
+        ...state.resumeData,
+        icon: action.payload
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);

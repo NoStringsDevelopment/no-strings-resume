@@ -170,4 +170,102 @@ describe('ResumeRenderer', () => {
     const nameElement = screen.getByTestId('resume-name');
     expect(nameElement).toHaveStyle({ fontFamily: 'var(--font-heading)' });
   });
+
+  describe('Icon Positioning', () => {
+    it('should position icon at specified top and right distances', () => {
+      const resumeWithIcon: ResumeData = {
+        ...mockResumeData,
+        icon: {
+          data: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiPjwvc3ZnPg==',
+          position: { top: 30, right: 40 },
+          size: 60
+        }
+      };
+
+      const { container } = render(
+        <ResumeRenderer resumeData={resumeWithIcon} theme={mockTheme} />
+      );
+
+      const iconElement = container.querySelector('img.absolute');
+      expect(iconElement).toBeTruthy();
+      
+      if (iconElement) {
+        const style = (iconElement as HTMLElement).style;
+        expect(style.top).toBe('30px');
+        expect(style.right).toBe('40px');
+      }
+    });
+
+    it('should maintain top-right anchor point when size changes', () => {
+      const resumeWithIcon: ResumeData = {
+        ...mockResumeData,
+        icon: {
+          data: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiPjwvc3ZnPg==',
+          position: { top: 20, right: 20 },
+          size: 60
+        }
+      };
+
+      const { container, rerender } = render(
+        <ResumeRenderer resumeData={resumeWithIcon} theme={mockTheme} />
+      );
+
+      let iconElement = container.querySelector('img.absolute') as HTMLElement;
+      
+      // Check initial position and size
+      expect(iconElement.style.top).toBe('20px');
+      expect(iconElement.style.right).toBe('20px');
+      expect(iconElement.style.width).toBe('60px');
+      expect(iconElement.style.height).toBe('60px');
+
+      // Change size but keep position
+      const updatedResume = {
+        ...resumeWithIcon,
+        icon: {
+          ...resumeWithIcon.icon!,
+          size: 120
+        }
+      };
+
+      rerender(<ResumeRenderer resumeData={updatedResume} theme={mockTheme} />);
+      
+      iconElement = container.querySelector('img.absolute') as HTMLElement;
+      
+      // Position should remain the same (top-right corner stays fixed)
+      expect(iconElement.style.top).toBe('20px');
+      expect(iconElement.style.right).toBe('20px');
+      // Size should update (maintains aspect ratio)
+      expect(iconElement.style.width).toBe('120px');
+      expect(iconElement.style.height).toBe('120px');
+    });
+
+    it('should render icon with correct size', () => {
+      const resumeWithIcon: ResumeData = {
+        ...mockResumeData,
+        icon: {
+          data: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiPjwvc3ZnPg==',
+          position: { top: 10, right: 10 },
+          size: 80
+        }
+      };
+
+      const { container } = render(
+        <ResumeRenderer resumeData={resumeWithIcon} theme={mockTheme} />
+      );
+
+      const iconElement = container.querySelector('img.absolute') as HTMLElement;
+      
+      expect(iconElement.style.width).toBe('80px');
+      expect(iconElement.style.height).toBe('80px');
+    });
+
+    it('should not render icon when icon data is not provided', () => {
+      const { container } = render(
+        <ResumeRenderer resumeData={mockResumeData} theme={mockTheme} />
+      );
+
+      const iconElement = container.querySelector('img.absolute');
+      expect(iconElement).toBeNull();
+    });
+  });
 });

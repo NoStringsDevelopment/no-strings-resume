@@ -4,12 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Upload, X } from "lucide-react";
 import { SummarySelector } from "./SummarySelector";
+import { useRef } from "react";
 
 export default function BasicEditor() {
   const { state, dispatch } = useResume();
   const { basics } = state.resumeData;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updateBasics = (field: string, value: string) => {
     dispatch({ 
@@ -62,6 +64,35 @@ export default function BasicEditor() {
       type: 'UPDATE_SECTION_VISIBILITY',
       payload: { basics: !sectionVisible }
     });
+  };
+
+  const handleIconUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      dispatch({
+        type: 'UPDATE_ICON',
+        payload: {
+          data: base64String,
+          position: state.resumeData.icon?.position || { top: 20, right: 20 },
+          size: state.resumeData.icon?.size || 60
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeIcon = () => {
+    dispatch({
+      type: 'UPDATE_ICON',
+      payload: undefined
+    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -140,6 +171,51 @@ export default function BasicEditor() {
                 data-testid="url-input"
               />
             </div>
+          </div>
+          
+          {/* Icon Upload Section */}
+          <div className="mt-4">
+            <Label>Resume Icon</Label>
+            <div className="flex items-center gap-4 mt-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleIconUpload}
+                className="hidden"
+                id="icon-upload"
+              />
+              {state.resumeData.icon?.data ? (
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={state.resumeData.icon.data} 
+                    alt="Resume icon" 
+                    className="w-12 h-12 object-contain border rounded"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={removeIcon}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Icon
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Upload an icon/logo to display on your resume. Position and size can be configured in theme settings.
+            </p>
           </div>
         </CardContent>
       </Card>
