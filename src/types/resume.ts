@@ -26,6 +26,8 @@ export interface ResumeData {
   
   // Extension: icon settings
   icon?: IconSettings;
+  // Extension: photo settings (same structure as icon)
+  photo?: IconSettings;
 }
 
 export interface IconSettings {

@@ -271,6 +271,16 @@ export function importResumeData(jsonString: string): ImportResult {
       }
     };
 
+    // If a basics.image is provided, auto-map it to the photo field so it can render in our UI.
+    // The image value can be a public path (e.g., /photos/name.jpg) or a data URL.
+    if (resumeData.basics.image && typeof resumeData.basics.image === 'string' && resumeData.basics.image.trim()) {
+      resumeData.photo = {
+        data: resumeData.basics.image,
+        position: { top: 20, right: 100 },
+        size: 60
+      };
+    }
+
     // Add non-conforming data if there were issues
     if (invalidFields.length > 0) {
       hasErrors = true;

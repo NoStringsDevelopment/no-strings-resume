@@ -117,6 +117,22 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
             }}
           />
         )}
+        {/* Photo rendering - positioned relative to top-right as well */}
+        {resumeData.photo?.data && resumeData.photo.position && resumeData.photo.size && (
+          <img 
+            src={resumeData.photo.data}
+            alt="Resume photo"
+            className="absolute"
+            style={{
+              top: `${resumeData.photo.position.top || 20}px`,
+              right: `${resumeData.photo.position.right || 100}px`,
+              width: `${resumeData.photo.size || 60}px`,
+              height: `${resumeData.photo.size || 60}px`,
+              objectFit: 'cover',
+              borderRadius: '9999px'
+            }}
+          />
+        )}
         
         <ResumeHeader basics={basics} isVisible={sectionVisibility.basics} />
 

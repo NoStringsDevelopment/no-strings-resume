@@ -926,6 +926,65 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       processedName = sanitizeTextForPDF(resumeData.basics.name);
     }
     pdf.text(processedName, margin, yPosition);
+    
+    // Render icon and photo (top-right anchored), if available
+    try {
+      // Utility to infer image type for jsPDF addImage
+      const inferJsPdfImageType = (dataUrl: string, resolvedUrl: string): 'PNG' | 'JPEG' | undefined => {
+        if (dataUrl.startsWith('data:image/png') || resolvedUrl.endsWith('.png')) return 'PNG';
+        if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg') || resolvedUrl.endsWith('.jpg') || resolvedUrl.endsWith('.jpeg')) return 'JPEG';
+        return undefined;
+      };
+
+      const pxToMm = (px: number) => px * 0.264583; // 96 DPI approx
+
+      const resolveImageDataUrl = async (data: string): Promise<string> => {
+        if (data.startsWith('data:')) return data;
+        // Treat as URL/path; fetch and convert to data URL
+        const response = await fetch(data);
+        const blob = await response.blob();
+        return await new Promise<string>((resolve) => {
+          const fr = new FileReader();
+          fr.onloadend = () => resolve(fr.result as string);
+          fr.readAsDataURL(blob);
+        });
+      };
+
+      // Icon
+      if (resumeData.icon?.data && resumeData.icon.position && resumeData.icon.size) {
+        const dataUrl = await resolveImageDataUrl(resumeData.icon.data);
+        const type = inferJsPdfImageType(resumeData.icon.data, dataUrl);
+        if (type) {
+          const sizeMm = pxToMm(resumeData.icon.size);
+          const topMm = pxToMm(resumeData.icon.position.top || 20);
+          const rightMm = pxToMm(resumeData.icon.position.right || 20);
+          const x = pdf.internal.pageSize.getWidth() - rightMm - sizeMm;
+          const y = topMm;
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore jsPDF type overloading is loose for addImage
+          pdf.addImage(dataUrl, type, x, y, sizeMm, sizeMm);
+        }
+      }
+
+      // Photo
+      if (resumeData.photo?.data && resumeData.photo.position && resumeData.photo.size) {
+        const dataUrl = await resolveImageDataUrl(resumeData.photo.data);
+        const type = inferJsPdfImageType(resumeData.photo.data, dataUrl);
+        if (type) {
+          const sizeMm = pxToMm(resumeData.photo.size);
+          const topMm = pxToMm(resumeData.photo.position.top || 20);
+          const rightMm = pxToMm(resumeData.photo.position.right || 100);
+          const x = pdf.internal.pageSize.getWidth() - rightMm - sizeMm;
+          const y = topMm;
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore jsPDF type overloading is loose for addImage
+          pdf.addImage(dataUrl, type, x, y, sizeMm, sizeMm);
+        }
+      }
+    } catch {
+      // ignore image failures to avoid breaking export
+    }
+
     yPosition += 12;
 
     // Label/title
