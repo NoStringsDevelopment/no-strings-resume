@@ -149,6 +149,89 @@ export const ThemeCustomizer = () => {
         </Card>
       )}
 
+      {/* Photo Configuration */}
+      {state.resumeData.photo?.data && state.resumeData.photo?.position && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Photo Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Distance from Top (px)</Label>
+                  <div className="px-2">
+                    <Slider
+                      value={[state.resumeData.photo?.position?.top || 20]}
+                      onValueChange={([value]) => dispatch({
+                        type: 'UPDATE_PHOTO',
+                        payload: {
+                          ...state.resumeData.photo!,
+                          position: { 
+                            ...state.resumeData.photo!.position,
+                            top: value 
+                          }
+                        }
+                      })}
+                      min={0}
+                      max={200}
+                      step={5}
+                      className="w-full"
+                    />
+                    <div className="text-sm text-gray-500 mt-1">{state.resumeData.photo?.position?.top || 20}px</div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Distance from Right (px)</Label>
+                  <div className="px-2">
+                    <Slider
+                      value={[state.resumeData.photo?.position?.right || 100]}
+                      onValueChange={([value]) => dispatch({
+                        type: 'UPDATE_PHOTO',
+                        payload: {
+                          ...state.resumeData.photo!,
+                          position: { 
+                            ...state.resumeData.photo!.position,
+                            right: value 
+                          }
+                        }
+                      })}
+                      min={0}
+                      max={300}
+                      step={5}
+                      className="w-full"
+                    />
+                    <div className="text-sm text-gray-500 mt-1">{state.resumeData.photo?.position?.right || 100}px</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Photo Size (px)</Label>
+                <div className="px-2">
+                  <Slider
+                    value={[state.resumeData.photo?.size || 60]}
+                    onValueChange={([value]) => dispatch({
+                      type: 'UPDATE_PHOTO',
+                      payload: {
+                        ...state.resumeData.photo!,
+                        size: value
+                      }
+                    })}
+                    min={20}
+                    max={200}
+                    step={5}
+                    className="w-full"
+                  />
+                  <div className="text-sm text-gray-500 mt-1">{state.resumeData.photo?.size || 60}px</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Color Customization */}
       <Card>
         <CardHeader>

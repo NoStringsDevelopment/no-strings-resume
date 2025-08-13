@@ -12,6 +12,7 @@ export default function BasicEditor() {
   const { state, dispatch } = useResume();
   const { basics } = state.resumeData;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const updateBasics = (field: string, value: string) => {
     dispatch({ 
@@ -92,6 +93,33 @@ export default function BasicEditor() {
     });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      dispatch({
+        type: 'UPDATE_PHOTO',
+        payload: {
+          data: base64String,
+          // Default place the photo left of the icon by 80px if icon exists
+          position: state.resumeData.photo?.position || { top: state.resumeData.icon?.position.top ?? 20, right: (state.resumeData.icon?.position.right ?? 20) + 80 },
+          size: state.resumeData.photo?.size || 60
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    dispatch({ type: 'UPDATE_PHOTO', payload: undefined });
+    if (photoInputRef.current) {
+      photoInputRef.current.value = '';
     }
   };
 
@@ -215,6 +243,51 @@ export default function BasicEditor() {
             </div>
             <p className="text-sm text-gray-500 mt-2">
               Upload an icon/logo to display on your resume. Position and size can be configured in theme settings.
+            </p>
+          </div>
+
+          {/* Photo Upload Section */}
+          <div className="mt-4">
+            <Label>Personal Photo</Label>
+            <div className="flex items-center gap-4 mt-2">
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                id="photo-upload"
+              />
+              {state.resumeData.photo?.data ? (
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={state.resumeData.photo.data} 
+                    alt="Resume photo" 
+                    className="w-12 h-12 object-cover border rounded"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={removePhoto}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Photo
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              Upload a personal photo. Position and size can be configured in theme settings. Defaults to left of the icon.
             </p>
           </div>
         </CardContent>

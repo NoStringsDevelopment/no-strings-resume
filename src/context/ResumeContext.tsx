@@ -75,7 +75,9 @@ type ResumeAction =
   // Section visibility actions
   | { type: 'UPDATE_SECTION_VISIBILITY'; payload: Partial<SectionVisibility> }
   // Icon actions
-  | { type: 'UPDATE_ICON'; payload: IconSettings | undefined };
+  | { type: 'UPDATE_ICON'; payload: IconSettings | undefined }
+  // Photo actions
+  | { type: 'UPDATE_PHOTO'; payload: IconSettings | undefined };
 
 const addToHistory = (state: ResumeState, newResumeData: ResumeData) => {
   const newHistory = state.history.slice(0, state.currentHistoryIndex + 1);
@@ -536,6 +538,19 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
       const updatedData = {
         ...state.resumeData,
         icon: action.payload
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'UPDATE_PHOTO': {
+      const updatedData = {
+        ...state.resumeData,
+        photo: action.payload
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
