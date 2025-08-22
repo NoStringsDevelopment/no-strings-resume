@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear LocalStorage</title>
+</head>
+<body>
+    <h1>Clear LocalStorage for No Strings Resume</h1>
+    <button onclick="clearData()">Clear LocalStorage</button>
+    <button onclick="showData()">Show Current Data</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function clearData() {
+            localStorage.removeItem('resumeData');
+            localStorage.removeItem('nostrings-resume-theme');
+            document.getElementById('output').textContent = 'LocalStorage cleared! Refresh the app.';
+        }
+        
+        function showData() {
+            const data = localStorage.getItem('resumeData');
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data);
+                    // Look for [object Object] issues
+                    const stringified = JSON.stringify(parsed, null, 2);
+                    const issues = [];
+                    
+                    // Check projects keywords
+                    if (parsed.projects) {
+                        parsed.projects.forEach((p, i) => {
+                            if (p.keywords) {
+                                p.keywords.forEach((k, j) => {
+                                    if (k && typeof k === 'object' && Object.keys(k).length === 0) {
+                                        issues.push(`Empty object in projects[${i}].keywords[${j}]`);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    // Check work highlights
+                    if (parsed.work) {
+                        parsed.work.forEach((w, i) => {
+                            if (w.highlights) {
+                                w.highlights.forEach((h, j) => {
+                                    if (h && typeof h === 'object' && Object.keys(h).length === 0) {
+                                        issues.push(`Empty object in work[${i}].highlights[${j}]`);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    document.getElementById('output').textContent = 
+                        'Issues found:\n' + issues.join('\n') + '\n\nData:\n' + stringified;
+                } catch (e) {
+                    document.getElementById('output').textContent = 'Error parsing data: ' + e;
+                }
+            } else {
+                document.getElementById('output').textContent = 'No resumeData in localStorage';
+            }
+        }
+    </script>
+</body>
+</html>

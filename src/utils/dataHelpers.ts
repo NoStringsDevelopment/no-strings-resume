@@ -1,4 +1,5 @@
 import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary } from '@/types/resume';
+import { cleanHighlights, cleanKeywords, cleanCourses, cleanRoles } from './arrayHelpers';
 
 /**
  * Default section visibility configuration
@@ -22,10 +23,35 @@ const DEFAULT_SECTION_VISIBILITY: SectionVisibility = {
  * Ensures all array items have a 'visible' property, defaults to true if missing
  */
 function ensureItemsHaveVisibility<T extends { visible?: boolean }>(items: T[]): T[] {
-  return items.map(item => ({
-    ...item,
-    visible: item.visible !== false
-  }));
+  return items.map(item => {
+    // Clean up nested arrays if they exist
+    const cleaned = { ...item } as Record<string, unknown>;
+    
+    // Clean highlights array if present
+    if ('highlights' in cleaned && Array.isArray(cleaned.highlights)) {
+      cleaned.highlights = cleanHighlights(cleaned.highlights);
+    }
+    
+    // Clean keywords array if present
+    if ('keywords' in cleaned && Array.isArray(cleaned.keywords)) {
+      cleaned.keywords = cleanKeywords(cleaned.keywords);
+    }
+    
+    // Clean courses array if present
+    if ('courses' in cleaned && Array.isArray(cleaned.courses)) {
+      cleaned.courses = cleanCourses(cleaned.courses);
+    }
+    
+    // Clean roles array if present
+    if ('roles' in cleaned && Array.isArray(cleaned.roles)) {
+      cleaned.roles = cleanRoles(cleaned.roles);
+    }
+    
+    return {
+      ...cleaned,
+      visible: cleaned.visible !== false
+    } as T;
+  });
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -146,13 +172,19 @@ export function normalizeResumeData(data: unknown): ResumeData {
     ...(normalized as object as ResumeData),
     work: ensureItemsHaveVisibility(normalized.work) as WorkExperience[],
     education: ensureItemsHaveVisibility(normalized.education) as Education[],
-    skills: ensureItemsHaveVisibility(normalized.skills) as Skill[],
+    skills: ensureItemsHaveVisibility(normalized.skills).map(skill => ({
+      ...skill,
+      keywords: cleanKeywords(skill.keywords)
+    })) as Skill[],
     projects: ensureItemsHaveVisibility(normalized.projects) as Project[],
     awards: ensureItemsHaveVisibility(normalized.awards) as Award[],
     certificates: ensureItemsHaveVisibility(normalized.certificates) as Certificate[],
     publications: ensureItemsHaveVisibility(normalized.publications) as Publication[],
     languages: ensureItemsHaveVisibility(normalized.languages) as Language[],
-    interests: ensureItemsHaveVisibility(normalized.interests) as Interest[],
+    interests: ensureItemsHaveVisibility(normalized.interests).map(interest => ({
+      ...interest,
+      keywords: cleanKeywords(interest.keywords)
+    })) as Interest[],
     references: ensureItemsHaveVisibility(normalized.references) as Reference[],
     volunteer: ensureItemsHaveVisibility(normalized.volunteer) as Volunteer[],
     
