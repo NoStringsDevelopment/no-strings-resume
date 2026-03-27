@@ -1,5 +1,6 @@
 import { ResumeData, Theme } from '@/types/resume';
-import { downloadFile, exportResumeAsJson } from '@/utils/importExport';
+import { downloadBlob, downloadFile, exportResumeAsJson } from '@/utils/importExport';
+import { buildResumeExportContent } from '@/utils/resumeExportContent';
 import { 
   getVisibleHighlights, 
   getHighlightContent, 
@@ -181,286 +182,307 @@ export function exportAsHROpen(resumeData: ResumeData) {
   downloadFile(jsonContent, filename, 'application/json');
 }
 
-export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
-  const { default: PizZip } = await import('pizzip');
-  const { default: Docxtemplater } = await import('docxtemplater');
-  
-  // Create a basic DOCX template content
-  const docxContent = generateDOCXContent(resumeData, theme);
-  
-  // Create a simple DOCX structure
-  const zip = new PizZip();
-  
-  // Add the basic DOCX structure
-  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-</Types>`);
-
-  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-</Relationships>`);
-
-  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-</Relationships>`);
-
-  zip.file('word/document.xml', docxContent);
-
-  const blob = zip.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  const filename = generateExportFilename(resumeData, 'docx', undefined, true);
-  
-  // Create download link
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+function normalizeHexColor(value: string | undefined, fallback: string): string {
+  const sanitized = (value || fallback).replace('#', '').trim();
+  return sanitized || fallback;
 }
 
-function generateDOCXContent(resumeData: ResumeData, theme: Theme): string {
-  let content = '';
-  const { sectionVisibility } = resumeData;
-  
-  // Helper function to convert hex color to Word format (remove #)
-  const formatColorForWord = (hexColor: string | undefined): string => {
-    if (!hexColor) return '000000'; // Default to black if color is undefined
-    return hexColor.replace('#', '');
+function normalizeExportTheme(theme: Theme) {
+  const fontSize = Number.isFinite(theme.typography?.fontSize) ? Math.max(theme.typography.fontSize, 10) : 12;
+  const lineHeight = Number.isFinite(theme.typography?.lineHeight) ? Math.max(theme.typography.lineHeight, 1.2) : 1.4;
+
+  return {
+    primary: normalizeHexColor(theme.colors?.primary, '2563eb'),
+    secondary: normalizeHexColor(theme.colors?.secondary, '64748b'),
+    accent: normalizeHexColor(theme.colors?.accent, '0ea5e9'),
+    text: normalizeHexColor(theme.colors?.text, '1e293b'),
+    textSecondary: normalizeHexColor(theme.colors?.textSecondary, '64748b'),
+    border: normalizeHexColor(theme.colors?.border, 'e2e8f0'),
+    headingFont: theme.fonts?.heading || theme.typography?.fontFamily || 'Arial',
+    bodyFont: theme.fonts?.body || theme.typography?.fontFamily || 'Arial',
+    fontSize,
+    lineHeight,
   };
+}
 
-  // Convert theme font sizes and spacing
-  const baseFontSize = Math.round(theme.typography.fontSize * 2); // Convert to half-points (Word format)
-  const headingFontSize = Math.round(baseFontSize * 1.5);
-  const largeFontSize = Math.round(baseFontSize * 2);
-  
-  const createParagraph = (text: string, style: 'heading1' | 'heading2' | 'heading3' | 'normal' | 'contact' | 'jobTitle' | 'company' = 'normal') => {
-    const styles = {
-      heading1: `<w:pStyle w:val="Heading1"/><w:color w:val="${formatColorForWord(theme.colors.primary)}"/><w:sz w:val="${largeFontSize}"/><w:szCs w:val="${largeFontSize}"/><w:b/>`,
-      heading2: `<w:pStyle w:val="Heading2"/><w:color w:val="${formatColorForWord(theme.colors.secondary)}"/><w:sz w:val="${headingFontSize}"/><w:szCs w:val="${headingFontSize}"/><w:b/>`,
-      heading3: `<w:pStyle w:val="Heading3"/><w:color w:val="${formatColorForWord(theme.colors.primary)}"/><w:sz w:val="${headingFontSize}"/><w:szCs w:val="${headingFontSize}"/><w:b/>`,
-      normal: `<w:color w:val="${formatColorForWord(theme.colors.text)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/>`,
-      contact: `<w:color w:val="${formatColorForWord(theme.colors.textSecondary)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/>`,
-      jobTitle: `<w:color w:val="${formatColorForWord(theme.colors.text)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/><w:b/>`,
-      company: `<w:color w:val="${formatColorForWord(theme.colors.accent)}"/><w:sz w:val="${baseFontSize}"/><w:szCs w:val="${baseFontSize}"/><w:b/>`
-    };
-    
-    const rPrStyle = styles[style];
-    const isHeading = style.startsWith('heading');
-    const fontFamily = isHeading ? (theme.fonts?.heading || 'Arial') : (theme.fonts?.body || 'Arial');
-    
-    return `
-    <w:p>
-      <w:pPr>
-        ${isHeading ? `<w:pStyle w:val="${style.charAt(0).toUpperCase() + style.slice(1)}"/>` : ''}
-        <w:spacing w:after="${isHeading ? '160' : '120'}"/>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          ${rPrStyle}
-          <w:rFonts w:ascii="${fontFamily}" w:hAnsi="${fontFamily}" w:cs="${fontFamily}"/>
-        </w:rPr>
-        <w:t>${text}</w:t>
-      </w:r>
-    </w:p>`;
-  };
+export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
+  const {
+    BorderStyle,
+    Document,
+    Packer,
+    Paragraph,
+    TextRun,
+  } = await import('docx');
 
-  // Header - document structure
-  content += `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:body>`;
+  const exportTheme = normalizeExportTheme(theme);
+  const exportContent = buildResumeExportContent(resumeData);
+  const baseDocxSize = Math.round(exportTheme.fontSize * 2);
+  const titleDocxSize = Math.round(baseDocxSize * 1.15);
+  const sectionDocxSize = Math.round(baseDocxSize * 1.2);
+  const nameDocxSize = Math.round(baseDocxSize * 1.85);
 
-  // Basics section
-  if (sectionVisibility.basics) {
-    content += createParagraph(resumeData.basics.name, 'heading1');
-    
-    if (resumeData.basics.label) {
-      content += createParagraph(resumeData.basics.label, 'heading2');
+  const children: InstanceType<typeof Paragraph>[] = [];
+
+  if (exportContent.header) {
+    children.push(
+      new Paragraph({
+        spacing: { after: 120 },
+        keepNext: true,
+        children: [
+          new TextRun({
+            text: exportContent.header.name,
+            bold: true,
+            color: exportTheme.primary,
+            font: exportTheme.headingFont,
+            size: nameDocxSize,
+          }),
+        ],
+      }),
+    );
+
+    if (exportContent.header.label) {
+      children.push(
+        new Paragraph({
+          spacing: { after: 120 },
+          keepNext: true,
+          children: [
+            new TextRun({
+              text: exportContent.header.label,
+              color: exportTheme.secondary,
+              font: exportTheme.bodyFont,
+              size: titleDocxSize,
+            }),
+          ],
+        }),
+      );
     }
-    
-    // Contact information
-    const contactInfo = [
-      resumeData.basics.email,
-      resumeData.basics.phone,
-      resumeData.basics.url,
-      [resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')
-    ].filter(Boolean);
-    
-    if (contactInfo.length > 0) {
-      content += createParagraph(contactInfo.join(' | '), 'contact');
+
+    if (exportContent.header.contacts.length > 0) {
+      children.push(
+        new Paragraph({
+          spacing: { after: 80 },
+          children: [
+            new TextRun({
+              text: exportContent.header.contacts.join(' | '),
+              color: exportTheme.textSecondary,
+              font: exportTheme.bodyFont,
+              size: baseDocxSize,
+            }),
+          ],
+        }),
+      );
     }
-    
-    // Profiles
-    const visibleProfiles = resumeData.basics.profiles.filter(p => p.visible !== false);
-    if (visibleProfiles.length > 0) {
-      const profilesInfo = visibleProfiles.map(profile => 
-        `${profile.network}: ${profile.username || profile.url}`
-      ).join(' | ');
-      
-      if (profilesInfo) {
-        content += createParagraph(profilesInfo, 'contact');
+
+    if (exportContent.header.profiles.length > 0) {
+      children.push(
+        new Paragraph({
+          spacing: { after: exportContent.header.summary ? 200 : 120 },
+          children: [
+            new TextRun({
+              text: exportContent.header.profiles.join(' | '),
+              color: exportTheme.textSecondary,
+              font: exportTheme.bodyFont,
+              size: baseDocxSize,
+            }),
+          ],
+        }),
+      );
+    }
+
+    if (exportContent.header.summary) {
+      children.push(
+        new Paragraph({
+          spacing: { before: 80, after: 80 },
+          keepNext: true,
+          border: {
+            bottom: {
+              color: exportTheme.border,
+              size: 4,
+              style: BorderStyle.SINGLE,
+            },
+          },
+          children: [
+            new TextRun({
+              text: 'Summary',
+              bold: true,
+              color: exportTheme.primary,
+              font: exportTheme.headingFont,
+              size: sectionDocxSize,
+            }),
+          ],
+        }),
+      );
+
+      children.push(
+        new Paragraph({
+          spacing: { after: 120 },
+          children: [
+            new TextRun({
+              text: exportContent.header.summary,
+              color: exportTheme.text,
+              font: exportTheme.bodyFont,
+              size: baseDocxSize,
+            }),
+          ],
+        }),
+      );
+    }
+  }
+
+  exportContent.sections.forEach((section) => {
+    children.push(
+      new Paragraph({
+        spacing: { before: 220, after: 120 },
+        keepNext: true,
+        border: {
+          bottom: {
+            color: exportTheme.border,
+            size: 4,
+            style: BorderStyle.SINGLE,
+          },
+        },
+        children: [
+          new TextRun({
+            text: section.title.toUpperCase(),
+            bold: true,
+            color: exportTheme.primary,
+            font: exportTheme.headingFont,
+            size: sectionDocxSize,
+          }),
+        ],
+      }),
+    );
+
+    section.entries.forEach((entry) => {
+      children.push(
+        new Paragraph({
+          spacing: { after: 40 },
+          keepNext: true,
+          children: [
+            new TextRun({
+              text: entry.title,
+              bold: true,
+              color: exportTheme.text,
+              font: exportTheme.bodyFont,
+              size: titleDocxSize,
+            }),
+          ],
+        }),
+      );
+
+      if (entry.subtitle) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 40 },
+            keepNext: true,
+            children: [
+              new TextRun({
+                text: entry.subtitle,
+                bold: true,
+                color: exportTheme.accent,
+                font: exportTheme.bodyFont,
+                size: baseDocxSize,
+              }),
+            ],
+          }),
+        );
       }
-    }
-    
-    // Summary section with spacing
-    if (resumeData.basics.summary) {
-      content += '<w:p><w:pPr><w:spacing w:before="240" w:after="240"/><w:pBdr><w:top w:val="single" w:sz="4" w:space="1" w:color="e2e8f0"/><w:bottom w:val="single" w:sz="4" w:space="1" w:color="e2e8f0"/></w:pBdr></w:pPr></w:p>';
-      content += createParagraph('SUMMARY', 'heading3');
-      content += createParagraph(resumeData.basics.summary);
-    }
-  }
 
-  // Work Experience with visibility filtering
-  if (sectionVisibility.work && resumeData.work.some(w => w.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="400"/></w:pPr></w:p>';
-    content += createParagraph('WORK EXPERIENCE', 'heading3');
-    
-    resumeData.work
-      .filter(work => work.visible !== false)
-      .forEach(work => {
-        content += createParagraph(`${work.position}`, 'jobTitle');
-        content += createParagraph(`${work.name}`, 'company');
-        content += createParagraph(`${work.startDate} - ${work.endDate || 'Present'}`, 'contact');
-        
-        if (work.summary) {
-          content += createParagraph(work.summary);
-        }
-        
-        // Use visibility helper for highlights
-        const visibleHighlights = getVisibleHighlights(work.highlights);
-        visibleHighlights.forEach(highlight => {
-          content += createParagraph(`• ${getHighlightContent(highlight)}`);
-        });
-        
-        content += '<w:p><w:pPr><w:spacing w:after="200"/></w:pPr></w:p>';
+      if (entry.metadata) {
+        children.push(
+          new Paragraph({
+            spacing: { after: entry.summary || entry.details.length > 0 || entry.bullets.length > 0 ? 40 : 120 },
+            children: [
+              new TextRun({
+                text: entry.metadata,
+                color: exportTheme.textSecondary,
+                font: exportTheme.bodyFont,
+                size: baseDocxSize,
+              }),
+            ],
+          }),
+        );
+      }
+
+      if (entry.summary) {
+        children.push(
+          new Paragraph({
+            spacing: { after: entry.details.length > 0 || entry.bullets.length > 0 ? 40 : 120 },
+            children: [
+              new TextRun({
+                text: entry.summary,
+                color: exportTheme.text,
+                font: exportTheme.bodyFont,
+                size: baseDocxSize,
+              }),
+            ],
+          }),
+        );
+      }
+
+      entry.details.forEach((detail, index) => {
+        children.push(
+          new Paragraph({
+            spacing: { after: index === entry.details.length - 1 && entry.bullets.length === 0 ? 120 : 40 },
+            children: [
+              new TextRun({
+                text: detail,
+                color: exportTheme.textSecondary,
+                font: exportTheme.bodyFont,
+                size: baseDocxSize,
+              }),
+            ],
+          }),
+        );
       });
-  }
 
-  // Education with course visibility filtering
-  if (sectionVisibility.education && resumeData.education.some(e => e.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="400"/></w:pPr></w:p>';
-    content += createParagraph('EDUCATION', 'heading3');
-    
-    resumeData.education
-      .filter(edu => edu.visible !== false)
-      .forEach(edu => {
-        const degree = `${edu.studyType}${edu.area ? ` in ${edu.area}` : ''}`;
-        content += createParagraph(degree, 'jobTitle');
-        content += createParagraph(edu.institution, 'company');
-        content += createParagraph(`${edu.startDate} - ${edu.endDate || 'Present'}`, 'contact');
-        
-        if (edu.score) {
-          content += createParagraph(`Score: ${edu.score}`, 'contact');
-        }
-        
-        // Use visibility helper for courses
-        const visibleCourses = getVisibleCourses(edu.courses);
-        if (visibleCourses.length > 0) {
-          const courseNames = visibleCourses.map(course => getCourseName(course));
-          content += createParagraph(`Relevant Courses: ${courseNames.join(', ')}`, 'contact');
-        }
-        
-        content += '<w:p><w:pPr><w:spacing w:after="200"/></w:pPr></w:p>';
+      entry.bullets.forEach((bullet, index) => {
+        children.push(
+          new Paragraph({
+            bullet: { level: 0 },
+            spacing: { after: index === entry.bullets.length - 1 ? 120 : 40 },
+            children: [
+              new TextRun({
+                text: bullet,
+                color: exportTheme.text,
+                font: exportTheme.bodyFont,
+                size: baseDocxSize,
+              }),
+            ],
+          }),
+        );
       });
+    });
+  });
+
+  const document = new Document({
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: {
+              top: 1440,
+              right: 1440,
+              bottom: 1440,
+              left: 1440,
+            },
+          },
+        },
+        children,
+      },
+    ],
+  });
+
+  const buffer = await Packer.toArrayBuffer(document);
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
+  if (!blob || blob.size === 0) {
+    throw new Error('Generated DOCX file was empty.');
   }
 
-  // Skills
-  if (sectionVisibility.skills && resumeData.skills.some(s => s.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="400"/></w:pPr></w:p>';
-    content += createParagraph('SKILLS', 'heading3');
-    
-    resumeData.skills
-      .filter(skill => skill.visible !== false)
-      .forEach(skill => {
-        const skillText = `${skill.name}${skill.level ? ` (${skill.level})` : ''}`;
-        content += createParagraph(skillText, 'normal');
-        
-        const visibleKeywords = getVisibleKeywords(skill.keywords);
-        if (visibleKeywords.length > 0) {
-          const keywordNames = visibleKeywords.map(keyword => getKeywordName(keyword));
-          content += createParagraph(keywordNames.join(', '), 'contact');
-        }
-        
-        content += '<w:p><w:pPr><w:spacing w:after="80"/></w:pPr></w:p>';
-      });
-  }
-
-  // Projects
-  if (sectionVisibility.projects && resumeData.projects.some(p => p.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
-    content += createParagraph('PROJECTS', 'heading3');
-    
-    resumeData.projects
-      .filter(project => project.visible !== false)
-      .forEach(project => {
-        content += createParagraph(project.name, 'normal');
-        content += createParagraph(project.description);
-        
-        const visibleHighlights = getVisibleHighlights(project.highlights);
-        if (visibleHighlights.length > 0) {
-          visibleHighlights.forEach(highlight => {
-            content += createParagraph(`• ${getHighlightContent(highlight)}`);
-          });
-        }
-        
-        const visibleKeywords = getVisibleKeywords(project.keywords);
-        if (visibleKeywords.length > 0) {
-          const keywordNames = visibleKeywords.map(keyword => getKeywordName(keyword));
-          content += createParagraph(`Technologies: ${keywordNames.join(', ')}`, 'contact');
-        }
-        
-        const visibleRoles = getVisibleRoles(project.roles);
-        if (visibleRoles.length > 0) {
-          const roleNames = visibleRoles.map(role => getRoleName(role));
-          content += createParagraph(`Roles: ${roleNames.join(', ')}`, 'contact');
-        }
-        
-        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
-      });
-  }
-
-  // Awards
-  if (sectionVisibility.awards && resumeData.awards.some(a => a.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
-    content += createParagraph('AWARDS', 'heading3');
-    
-    resumeData.awards
-      .filter(award => award.visible !== false)
-      .forEach(award => {
-        content += createParagraph(`${award.title} - ${award.awarder}`, 'normal');
-        content += createParagraph(award.date, 'contact');
-        
-        if (award.summary) {
-          content += createParagraph(award.summary);
-        }
-        
-        content += '<w:p><w:pPr><w:spacing w:after="160"/></w:pPr></w:p>';
-      });
-  }
-
-  // Languages
-  if (sectionVisibility.languages && resumeData.languages.some(l => l.visible !== false)) {
-    content += '<w:p><w:pPr><w:spacing w:before="320"/></w:pPr></w:p>';
-    content += createParagraph('LANGUAGES', 'heading3');
-    
-    resumeData.languages
-      .filter(lang => lang.visible !== false)
-      .forEach(lang => {
-        const langText = `${lang.language}${lang.fluency ? ` (${lang.fluency})` : ''}`;
-        content += createParagraph(langText);
-      });
-  }
-
-  content += `
-  </w:body>
-</w:document>`;
-
-  return content;
+  const filename = generateExportFilename(resumeData, 'docx', undefined, true);
+  downloadBlob(blob, filename);
 }
 
 export function exportAsHTML(resumeData: ResumeData, theme: Theme) {
@@ -767,10 +789,8 @@ function sanitizeTextForPDF(text: string): string {
     // Replace bullet points with ASCII dash
     .replace(/•/g, '-')
     // Replace other common problematic characters
-    .replace(/'/g, "'")  // curly single quote
-    .replace(/'/g, "'")  // curly single quote
-    .replace(/"/g, '"')  // curly double quote left
-    .replace(/"/g, '"')  // curly double quote right
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
     .replace(/–/g, '-')  // en dash
     .replace(/—/g, '--') // em dash
     .replace(/…/g, '...') // ellipsis
@@ -789,22 +809,12 @@ function sanitizeContactInfo(contactInfo: (string | false)[]): string {
 // Helper function to check if text contains Unicode characters that need special handling
 function containsUnicodeSymbols(text: string): boolean {
   // Check for emojis, special symbols, and non-ASCII characters that might not render in Helvetica
-  return /[\u{1F300}-\u{1F9FF}]|[•–—""''…]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(text);
+  return /[\u{1F300}-\u{1F9FF}]|[•–—\u2018\u2019\u201C\u201D…]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(text);
 }
 
 // Helper function to try loading Unicode-capable font
-async function tryLoadUnicodeFont(pdf: unknown): Promise<boolean> {
+async function tryLoadUnicodeFont(): Promise<boolean> {
   try {
-    // Try to load a system font or web font that supports Unicode
-    // This is a simplified approach - in production, you might want to:
-    // 1. Bundle a Unicode font with your app
-    // 2. Load from Google Fonts or other CDN
-    // 3. Use a more comprehensive Unicode font like Noto Sans
-    
-    // For now, we'll detect if the browser/system has better font support
-    // In a real implementation, you would load a proper TTF font file
-    
-    // Check if we can use a system font with better Unicode support
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return false;
@@ -817,361 +827,283 @@ async function tryLoadUnicodeFont(pdf: unknown): Promise<boolean> {
     ctx.font = '12px monospace';
     const width2 = ctx.measureText(testText).width;
     
-    // If widths are significantly different, we likely have Unicode support
-    const hasUnicodeSupport = Math.abs(width1 - width2) > 2;
-    
-    if (hasUnicodeSupport) {
-      // Try to set a Unicode-friendly font in jsPDF
-      // Note: This is a simplified approach. For production use, you'd want to:
-      // 1. Load actual TTF font files
-      // 2. Use pdf.addFileToVFS() and pdf.addFont()
-      // 3. Handle font loading errors properly
-      
-      // For now, we'll just indicate that we should try to preserve Unicode
-      return true;
-    }
-    
-    return false;
+    return Math.abs(width1 - width2) > 2;
   } catch (error) {
     console.warn('Failed to load Unicode font for PDF export:', error);
     return false;
   }
 }
 
+async function resolveImageDataUrl(source: string | undefined): Promise<string | null> {
+  if (!source) return null;
+  if (source.startsWith('data:image')) return source;
+
+  try {
+    let path = source;
+    if (!/^https?:\/\//.test(path) && !path.startsWith('/')) {
+      path = `/${path}`;
+    }
+
+    const response = await fetch(path);
+    if (!response.ok) {
+      return null;
+    }
+
+    const blob = await response.blob();
+    return await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+function inferJsPdfImageType(source?: string, dataUrl?: string): 'PNG' | 'JPEG' {
+  const normalizedSource = (source || '').toLowerCase();
+  if (normalizedSource.endsWith('.jpg') || normalizedSource.endsWith('.jpeg')) return 'JPEG';
+  if (dataUrl?.startsWith('data:image/jpeg')) return 'JPEG';
+  return 'PNG';
+}
+
+function getPdfLineHeight(fontSize: number, lineHeightMultiplier: number): number {
+  return Math.max(4.5, fontSize * lineHeightMultiplier * 0.352778);
+}
+
+async function renderPdfTopVisuals(pdf: {
+  internal: { pageSize: { getWidth: () => number } };
+  addImage: (...args: unknown[]) => void;
+}, resumeData: ResumeData): Promise<number> {
+  const pxToMm = (pixels: number) => pixels * 0.264583;
+  let bottom = 0;
+
+  const renderVisual = async (
+    source: string | undefined,
+    position: { top: number; right: number } | undefined,
+    size: number | undefined,
+  ) => {
+    if (!source || !position || !size) {
+      return;
+    }
+
+    const dataUrl = await resolveImageDataUrl(source);
+    if (!dataUrl) {
+      return;
+    }
+
+    const imageType = inferJsPdfImageType(source, dataUrl);
+    const sizeMm = pxToMm(size);
+    const topMm = pxToMm(position.top || 20);
+    const rightMm = pxToMm(position.right || 20);
+    const x = pdf.internal.pageSize.getWidth() - rightMm - sizeMm;
+    const y = topMm;
+
+    pdf.addImage(dataUrl, imageType, x, y, sizeMm, sizeMm);
+    bottom = Math.max(bottom, y + sizeMm);
+  };
+
+  try {
+    await renderVisual(resumeData.icon?.data, resumeData.icon?.position, resumeData.icon?.size);
+    await renderVisual(resumeData.photo?.data, resumeData.photo?.position, resumeData.photo?.size);
+  } catch (error) {
+    console.warn('PDF export: failed to render optional images.', error);
+  }
+
+  return bottom;
+}
+
 export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   const { jsPDF } = await import('jspdf');
-  const pdf = new jsPDF();
-  
-  // Try to enable Unicode support
-  const hasUnicodeSupport = await tryLoadUnicodeFont(pdf);
-  
-  let yPosition = 20;
+  const pdf = new jsPDF({ compress: true });
+  const exportTheme = normalizeExportTheme(theme);
+  const exportContent = buildResumeExportContent(resumeData);
+  const hasUnicodeSupport = await tryLoadUnicodeFont();
   const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 20;
-  const lineHeight = 6;
-  const sectionSpacing = 8;
+  const sectionSpacing = 5;
+  const usableWidth = pageWidth - margin * 2;
+  const textColor = `#${exportTheme.text}`;
+  const mutedColor = `#${exportTheme.textSecondary}`;
+  const accentColor = `#${exportTheme.accent}`;
+  const primaryColor = `#${exportTheme.primary}`;
+  const borderColor = `#${exportTheme.border}`;
+  let yPosition = margin;
 
-  // Helper function to check if we need a new page
-  const checkNewPage = (requiredHeight: number = lineHeight) => {
-    if (yPosition + requiredHeight > pdf.internal.pageSize.getHeight() - 20) {
+  const prepareText = (text: string): string => {
+    if (!hasUnicodeSupport && containsUnicodeSymbols(text)) {
+      return sanitizeTextForPDF(text);
+    }
+    return text;
+  };
+
+  const ensureSpace = (requiredHeight: number) => {
+    if (yPosition + requiredHeight > pageHeight - margin) {
       pdf.addPage();
-      yPosition = 20;
+      yPosition = margin;
     }
   };
 
-  // Helper function to add text with word wrapping and smart Unicode handling
-  const addText = (text: string, fontSize: number = 11, isBold: boolean = false, color: string = '#000000') => {
-    if (!text) return;
-    
-    let processedText = text;
-    
-    // Only sanitize if we don't have Unicode support AND the text contains problematic characters
-    if (!hasUnicodeSupport && containsUnicodeSymbols(text)) {
-      processedText = sanitizeTextForPDF(text);
-      console.log(`PDF Export: Sanitized text due to limited Unicode support: "${text}" -> "${processedText}"`);
+  const addWrappedText = (
+    text: string,
+    options?: {
+      fontSize?: number;
+      bold?: boolean;
+      color?: string;
+      indent?: number;
+      width?: number;
+      spacingAfter?: number;
+    },
+  ) => {
+    if (!text?.trim()) {
+      return;
     }
-    
+
+    const fontSize = options?.fontSize ?? 11;
+    const indent = options?.indent ?? margin;
+    const width = options?.width ?? pageWidth - indent - margin;
+    const spacingAfter = options?.spacingAfter ?? 1;
+    const processedText = prepareText(text);
+    const lineHeight = getPdfLineHeight(fontSize, exportTheme.lineHeight);
+    const lines = pdf.splitTextToSize(processedText, width);
+
+    pdf.setFont('helvetica', options?.bold ? 'bold' : 'normal');
     pdf.setFontSize(fontSize);
-    pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
-    pdf.setTextColor(color);
-    
-    const lines = pdf.splitTextToSize(processedText, pageWidth - 2 * margin);
+    pdf.setTextColor(options?.color ?? textColor);
+
     lines.forEach((line: string) => {
-      checkNewPage();
-      pdf.text(line, margin, yPosition);
+      ensureSpace(lineHeight);
+      pdf.text(line, indent, yPosition);
       yPosition += lineHeight;
     });
+
+    yPosition += spacingAfter;
+  };
+
+  const addBullet = (text: string) => {
+    const fontSize = 10;
+    const lineHeight = getPdfLineHeight(fontSize, exportTheme.lineHeight);
+    const bullet = hasUnicodeSupport ? '•' : '-';
+    const bulletIndent = margin + 4;
+    const lines = pdf.splitTextToSize(prepareText(text), pageWidth - bulletIndent - margin);
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(fontSize);
+    pdf.setTextColor(textColor);
+
+    lines.forEach((line: string, index: number) => {
+      ensureSpace(lineHeight);
+      if (index === 0) {
+        pdf.text(bullet, margin, yPosition);
+      }
+      pdf.text(line, bulletIndent, yPosition);
+      yPosition += lineHeight;
+    });
+
+    yPosition += 1;
   };
 
   const addSectionHeader = (title: string) => {
-    if (!title) return;
-    
     yPosition += sectionSpacing;
-    checkNewPage(12);
-    pdf.setFontSize(14);
+    ensureSpace(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor('#2563eb'); // Primary color
-    
-    let processedTitle = title;
-    if (!hasUnicodeSupport && containsUnicodeSymbols(title)) {
-      processedTitle = sanitizeTextForPDF(title);
-    }
-    
-    pdf.text(processedTitle.toUpperCase(), margin, yPosition);
-    yPosition += 8;
-    
-    // Add underline
-    pdf.setDrawColor(226, 232, 240); // Border color
+    pdf.setFontSize(14);
+    pdf.setTextColor(primaryColor);
+    pdf.text(prepareText(title.toUpperCase()), margin, yPosition);
+    yPosition += 6;
+    pdf.setDrawColor(borderColor);
     pdf.setLineWidth(0.5);
     pdf.line(margin, yPosition, pageWidth - margin, yPosition);
     yPosition += 4;
   };
 
-  // Add a note about Unicode support at the beginning
+  const renderEntry = (entry: {
+    title: string;
+    subtitle?: string;
+    metadata?: string;
+    summary?: string;
+    details: string[];
+    bullets: string[];
+  }) => {
+    addWrappedText(entry.title, { fontSize: 12, bold: true, color: textColor, spacingAfter: 0.5 });
+
+    if (entry.subtitle) {
+      addWrappedText(entry.subtitle, { fontSize: 11, bold: true, color: accentColor, spacingAfter: 0.5 });
+    }
+
+    if (entry.metadata) {
+      addWrappedText(entry.metadata, {
+        fontSize: 10,
+        color: mutedColor,
+        spacingAfter: entry.summary || entry.details.length > 0 || entry.bullets.length > 0 ? 0.5 : 2,
+      });
+    }
+
+    if (entry.summary) {
+      addWrappedText(entry.summary, {
+        fontSize: 10,
+        color: textColor,
+        spacingAfter: entry.details.length > 0 || entry.bullets.length > 0 ? 0.5 : 2,
+      });
+    }
+
+    entry.details.forEach((detail, index) => {
+      addWrappedText(detail, {
+        fontSize: 10,
+        color: mutedColor,
+        spacingAfter: index === entry.details.length - 1 && entry.bullets.length === 0 ? 2 : 0.5,
+      });
+    });
+
+    entry.bullets.forEach(addBullet);
+    yPosition += 2;
+  };
+
+  const topVisualBottom = await renderPdfTopVisuals(pdf as unknown as {
+    internal: { pageSize: { getWidth: () => number } };
+    addImage: (...args: unknown[]) => void;
+  }, resumeData);
+  if (topVisualBottom > 0) {
+    yPosition = Math.max(yPosition, topVisualBottom + 6);
+  }
+
   if (!hasUnicodeSupport) {
     console.info('PDF Export: Using ASCII fallback mode. Some Unicode characters will be converted to text equivalents.');
-  } else {
-    console.info('PDF Export: Unicode support detected. Preserving original characters.');
   }
 
-  // Header section
-  if (resumeData.sectionVisibility.basics) {
-    // Name - large and bold
-    pdf.setFontSize(24);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor('#2563eb');
-    
-    let processedName = resumeData.basics.name;
-    if (!hasUnicodeSupport && containsUnicodeSymbols(resumeData.basics.name)) {
-      processedName = sanitizeTextForPDF(resumeData.basics.name);
-    }
-    pdf.text(processedName, margin, yPosition);
-    
-    // Render icon and photo (top-right anchored), if available
-    try {
-      // Utility to infer image type for jsPDF addImage
-      const inferJsPdfImageType = (dataUrl: string, resolvedUrl: string): 'PNG' | 'JPEG' | undefined => {
-        if (dataUrl.startsWith('data:image/png') || resolvedUrl.endsWith('.png')) return 'PNG';
-        if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg') || resolvedUrl.endsWith('.jpg') || resolvedUrl.endsWith('.jpeg')) return 'JPEG';
-        return undefined;
-      };
+  if (exportContent.header) {
+    addWrappedText(exportContent.header.name, { fontSize: 24, bold: true, color: primaryColor, spacingAfter: 1 });
 
-      const pxToMm = (px: number) => px * 0.264583; // 96 DPI approx
-
-      const resolveImageDataUrl = async (data: string): Promise<string> => {
-        if (data.startsWith('data:')) return data;
-        // Treat as URL/path; fetch and convert to data URL
-        const response = await fetch(data);
-        const blob = await response.blob();
-        return await new Promise<string>((resolve) => {
-          const fr = new FileReader();
-          fr.onloadend = () => resolve(fr.result as string);
-          fr.readAsDataURL(blob);
-        });
-      };
-
-      // Icon
-      if (resumeData.icon?.data && resumeData.icon.position && resumeData.icon.size) {
-        const dataUrl = await resolveImageDataUrl(resumeData.icon.data);
-        const type = inferJsPdfImageType(resumeData.icon.data, dataUrl);
-        if (type) {
-          const sizeMm = pxToMm(resumeData.icon.size);
-          const topMm = pxToMm(resumeData.icon.position.top || 20);
-          const rightMm = pxToMm(resumeData.icon.position.right || 20);
-          const x = pdf.internal.pageSize.getWidth() - rightMm - sizeMm;
-          const y = topMm;
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore jsPDF type overloading is loose for addImage
-          pdf.addImage(dataUrl, type, x, y, sizeMm, sizeMm);
-        }
-      }
-
-      // Photo
-      if (resumeData.photo?.data && resumeData.photo.position && resumeData.photo.size) {
-        const dataUrl = await resolveImageDataUrl(resumeData.photo.data);
-        const type = inferJsPdfImageType(resumeData.photo.data, dataUrl);
-        if (type) {
-          const sizeMm = pxToMm(resumeData.photo.size);
-          const topMm = pxToMm(resumeData.photo.position.top || 20);
-          const rightMm = pxToMm(resumeData.photo.position.right || 100);
-          const x = pdf.internal.pageSize.getWidth() - rightMm - sizeMm;
-          const y = topMm;
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore jsPDF type overloading is loose for addImage
-          pdf.addImage(dataUrl, type, x, y, sizeMm, sizeMm);
-        }
-      }
-    } catch {
-      // ignore image failures to avoid breaking export
+    if (exportContent.header.label) {
+      addWrappedText(exportContent.header.label, { fontSize: 16, color: mutedColor, spacingAfter: 1.5 });
     }
 
-    yPosition += 12;
-
-    // Label/title
-    if (resumeData.basics.label) {
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor('#64748b');
-      
-      let processedLabel = resumeData.basics.label;
-      if (!hasUnicodeSupport && containsUnicodeSymbols(resumeData.basics.label)) {
-        processedLabel = sanitizeTextForPDF(resumeData.basics.label);
-      }
-      pdf.text(processedLabel, margin, yPosition);
-      yPosition += 8;
-    }
-    
-    // Contact information - with smart Unicode handling
-    const contactInfo = [
-      resumeData.basics.email && `📧 ${resumeData.basics.email}`,
-      resumeData.basics.phone && `📞 ${resumeData.basics.phone}`,
-      resumeData.basics.url && `🌐 ${resumeData.basics.url}`,
-      (resumeData.basics.location.city || resumeData.basics.location.region) && 
-        `📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}`
-    ].filter(Boolean);
-    
-    if (contactInfo.length > 0) {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor('#64748b');
-      
-      let contactLine: string;
-      if (hasUnicodeSupport) {
-        // Use bullet separator and keep emojis
-        contactLine = contactInfo.map(item => item as string).join(' • ');
-      } else {
-        // Use sanitized version
-        contactLine = sanitizeContactInfo(contactInfo);
-      }
-      addText(contactLine, 10, false, '#64748b');
+    if (exportContent.header.contacts.length > 0) {
+      const contactLine = hasUnicodeSupport
+        ? exportContent.header.contacts.join(' • ')
+        : sanitizeContactInfo(exportContent.header.contacts);
+      addWrappedText(contactLine, { fontSize: 10, color: mutedColor, spacingAfter: 1 });
     }
 
-    // Profiles - also with smart Unicode handling
-    if (resumeData.basics.profiles.some(p => p.visible !== false)) {
-      const profilesInfo = resumeData.basics.profiles
-        .filter(profile => profile.visible !== false)
-        .map(profile => `${profile.network}: ${profile.username || profile.url}`)
-        .join(hasUnicodeSupport ? ' • ' : ' | ');
-      
-      if (profilesInfo) {
-        addText(profilesInfo, 10, false, '#64748b');
-      }
+    if (exportContent.header.profiles.length > 0) {
+      addWrappedText(exportContent.header.profiles.join(hasUnicodeSupport ? ' • ' : ' | '), {
+        fontSize: 10,
+        color: mutedColor,
+        spacingAfter: exportContent.header.summary ? 2 : 3,
+      });
     }
-    
-    // Summary
-    if (resumeData.basics.summary) {
-      yPosition += 4;
-      addText(resumeData.basics.summary, 11, false, '#1e293b');
+
+    if (exportContent.header.summary) {
+      addSectionHeader('Summary');
+      addWrappedText(exportContent.header.summary, { fontSize: 11, color: textColor, spacingAfter: 3 });
     }
   }
 
-  // Work Experience
-  if (resumeData.sectionVisibility.work && resumeData.work.some(w => w.visible !== false)) {
-    addSectionHeader('Work Experience');
-    
-    resumeData.work
-      .filter(work => work.visible !== false)
-      .forEach(work => {
-        // Position and company
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor('#1e293b');
-        const jobTitle = `${work.position} at ${work.name}`;
-        
-        let processedJobTitle = jobTitle;
-        if (!hasUnicodeSupport && containsUnicodeSymbols(jobTitle)) {
-          processedJobTitle = sanitizeTextForPDF(jobTitle);
-        }
-        pdf.text(processedJobTitle, margin, yPosition);
-        yPosition += 7;
-
-        // Dates
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor('#64748b');
-        const dateRange = `${work.startDate} - ${work.endDate || 'Present'}`;
-        
-        let processedDateRange = dateRange;
-        if (!hasUnicodeSupport && containsUnicodeSymbols(dateRange)) {
-          processedDateRange = sanitizeTextForPDF(dateRange);
-        }
-        pdf.text(processedDateRange, margin, yPosition);
-        yPosition += 7;
-
-        // Summary
-        if (work.summary) {
-          addText(work.summary, 10, false, '#1e293b');
-          yPosition += 2;
-        }
-
-        // Highlights
-        if (work.highlights.length > 0) {
-          work.highlights.forEach(highlight => {
-            const bulletChar = hasUnicodeSupport ? '•' : '-';
-            addText(`${bulletChar} ${highlight}`, 10, false, '#1e293b');
-          });
-        }
-        yPosition += 4;
-      });
-  }
-
-  // Education
-  if (resumeData.sectionVisibility.education && resumeData.education.some(e => e.visible !== false)) {
-    addSectionHeader('Education');
-    
-    resumeData.education
-      .filter(edu => edu.visible !== false)
-      .forEach(edu => {
-        const degree = `${edu.studyType}${edu.area ? ` in ${edu.area}` : ''}`;
-        addText(degree, 12, true, '#1e293b');
-        addText(edu.institution, 11, false, '#0ea5e9');
-        addText(`${edu.startDate} - ${edu.endDate || 'Present'}`, 10, false, '#64748b');
-        if (edu.score) {
-          addText(`Score: ${edu.score}`, 10, false, '#64748b');
-        }
-        yPosition += 4;
-      });
-  }
-
-  // Skills
-  if (resumeData.sectionVisibility.skills && resumeData.skills.some(s => s.visible !== false)) {
-    addSectionHeader('Skills');
-    
-    resumeData.skills
-      .filter(skill => skill.visible !== false)
-      .forEach(skill => {
-        const skillText = `${skill.name}${skill.level ? ` (${skill.level})` : ''}`;
-        addText(skillText, 11, true, '#1e293b');
-        if (skill.keywords.length > 0) {
-          addText(skill.keywords.join(', '), 10, false, '#64748b');
-        }
-        yPosition += 2;
-      });
-  }
-
-  // Projects
-  if (resumeData.sectionVisibility.projects && resumeData.projects.some(p => p.visible !== false)) {
-    addSectionHeader('Projects');
-    
-    resumeData.projects
-      .filter(project => project.visible !== false)
-      .forEach(project => {
-        addText(project.name, 12, true, '#1e293b');
-        addText(project.description, 10, false, '#1e293b');
-        if (project.keywords.length > 0) {
-          addText(`Technologies: ${project.keywords.join(', ')}`, 10, false, '#64748b');
-        }
-        yPosition += 4;
-      });
-  }
-
-  // Awards
-  if (resumeData.sectionVisibility.awards && resumeData.awards.some(a => a.visible !== false)) {
-    addSectionHeader('Awards');
-    
-    resumeData.awards
-      .filter(award => award.visible !== false)
-      .forEach(award => {
-        addText(`${award.title} - ${award.awarder}`, 11, true, '#1e293b');
-        addText(award.date, 10, false, '#64748b');
-        if (award.summary) {
-          addText(award.summary, 10, false, '#1e293b');
-        }
-        yPosition += 4;
-      });
-  }
-
-  // Languages
-  if (resumeData.sectionVisibility.languages && resumeData.languages.some(l => l.visible !== false)) {
-    addSectionHeader('Languages');
-    
-    resumeData.languages
-      .filter(lang => lang.visible !== false)
-      .forEach(lang => {
-        const langText = `${lang.language}${lang.fluency ? ` (${lang.fluency})` : ''}`;
-        addText(langText, 11, false, '#1e293b');
-      });
-  }
+  exportContent.sections.forEach((section) => {
+    addSectionHeader(section.title);
+    section.entries.forEach(renderEntry);
+  });
 
   const filename = generateExportFilename(resumeData, 'pdf', undefined, true);
   pdf.save(filename);
