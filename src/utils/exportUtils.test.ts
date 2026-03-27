@@ -257,15 +257,37 @@ const baseResumeData: ResumeData = {
 
 const originalCreateElement = document.createElement;
 const originalFetch = global.fetch;
+const originalImage = global.Image;
+
+const tinyPngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/afoAAAAASUVORK5CYII=';
+const tinyAltPngDataUrl = 'data:image/png;base64,ZmFrZS1jb252ZXJ0ZWQtcGhvdG8=';
+const tinyJpegDataUrl = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBUQEBAVFRUVFRUVFRUVFRUVFRUVFRUXFhUVFRUYHSggGBolGxUVITEhJSkrLi4uFx8zODMsNygtLisBCgoKDg0OGhAQGy0mICYtLS8tLS0tLy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAAEAAgMBIgACEQEDEQH/xAAXAAADAQAAAAAAAAAAAAAAAAAAAQID/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEAMQAAAB6AAAAP/EABQQAQAAAAAAAAAAAAAAAAAAACD/2gAIAQEAAT8Af//EABQRAQAAAAAAAAAAAAAAAAAAACD/2gAIAQIBAT8Af//EABQRAQAAAAAAAAAAAAAAAAAAACD/2gAIAQMBAT8Af//Z';
+const tinyIcoDataUrl = 'data:image/x-icon;base64,AAABAAEAEBAAAAAAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wD///8A////AP///wD///8A////AP///wD///8AAAAAAP///wD///8A////AP///wD///8A////AAAAAAD///8A////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wD///8A////AP///wD///8A////AAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8AAAAAAP///wD///8A////AP///wD///8A////AP///wAAAAAA';
+let canvasDataUrlCallCount = 0;
 
 function createCanvasWithUnicodeSupport(hasUnicodeSupport: boolean): HTMLCanvasElement {
   return {
+    width: 1,
+    height: 1,
     getContext: vi.fn(() => ({
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      clearRect: vi.fn(),
+      clip: vi.fn(),
+      closePath: vi.fn(),
+      drawImage: vi.fn(),
       measureText: vi.fn((text: string) => ({
         width: hasUnicodeSupport && /[📧📞🌐📍•]/u.test(text) ? 60 : 20,
       })),
       font: '',
+      restore: vi.fn(),
+      save: vi.fn(),
     })),
+    toDataURL: vi.fn(() => {
+      const value = canvasDataUrlCallCount === 0 ? tinyPngDataUrl : tinyAltPngDataUrl;
+      canvasDataUrlCallCount += 1;
+      return value;
+    }),
   } as unknown as HTMLCanvasElement;
 }
 
@@ -279,18 +301,23 @@ async function readBlobAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
 }
 
 async function getGeneratedDocxXml(): Promise<string> {
-  const mockDownloadBlob = vi.mocked(importExportUtils.downloadBlob);
-  const blob = mockDownloadBlob.mock.calls[0]?.[0] as Blob;
-  expect(blob).toBeInstanceOf(Blob);
-  const buffer = await readBlobAsArrayBuffer(blob);
-  const zip = new PizZip(new Uint8Array(buffer));
+  const zip = await getGeneratedDocxZip();
   const file = zip.file('word/document.xml');
   expect(file).toBeTruthy();
   return file?.asText() ?? '';
 }
 
+async function getGeneratedDocxZip(): Promise<PizZip> {
+  const mockDownloadBlob = vi.mocked(importExportUtils.downloadBlob);
+  const blob = mockDownloadBlob.mock.calls[0]?.[0] as Blob;
+  expect(blob).toBeInstanceOf(Blob);
+  const buffer = await readBlobAsArrayBuffer(blob);
+  return new PizZip(new Uint8Array(buffer));
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
+  canvasDataUrlCallCount = 0;
   mockSplitTextToSize.mockImplementation((text: string) => [text]);
   document.createElement = vi.fn((tagName: string) => {
     if (tagName === 'canvas') {
@@ -299,15 +326,38 @@ beforeEach(() => {
     return originalCreateElement.call(document, tagName);
   });
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Missing image asset')));
+  vi.stubGlobal(
+    'Image',
+    class MockImage {
+      onload: null | (() => void) = null;
+      onerror: null | (() => void) = null;
+      width = 32;
+      height = 32;
+      naturalWidth = 32;
+      naturalHeight = 32;
+
+      set src(value: string) {
+        queueMicrotask(() => {
+          if (value.includes('broken-image')) {
+            this.onerror?.();
+            return;
+          }
+          this.onload?.();
+        });
+      }
+    } as unknown as typeof Image,
+  );
 });
 
 afterEach(() => {
   document.createElement = originalCreateElement;
   if (originalFetch) {
     global.fetch = originalFetch;
-  } else {
-    vi.unstubAllGlobals();
   }
+  if (originalImage) {
+    global.Image = originalImage;
+  }
+  vi.unstubAllGlobals();
 });
 
 describe('PDF export', () => {
@@ -345,6 +395,48 @@ describe('PDF export', () => {
 
     await expect(exportAsPDF(resumeWithImages, baseTheme)).resolves.not.toThrow();
     expect(mockSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('embeds supported photos and rasterizes unsupported icons before rendering', async () => {
+    const resumeWithImages: ResumeData = {
+      ...baseResumeData,
+      icon: {
+        data: tinyIcoDataUrl,
+        position: { top: 20, right: 20 },
+        size: 48,
+      },
+      photo: {
+        data: tinyJpegDataUrl,
+        position: { top: 20, right: 96 },
+        size: 72,
+      },
+    };
+
+    await exportAsPDF(resumeWithImages, baseTheme);
+
+    expect(mockAddImage).toHaveBeenCalledTimes(2);
+    const imageTypes = mockAddImage.mock.calls.map((call) => call[1]);
+    expect(imageTypes).toEqual(['PNG', 'PNG']);
+    expect(mockAddImage.mock.calls.every((call) => String(call[0]).startsWith('data:image/png;base64,'))).toBe(true);
+    expect(mockSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('measures wrapped text after applying font size and justifies the summary paragraph', async () => {
+    mockSplitTextToSize.mockImplementation((text: string) => {
+      if (text.includes('Creative designer with résumé building expertise')) {
+        return ['summary-line-1', 'summary-line-2'];
+      }
+      return [text];
+    });
+
+    await exportAsPDF(baseResumeData, baseTheme);
+
+    expect(mockSetFontSize.mock.invocationCallOrder[0]).toBeLessThan(mockSplitTextToSize.mock.invocationCallOrder[0]);
+
+    const justifiedSummaryCall = mockText.mock.calls.find((call) => call[0] === 'summary-line-1');
+    expect(justifiedSummaryCall?.[3]).toMatchObject({
+      align: 'justify',
+    });
   });
 });
 
@@ -385,9 +477,40 @@ describe('DOCX export', () => {
     const blob = mockDownloadBlob.mock.calls[0]?.[0] as Blob;
     expect(blob.size).toBeGreaterThan(0);
 
-    const buffer = await readBlobAsArrayBuffer(blob);
-    const zip = new PizZip(new Uint8Array(buffer));
+    const zip = await getGeneratedDocxZip();
     expect(zip.file('[Content_Types].xml')).toBeTruthy();
     expect(zip.file('word/document.xml')).toBeTruthy();
+  });
+
+  it('embeds icon and photo assets in the DOCX package', async () => {
+    const resumeWithImages: ResumeData = {
+      ...baseResumeData,
+      icon: {
+        data: tinyIcoDataUrl,
+        position: { top: 20, right: 20 },
+        size: 48,
+      },
+      photo: {
+        data: tinyJpegDataUrl,
+        position: { top: 20, right: 96 },
+        size: 72,
+      },
+    };
+
+    await exportAsDOCX(resumeWithImages, baseTheme);
+
+    const zip = await getGeneratedDocxZip();
+    const mediaFiles = Object.keys(zip.files).filter((name) => name.startsWith('word/media/') && !zip.files[name]?.dir);
+    expect(mediaFiles.length).toBe(2);
+    expect(mediaFiles.every((name) => name.endsWith('.png'))).toBe(true);
+
+    const documentXml = zip.file('word/document.xml')?.asText() ?? '';
+    const relationshipsXml = zip.file('word/_rels/document.xml.rels')?.asText() ?? '';
+
+    expect(documentXml).toContain('<w:drawing>');
+    expect(documentXml).toContain('<wp:anchor');
+    expect(documentXml).toContain('<wp:wrapSquare');
+    expect((relationshipsXml.match(/relationships\/image/g) ?? []).length).toBe(2);
+    expect(relationshipsXml).toContain('Target="media/');
   });
 });

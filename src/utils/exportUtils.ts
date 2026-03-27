@@ -206,23 +206,282 @@ function normalizeExportTheme(theme: Theme) {
   };
 }
 
+const DOCX_PAGE_WIDTH_TWIPS = 12240;
+const DOCX_PAGE_HEIGHT_TWIPS = 15840;
+const TWIPS_PER_PIXEL = 15;
+const EMUS_PER_PIXEL = 9525;
+const PDF_TEXT_WRAP_GAP_MM = 4;
+
+type ExportVisualKind = 'icon' | 'photo';
+
+interface PreparedExportVisual {
+  kind: ExportVisualKind;
+  dataUrl: string;
+  pdfType: 'PNG' | 'JPEG';
+  docxType: 'png' | 'jpg';
+  position: {
+    top: number;
+    right: number;
+  };
+  size: number;
+}
+
+interface PdfTopVisualLayout {
+  bottom: number;
+  left: number;
+}
+
+function getVisualLabel(kind: ExportVisualKind): string {
+  return kind === 'icon' ? 'icon' : 'photo';
+}
+
+function pixelToEmu(pixels: number): number {
+  return Math.round(pixels * EMUS_PER_PIXEL);
+}
+
+function twipsToPixels(twips: number): number {
+  return twips / TWIPS_PER_PIXEL;
+}
+
+function getDataUrlMimeType(dataUrl: string): string | null {
+  const match = dataUrl.match(/^data:([^;,]+)[;,]/i);
+  return match?.[1]?.toLowerCase() ?? null;
+}
+
+function dataUrlToUint8Array(dataUrl: string): Uint8Array {
+  const [, payload = ''] = dataUrl.split(',', 2);
+  const binary = atob(payload);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
+}
+
+async function loadImageElement(dataUrl: string): Promise<HTMLImageElement | null> {
+  if (typeof Image === 'undefined') {
+    return null;
+  }
+
+  return await new Promise<HTMLImageElement | null>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = dataUrl;
+  });
+}
+
+async function renderStyledVisualDataUrl(kind: ExportVisualKind, dataUrl: string, size: number): Promise<string | null> {
+  const image = await loadImageElement(dataUrl);
+  if (!image) {
+    return null;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(Math.round(size), 1);
+  canvas.height = Math.max(Math.round(size), 1);
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    return null;
+  }
+
+  const sourceWidth = Math.max(Math.round(image.naturalWidth || image.width || 1), 1);
+  const sourceHeight = Math.max(Math.round(image.naturalHeight || image.height || 1), 1);
+  const scale = kind === 'photo'
+    ? Math.max(canvas.width / sourceWidth, canvas.height / sourceHeight)
+    : Math.min(canvas.width / sourceWidth, canvas.height / sourceHeight);
+  const drawWidth = sourceWidth * scale;
+  const drawHeight = sourceHeight * scale;
+  const drawX = (canvas.width - drawWidth) / 2;
+  const drawY = (canvas.height - drawHeight) / 2;
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (kind === 'photo') {
+    context.save();
+    context.beginPath();
+    context.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
+    context.closePath();
+    context.clip();
+  }
+
+  context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+
+  if (kind === 'photo') {
+    context.restore();
+  }
+
+  try {
+    return canvas.toDataURL('image/png');
+  } catch {
+    return null;
+  }
+}
+
+async function normalizeExportImageDataUrl(kind: ExportVisualKind, source: string | undefined, size: number): Promise<{
+  dataUrl: string;
+  pdfType: 'PNG' | 'JPEG';
+  docxType: 'png' | 'jpg';
+} | null> {
+  const dataUrl = await resolveImageDataUrl(source);
+  if (!dataUrl) {
+    return null;
+  }
+
+  const styledDataUrl = await renderStyledVisualDataUrl(kind, dataUrl, size);
+  if (styledDataUrl) {
+    return {
+      dataUrl: styledDataUrl,
+      pdfType: 'PNG',
+      docxType: 'png',
+    };
+  }
+
+  const mimeType = getDataUrlMimeType(dataUrl);
+  if (mimeType === 'image/png') {
+    return {
+      dataUrl,
+      pdfType: 'PNG',
+      docxType: 'png',
+    };
+  }
+
+  if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
+    return {
+      dataUrl,
+      pdfType: 'JPEG',
+      docxType: 'jpg',
+    };
+  }
+
+  return null;
+}
+
+async function prepareResumeVisuals(resumeData: ResumeData): Promise<PreparedExportVisual[]> {
+  const visualEntries: Array<{
+    kind: ExportVisualKind;
+    source: string | undefined;
+    position: { top: number; right: number } | undefined;
+    size: number | undefined;
+  }> = [
+    {
+      kind: 'icon',
+      source: resumeData.icon?.data,
+      position: resumeData.icon?.position,
+      size: resumeData.icon?.size,
+    },
+    {
+      kind: 'photo',
+      source: resumeData.photo?.data,
+      position: resumeData.photo?.position,
+      size: resumeData.photo?.size,
+    },
+  ];
+
+  const preparedVisuals = await Promise.all(
+    visualEntries.map(async (entry) => {
+      if (!entry.source || !entry.position || !entry.size) {
+        return null;
+      }
+
+      const normalized = await normalizeExportImageDataUrl(entry.kind, entry.source, entry.size);
+      if (!normalized) {
+        return null;
+      }
+
+      return {
+        kind: entry.kind,
+        dataUrl: normalized.dataUrl,
+        pdfType: normalized.pdfType,
+        docxType: normalized.docxType,
+        position: entry.position,
+        size: entry.size,
+      } satisfies PreparedExportVisual;
+    }),
+  );
+
+  return preparedVisuals
+    .filter((visual): visual is PreparedExportVisual => Boolean(visual))
+    .sort((left, right) => right.position.right - left.position.right);
+}
+
 export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
   const {
     BorderStyle,
     Document,
+    HorizontalPositionRelativeFrom,
+    ImageRun,
     Packer,
     Paragraph,
+    TextWrappingType,
     TextRun,
+    VerticalPositionRelativeFrom,
   } = await import('docx');
 
   const exportTheme = normalizeExportTheme(theme);
   const exportContent = buildResumeExportContent(resumeData);
+  const preparedVisuals = await prepareResumeVisuals(resumeData);
+  const docxPageWidthPx = twipsToPixels(DOCX_PAGE_WIDTH_TWIPS);
   const baseDocxSize = Math.round(exportTheme.fontSize * 2);
   const titleDocxSize = Math.round(baseDocxSize * 1.15);
   const sectionDocxSize = Math.round(baseDocxSize * 1.2);
   const nameDocxSize = Math.round(baseDocxSize * 1.85);
 
   const children: InstanceType<typeof Paragraph>[] = [];
+
+  if (preparedVisuals.length > 0) {
+    const visualRuns = preparedVisuals.map((visual) =>
+      new ImageRun({
+        data: dataUrlToUint8Array(visual.dataUrl),
+        type: visual.docxType,
+        transformation: {
+          width: visual.size,
+          height: visual.size,
+        },
+        floating: {
+          horizontalPosition: {
+            relative: HorizontalPositionRelativeFrom.PAGE,
+            offset: pixelToEmu(Math.max(docxPageWidthPx - visual.position.right - visual.size, 0)),
+          },
+          verticalPosition: {
+            relative: VerticalPositionRelativeFrom.PAGE,
+            offset: pixelToEmu(Math.max(visual.position.top, 0)),
+          },
+          wrap: {
+            type: TextWrappingType.SQUARE,
+          },
+          margins: {
+            top: pixelToEmu(4),
+            right: pixelToEmu(4),
+            bottom: pixelToEmu(4),
+            left: pixelToEmu(4),
+          },
+          allowOverlap: true,
+          behindDocument: false,
+          layoutInCell: true,
+        },
+        altText: {
+          title: `Resume ${getVisualLabel(visual.kind)}`,
+          description: `Resume ${getVisualLabel(visual.kind)}`,
+        },
+      }),
+    );
+
+    children.push(
+      new Paragraph({
+        spacing: { after: 0 },
+        children: [
+          ...visualRuns,
+          new TextRun({
+            text: '',
+          }),
+        ],
+      }),
+    );
+  }
 
   if (exportContent.header) {
     children.push(
@@ -461,6 +720,10 @@ export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
       {
         properties: {
           page: {
+            size: {
+              width: DOCX_PAGE_WIDTH_TWIPS,
+              height: DOCX_PAGE_HEIGHT_TWIPS,
+            },
             margin: {
               top: 1440,
               right: 1440,
@@ -866,13 +1129,6 @@ async function resolveImageDataUrl(source: string | undefined): Promise<string |
   }
 }
 
-function inferJsPdfImageType(source?: string, dataUrl?: string): 'PNG' | 'JPEG' {
-  const normalizedSource = (source || '').toLowerCase();
-  if (normalizedSource.endsWith('.jpg') || normalizedSource.endsWith('.jpeg')) return 'JPEG';
-  if (dataUrl?.startsWith('data:image/jpeg')) return 'JPEG';
-  return 'PNG';
-}
-
 function getPdfLineHeight(fontSize: number, lineHeightMultiplier: number): number {
   return Math.max(4.5, fontSize * lineHeightMultiplier * 0.352778);
 }
@@ -880,43 +1136,33 @@ function getPdfLineHeight(fontSize: number, lineHeightMultiplier: number): numbe
 async function renderPdfTopVisuals(pdf: {
   internal: { pageSize: { getWidth: () => number } };
   addImage: (...args: unknown[]) => void;
-}, resumeData: ResumeData): Promise<number> {
+}, resumeData: ResumeData): Promise<PdfTopVisualLayout> {
   const pxToMm = (pixels: number) => pixels * 0.264583;
   let bottom = 0;
-
-  const renderVisual = async (
-    source: string | undefined,
-    position: { top: number; right: number } | undefined,
-    size: number | undefined,
-  ) => {
-    if (!source || !position || !size) {
-      return;
-    }
-
-    const dataUrl = await resolveImageDataUrl(source);
-    if (!dataUrl) {
-      return;
-    }
-
-    const imageType = inferJsPdfImageType(source, dataUrl);
-    const sizeMm = pxToMm(size);
-    const topMm = pxToMm(position.top || 20);
-    const rightMm = pxToMm(position.right || 20);
-    const x = pdf.internal.pageSize.getWidth() - rightMm - sizeMm;
-    const y = topMm;
-
-    pdf.addImage(dataUrl, imageType, x, y, sizeMm, sizeMm);
-    bottom = Math.max(bottom, y + sizeMm);
-  };
+  let left = pdf.internal.pageSize.getWidth();
 
   try {
-    await renderVisual(resumeData.icon?.data, resumeData.icon?.position, resumeData.icon?.size);
-    await renderVisual(resumeData.photo?.data, resumeData.photo?.position, resumeData.photo?.size);
+    const preparedVisuals = await prepareResumeVisuals(resumeData);
+
+    preparedVisuals.forEach((visual) => {
+      const sizeMm = pxToMm(visual.size);
+      const topMm = pxToMm(visual.position.top || 20);
+      const rightMm = pxToMm(visual.position.right || 20);
+      const x = pdf.internal.pageSize.getWidth() - rightMm - sizeMm;
+      const y = topMm;
+
+      pdf.addImage(visual.dataUrl, visual.pdfType, x, y, sizeMm, sizeMm);
+      bottom = Math.max(bottom, y + sizeMm);
+      left = Math.min(left, x);
+    });
   } catch (error) {
     console.warn('PDF export: failed to render optional images.', error);
   }
 
-  return bottom;
+  return {
+    bottom,
+    left,
+  };
 }
 
 export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
@@ -936,6 +1182,10 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   const primaryColor = `#${exportTheme.primary}`;
   const borderColor = `#${exportTheme.border}`;
   let yPosition = margin;
+  const topVisualLayout = await renderPdfTopVisuals(pdf as unknown as {
+    internal: { pageSize: { getWidth: () => number } };
+    addImage: (...args: unknown[]) => void;
+  }, resumeData);
 
   const prepareText = (text: string): string => {
     if (!hasUnicodeSupport && containsUnicodeSymbols(text)) {
@@ -960,6 +1210,8 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
       indent?: number;
       width?: number;
       spacingAfter?: number;
+      ignoreTopVisualWrap?: boolean;
+      align?: 'left' | 'justify';
     },
   ) => {
     if (!text?.trim()) {
@@ -968,19 +1220,28 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
 
     const fontSize = options?.fontSize ?? 11;
     const indent = options?.indent ?? margin;
-    const width = options?.width ?? pageWidth - indent - margin;
+    const preferredWidth = options?.width ?? pageWidth - indent - margin;
+    const width = !options?.ignoreTopVisualWrap && topVisualLayout.bottom > 0 && yPosition < topVisualLayout.bottom
+      ? Math.max(30, Math.min(preferredWidth, topVisualLayout.left - PDF_TEXT_WRAP_GAP_MM - indent))
+      : preferredWidth;
     const spacingAfter = options?.spacingAfter ?? 1;
     const processedText = prepareText(text);
-    const lineHeight = getPdfLineHeight(fontSize, exportTheme.lineHeight);
-    const lines = pdf.splitTextToSize(processedText, width);
 
     pdf.setFont('helvetica', options?.bold ? 'bold' : 'normal');
     pdf.setFontSize(fontSize);
     pdf.setTextColor(options?.color ?? textColor);
 
+    const lineHeight = getPdfLineHeight(fontSize, exportTheme.lineHeight);
+    const lines = pdf.splitTextToSize(processedText, width);
+
     lines.forEach((line: string) => {
       ensureSpace(lineHeight);
-      pdf.text(line, indent, yPosition);
+      const shouldJustify = options?.align === 'justify' && lines.length > 1 && line !== lines[lines.length - 1];
+      if (shouldJustify) {
+        pdf.text(line, indent, yPosition, { align: 'justify', maxWidth: width });
+      } else {
+        pdf.text(line, indent, yPosition);
+      }
       yPosition += lineHeight;
     });
 
@@ -1066,14 +1327,6 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
     yPosition += 2;
   };
 
-  const topVisualBottom = await renderPdfTopVisuals(pdf as unknown as {
-    internal: { pageSize: { getWidth: () => number } };
-    addImage: (...args: unknown[]) => void;
-  }, resumeData);
-  if (topVisualBottom > 0) {
-    yPosition = Math.max(yPosition, topVisualBottom + 6);
-  }
-
   if (!hasUnicodeSupport) {
     console.info('PDF Export: Using ASCII fallback mode. Some Unicode characters will be converted to text equivalents.');
   }
@@ -1102,8 +1355,18 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
 
     if (exportContent.header.summary) {
       addSectionHeader('Summary');
-      addWrappedText(exportContent.header.summary, { fontSize: 11, color: textColor, spacingAfter: 3 });
+      addWrappedText(exportContent.header.summary, {
+        fontSize: 10.5,
+        color: textColor,
+        spacingAfter: 3,
+        ignoreTopVisualWrap: true,
+        align: 'justify',
+      });
     }
+  }
+
+  if (topVisualLayout.bottom > 0) {
+    yPosition = Math.max(yPosition, topVisualLayout.bottom + 4);
   }
 
   exportContent.sections.forEach((section) => {
