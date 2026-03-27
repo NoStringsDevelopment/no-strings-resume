@@ -1,8 +1,7 @@
-import { ResumeData } from '@/types/resume';
+import { ResumeData, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 import { 
   ExtendedResumeData, 
   Extensions,
-  getDefaultExtensions,
   validateExtendedResumeData,
   isExtendedResumeFormat,
   ItemVisibility,
@@ -203,6 +202,12 @@ export function convertToExtendedFormat(resumeData: ResumeData): ExtendedResumeD
     
     visibility: {
       sections: { ...resumeData.sectionVisibility },
+      fields: {
+        basics: {
+          ...DEFAULT_BASICS_VISIBILITY,
+          ...resumeData.basicsVisibility
+        }
+      },
       items: itemVisibility,
       subItems: subItemVisibility
     },
@@ -217,6 +222,11 @@ export function convertToExtendedFormat(resumeData: ResumeData): ExtendedResumeD
     },
     
     nonConforming: resumeData.nonConformingData,
+
+    summaries: resumeData.summaries,
+    activeSummaryId: resumeData.activeSummaryId,
+    icon: resumeData.icon,
+    photo: resumeData.photo,
     
     app: {
       lastSaved: now,
@@ -270,54 +280,59 @@ export function convertFromExtendedFormat(extendedData: ExtendedResumeData): Res
     
          work: extendedData.work.map((work, workIndex) => ({
        ...work,
-       highlights: work.highlights.map((highlight, hIndex) => ({
-         content: typeof highlight === 'string' ? highlight : highlight,
-         visible: getSubItemVisibility('work', workIndex, 'highlights', hIndex)
-       })) as (string | { content: string; visible?: boolean })[],
+       highlights: work.highlights.map((highlight, hIndex) => {
+         const isVisible = getSubItemVisibility('work', workIndex, 'highlights', hIndex);
+         // Extended format stores as strings, return based on visibility
+         if (isVisible) {
+           return highlight; // Keep as string when visible
+         } else {
+           return { content: highlight, visible: false }; // Convert to object when hidden
+         }
+       }),
        visible: getItemVisibility('work', workIndex)
      })),
      
      volunteer: extendedData.volunteer.map((volunteer, volIndex) => ({
        ...volunteer,
-       highlights: volunteer.highlights.map((highlight, hIndex) => ({
-         content: typeof highlight === 'string' ? highlight : highlight,
-         visible: getSubItemVisibility('volunteer', volIndex, 'highlights', hIndex)
-       })) as (string | { content: string; visible?: boolean })[],
+       highlights: volunteer.highlights.map((highlight, hIndex) => {
+         const isVisible = getSubItemVisibility('volunteer', volIndex, 'highlights', hIndex);
+         return isVisible ? highlight : { content: highlight, visible: false };
+       }),
        visible: getItemVisibility('volunteer', volIndex)
      })),
      
      education: extendedData.education.map((edu, eduIndex) => ({
        ...edu,
-       courses: edu.courses.map((course, cIndex) => ({
-         name: typeof course === 'string' ? course : course,
-         visible: getSubItemVisibility('education', eduIndex, 'courses', cIndex)
-       })) as (string | { name: string; visible?: boolean })[],
+       courses: edu.courses.map((course, cIndex) => {
+         const isVisible = getSubItemVisibility('education', eduIndex, 'courses', cIndex);
+         return isVisible ? course : { name: course, visible: false };
+       }),
        visible: getItemVisibility('education', eduIndex)
      })),
      
      skills: extendedData.skills.map((skill, skillIndex) => ({
        ...skill,
-       keywords: skill.keywords.map((keyword, kIndex) => ({
-         name: typeof keyword === 'string' ? keyword : keyword,
-         visible: getSubItemVisibility('skills', skillIndex, 'keywords', kIndex)
-       })) as (string | { name: string; visible?: boolean })[],
+       keywords: skill.keywords.map((keyword, kIndex) => {
+         const isVisible = getSubItemVisibility('skills', skillIndex, 'keywords', kIndex);
+         return isVisible ? keyword : { name: keyword, visible: false };
+       }),
        visible: getItemVisibility('skills', skillIndex)
      })),
      
      projects: extendedData.projects.map((project, projIndex) => ({
        ...project,
-       highlights: project.highlights.map((highlight, hIndex) => ({
-         content: typeof highlight === 'string' ? highlight : highlight,
-         visible: getSubItemVisibility('projects', projIndex, 'highlights', hIndex)
-       })) as (string | { content: string; visible?: boolean })[],
-       keywords: project.keywords.map((keyword, kIndex) => ({
-         name: typeof keyword === 'string' ? keyword : keyword,
-         visible: getSubItemVisibility('projects', projIndex, 'keywords', kIndex)
-       })) as (string | { name: string; visible?: boolean })[],
-       roles: project.roles.map((role, rIndex) => ({
-         name: typeof role === 'string' ? role : role,
-         visible: getSubItemVisibility('projects', projIndex, 'roles', rIndex)
-       })) as (string | { name: string; visible?: boolean })[],
+       highlights: project.highlights.map((highlight, hIndex) => {
+         const isVisible = getSubItemVisibility('projects', projIndex, 'highlights', hIndex);
+         return isVisible ? highlight : { content: highlight, visible: false };
+       }),
+       keywords: project.keywords.map((keyword, kIndex) => {
+         const isVisible = getSubItemVisibility('projects', projIndex, 'keywords', kIndex);
+         return isVisible ? keyword : { name: keyword, visible: false };
+       }),
+       roles: project.roles.map((role, rIndex) => {
+         const isVisible = getSubItemVisibility('projects', projIndex, 'roles', rIndex);
+         return isVisible ? role : { name: role, visible: false };
+       }),
        visible: getItemVisibility('projects', projIndex)
      })),
     
@@ -343,10 +358,10 @@ export function convertFromExtendedFormat(extendedData: ExtendedResumeData): Res
     
          interests: extendedData.interests.map((interest, interestIndex) => ({
        ...interest,
-       keywords: interest.keywords.map((keyword, kIndex) => ({
-         name: typeof keyword === 'string' ? keyword : keyword,
-         visible: getSubItemVisibility('interests', interestIndex, 'keywords', kIndex)
-       })) as (string | { name: string; visible?: boolean })[],
+       keywords: interest.keywords.map((keyword, kIndex) => {
+         const isVisible = getSubItemVisibility('interests', interestIndex, 'keywords', kIndex);
+         return isVisible ? keyword : { name: keyword, visible: false };
+       }),
        visible: getItemVisibility('interests', interestIndex)
      })),
     
@@ -357,7 +372,15 @@ export function convertFromExtendedFormat(extendedData: ExtendedResumeData): Res
     
     meta: extendedData.meta,
     sectionVisibility: { ...visibility.sections },
-    nonConformingData: extensions.nonConforming
+    basicsVisibility: {
+      ...DEFAULT_BASICS_VISIBILITY,
+      ...(visibility.fields?.basics || {})
+    },
+    nonConformingData: extensions.nonConforming,
+    summaries: extensions.summaries,
+    activeSummaryId: extensions.activeSummaryId,
+    icon: extensions.icon,
+    photo: extensions.photo
   };
 }
 
@@ -368,7 +391,7 @@ export function exportAsBackup(resumeData: ResumeData) {
   const extendedData = convertToExtendedFormat(resumeData);
   const jsonContent = JSON.stringify(extendedData, null, 2);
   const filename = generateExportFilename(resumeData, 'json', 'backup', true);
-  downloadFile(jsonContent, filename, 'application/json');
+  downloadFile(jsonContent, filename, 'application/json;charset=utf-8');
 }
 
 /**

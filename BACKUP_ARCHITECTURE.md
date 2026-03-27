@@ -35,7 +35,7 @@ This document describes the backup/restore functionality architecture that prese
   
   // App extensions (separate namespace)
   "$extensions": {
-    "$schemaVersion": "1.0.0",
+    "$schemaVersion": "1.2.0",
     "$extendedSchema": "https://github.com/user/repo/schemas/extended-resume-v1.json",
     
     "visibility": {
@@ -62,6 +62,10 @@ This document describes the backup/restore functionality architecture that prese
     },
     
     "nonConforming": { ... },  // Import validation issues
+    "summaries": [ ... ],      // Named summaries
+    "activeSummaryId": "...",  // Active summary
+    "icon": { ... },           // Uploaded logo/icon
+    "photo": { ... },          // Uploaded photo
     "app": { ... }             // App metadata
   }
 }

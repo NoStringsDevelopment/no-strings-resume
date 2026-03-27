@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Eye, EyeOff, Upload, X } from "lucide-react";
 import { SummarySelector } from "./SummarySelector";
 import { useRef } from "react";
+import { BasicsFieldVisibility, DEFAULT_BASICS_VISIBILITY } from "@/types/resume";
 
 export default function BasicEditor() {
   const { state, dispatch } = useResume();
   const { basics } = state.resumeData;
+  const basicsVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...state.resumeData.basicsVisibility };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,6 +57,13 @@ export default function BasicEditor() {
     dispatch({ 
       type: 'UPDATE_BASICS', 
       payload: { profiles: updatedProfiles } 
+    });
+  };
+
+  const toggleBasicsFieldVisibility = (field: keyof BasicsFieldVisibility) => {
+    dispatch({
+      type: 'UPDATE_BASICS_VISIBILITY',
+      payload: { [field]: !basicsVisibility[field] }
     });
   };
 
@@ -289,6 +298,37 @@ export default function BasicEditor() {
             <p className="text-sm text-gray-500 mt-2">
               Upload a personal photo. Position and size can be configured in theme settings. Defaults to left of the icon.
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card data-testid="basics-field-visibility-card">
+        <CardHeader>
+          <CardTitle>Basics Field Visibility</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {([
+              ['label', 'Label'],
+              ['email', 'Email'],
+              ['phone', 'Phone'],
+              ['url', 'Website'],
+              ['location', 'Location'],
+              ['summary', 'Summary'],
+            ] as Array<[keyof BasicsFieldVisibility, string]>).map(([field, label]) => (
+              <div key={field} className="flex items-center justify-between rounded-md border px-3 py-2">
+                <span className="text-sm font-medium">{label}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleBasicsFieldVisibility(field)}
+                  className="p-1"
+                  data-testid={`basics-field-${field}-visibility-toggle`}
+                >
+                  {basicsVisibility[field] ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </Button>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

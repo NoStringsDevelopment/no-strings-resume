@@ -152,7 +152,7 @@ test.describe('Backup Functionality', () => {
     expect(backup).toHaveProperty('basics');
     expect(backup).toHaveProperty('work');
     expect(backup).toHaveProperty('$extensions');
-    expect(backup.$extensions.$schemaVersion).toBe('1.1.0');
+    expect(backup.$extensions.$schemaVersion).toBe('1.2.0');
     expect(backup.$extensions.backup.format).toBe('extended');
     
     // Clean up

@@ -168,7 +168,7 @@ const ResumeEditor = () => {
         });
       }
     };
-    reader.readAsText(file);
+    reader.readAsText(file, 'utf-8');
   };
 
   const handleBackup = () => {

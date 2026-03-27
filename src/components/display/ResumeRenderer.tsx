@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ResumeData, Theme } from '@/types/resume';
+import { ResumeData, Theme, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 import { ResumeHeader } from './ResumeHeader';
 import { WorkSection } from './WorkSection';
 import { EducationSection } from './EducationSection';
@@ -57,6 +57,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
     },
     profiles: []
   };
+  const basicsVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...resumeData.basicsVisibility };
 
   // Ensure arrays exist
   const work = resumeData.work || [];
@@ -134,7 +135,7 @@ export const ResumeRenderer: React.FC<ResumeRendererProps> = ({
           />
         )}
         
-        <ResumeHeader basics={basics} isVisible={sectionVisibility.basics} />
+        <ResumeHeader basics={basics} basicsVisibility={basicsVisibility} isVisible={sectionVisibility.basics} />
 
         <div className="p-8" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-section)' }}>
           <WorkSection work={work} isVisible={sectionVisibility.work} />

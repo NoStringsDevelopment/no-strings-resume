@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useEffect, ReactNode, useContext } from 'react';
-import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings, BasicsFieldVisibility } from '@/types/resume';
 import { getDefaultResumeData } from '@/utils/defaultData';
-import { normalizeResumeData, normalizeStoredData } from '@/utils/dataHelpers';
+import { normalizeResumeData as baseNormalizeResumeData, normalizeStoredData } from '@/utils/dataHelpers';
 import { deduplicateSummaries } from '@/utils/dataHelpers';
 
 interface ResumeState {
@@ -74,6 +74,7 @@ type ResumeAction =
   | { type: 'REMOVE_AWARD'; payload: number }
   // Section visibility actions
   | { type: 'UPDATE_SECTION_VISIBILITY'; payload: Partial<SectionVisibility> }
+  | { type: 'UPDATE_BASICS_VISIBILITY'; payload: Partial<BasicsFieldVisibility> }
   // Icon actions
   | { type: 'UPDATE_ICON'; payload: IconSettings | undefined }
   // Photo actions
@@ -92,6 +93,12 @@ const addToHistory = (state: ResumeState, newResumeData: ResumeData) => {
     historyIndex: newHistory.length - 1,
   };
 };
+
+const normalizeResumeData = (data: unknown) =>
+  baseNormalizeResumeData(data, { preserveDraftItems: true });
+
+const normalizeLoadedResumeData = (data: unknown) =>
+  baseNormalizeResumeData(data);
 
 const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState => {
   switch (action.type) {
@@ -183,7 +190,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'UPDATE_RESUME':
     case 'SET_RESUME_DATA': {
       // Normalize data before storing
-      const normalizedData = normalizeResumeData(action.payload);
+      const normalizedData = normalizeLoadedResumeData(action.payload);
       const historyUpdate = addToHistory(state, normalizedData);
       return {
         ...state,
@@ -193,7 +200,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     }
     case 'LOAD_RESUME': {
       // Normalize data before loading
-      const normalizedData = normalizeResumeData(action.payload);
+      const normalizedData = normalizeLoadedResumeData(action.payload);
       return {
         ...state,
         resumeData: normalizedData,
@@ -764,6 +771,19 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
         ...historyUpdate
       };
     }
+    case 'UPDATE_BASICS_VISIBILITY': {
+      const updatedData = {
+        ...state.resumeData,
+        basicsVisibility: { ...state.resumeData.basicsVisibility, ...action.payload }
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
     case 'UNDO': {
       if (state.currentHistoryIndex <= 0) return state;
       const newIndex = state.currentHistoryIndex - 1;
@@ -837,10 +857,10 @@ export const ResumeProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         // If no localStorage data or it was invalid, try to load resume.json
         try {
-          const response = await fetch('/resume.json');
+            const response = await fetch('/resume.json');
           if (response.ok) {
             const defaultData = await response.json();
-            const normalizedData = normalizeResumeData(defaultData);
+            const normalizedData = normalizeLoadedResumeData(defaultData);
             dispatch({ type: 'LOAD_RESUME', payload: normalizedData });
             dispatch({ type: 'SET_LOADING', payload: false });
             return;

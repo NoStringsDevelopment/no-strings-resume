@@ -10,65 +10,65 @@ import { ResumeRenderer } from "@/components/display/ResumeRenderer";
 import { exportAsJsonResume, exportAsHROpen, exportAsHTML, exportAsPDF, exportAsDOCX } from "@/utils/exportUtils";
 import { useToast } from "@/hooks/use-toast";
 
+type ExportFormat = 'json' | 'hropen' | 'html' | 'pdf' | 'docx';
+
+const EXPORT_SUCCESS_MESSAGES: Record<ExportFormat, string> = {
+  json: 'Resume exported as JSON Resume format',
+  hropen: 'Resume exported as HR-Open format',
+  html: 'Resume exported as HTML',
+  pdf: 'Resume exported as PDF',
+  docx: 'Resume exported as DOCX',
+};
+
+const EXPORT_ERROR_MESSAGES: Record<ExportFormat, string> = {
+  json: 'Failed to export JSON Resume. Please try again.',
+  hropen: 'Failed to export HR-Open JSON. Please try again.',
+  html: 'Failed to export HTML. Please try again.',
+  pdf: 'Failed to export PDF. Please try again or use DOCX/HTML as a fallback.',
+  docx: 'Failed to export DOCX. Please try again or use PDF/HTML as a fallback.',
+};
+
 const ResumeView = () => {
   const navigate = useNavigate();
   const context = useContext(ResumeContext);
   if (!context) {
     throw new Error('ResumeView must be used within a ResumeProvider');
   }
-  const { state, dispatch } = context;
+  const { state } = context;
   const { themeState } = useTheme();
   const { toast } = useToast();
 
-  const handleExport = async (format: string) => {
+  const handleExport = async (format: ExportFormat) => {
     try {
       switch (format) {
         case 'json':
           exportAsJsonResume(state.resumeData);
-          toast({
-            title: "Success",
-            description: "Resume exported as JSON Resume format"
-          });
           break;
         case 'hropen':
           exportAsHROpen(state.resumeData);
-          toast({
-            title: "Success",
-            description: "Resume exported as HR-Open format"
-          });
           break;
         case 'html':
           exportAsHTML(state.resumeData, themeState.currentTheme);
-          toast({
-            title: "Success",
-            description: "Resume exported as HTML"
-          });
           break;
         case 'pdf':
           await exportAsPDF(state.resumeData, themeState.currentTheme);
-          toast({
-            title: "Success",
-            description: "Resume exported as PDF"
-          });
           break;
         case 'docx':
           await exportAsDOCX(state.resumeData, themeState.currentTheme);
-          toast({
-            title: "Success",
-            description: "Resume exported as DOCX"
-          });
           break;
         default:
-          toast({
-            title: "Error",
-            description: "Export format not supported"
-          });
+          return;
       }
+
+      toast({
+        title: "Success",
+        description: EXPORT_SUCCESS_MESSAGES[format]
+      });
     } catch (error) {
       console.error('Export error:', error);
       toast({
         title: "Error",
-        description: "Failed to export resume"
+        description: EXPORT_ERROR_MESSAGES[format]
       });
     }
   };

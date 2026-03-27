@@ -7,18 +7,21 @@ import ResumeView from './ResumeView';
 import { ResumeProvider } from '@/context/ResumeContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 
+const toastSpy = vi.fn();
+
 // Mock the export utilities
 vi.mock('@/utils/exportUtils', () => ({
   exportAsJsonResume: vi.fn(),
   exportAsHROpen: vi.fn(),
   exportAsHTML: vi.fn(),
   exportAsPDF: vi.fn().mockResolvedValue(undefined),
+  exportAsDOCX: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock the toast hook
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast: toastSpy,
   }),
 }));
 
@@ -120,6 +123,27 @@ describe('ResumeView', () => {
     expect(exportAsPDF).toHaveBeenCalled();
   });
 
+  it('calls DOCX export when DOCX export is selected', async () => {
+    const { exportAsDOCX } = await import('@/utils/exportUtils');
+    const user = userEvent.setup();
+    renderResumeView();
+
+    await act(async () => {
+      await user.click(screen.getByTestId('view-export-button'));
+    });
+
+    await waitFor(async () => {
+      const docxButton = screen.getByTestId('export-docx-button');
+      expect(docxButton).toBeInTheDocument();
+
+      await act(async () => {
+        await user.click(docxButton);
+      });
+    });
+
+    expect(exportAsDOCX).toHaveBeenCalled();
+  });
+
   it('calls JSON export when JSON export button is activated via keyboard', async () => {
     const { exportAsJsonResume } = await import('@/utils/exportUtils');
     const user = userEvent.setup();
@@ -174,6 +198,34 @@ describe('ResumeView', () => {
 
     // Verify the export function was called
     expect(exportAsPDF).toHaveBeenCalled();
+  });
+
+  it('shows an error toast when export fails', async () => {
+    const exportUtils = await import('@/utils/exportUtils');
+    vi.mocked(exportUtils.exportAsPDF).mockRejectedValueOnce(new Error('PDF export failed'));
+
+    const user = userEvent.setup();
+    renderResumeView();
+
+    await act(async () => {
+      await user.click(screen.getByTestId('view-export-button'));
+    });
+
+    await waitFor(async () => {
+      const pdfButton = screen.getByTestId('export-pdf-button');
+      expect(pdfButton).toBeInTheDocument();
+
+      await act(async () => {
+        await user.click(pdfButton);
+      });
+    });
+
+    expect(toastSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Error',
+        description: 'Failed to export PDF. Please try again or use DOCX/HTML as a fallback.',
+      }),
+    );
   });
 
   it('displays resume content', () => {
