@@ -61,6 +61,21 @@ describe('arrayHelpers', () => {
       ]);
     });
 
+    it('should preserve editor placeholders when requested', () => {
+      const input = [
+        { content: '', visible: true },
+        { name: 'Valid keyword', visible: true },
+        { visible: true }
+      ];
+
+      const result = cleanArray(input, { preservePlaceholders: true });
+
+      expect(result).toEqual([
+        { content: '', visible: true },
+        { name: 'Valid keyword', visible: true }
+      ]);
+    });
+
     it('should handle null and undefined', () => {
       const input = ['valid', null, undefined, 'another'];
       const result = cleanArray(input);
@@ -130,7 +145,11 @@ describe('arrayHelpers', () => {
 
     it('should return null for highlight objects with empty content', () => {
       expect(sanitizeArrayItem({ content: '' })).toBeNull();
-      expect(sanitizeArrayItem({ content: '  ', visible: true })).toBeNull();
+    });
+
+    it('should preserve editor placeholder objects when requested', () => {
+      expect(sanitizeArrayItem({ name: '', visible: true }, { preservePlaceholders: true })).toEqual({ name: '', visible: true });
+      expect(sanitizeArrayItem({ content: '  ', visible: true }, { preservePlaceholders: true })).toEqual({ content: '  ', visible: true });
     });
 
     it('should return object for valid objects', () => {

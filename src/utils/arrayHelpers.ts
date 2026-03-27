@@ -10,6 +10,20 @@ type TextObject = {
   visible?: boolean;
 };
 
+type CleanArrayOptions = {
+  preservePlaceholders?: boolean;
+};
+
+function isEditorPlaceholder(item: TextObject): boolean {
+  return (
+    Object.prototype.hasOwnProperty.call(item, 'visible') &&
+    (
+      Object.prototype.hasOwnProperty.call(item, 'content') ||
+      Object.prototype.hasOwnProperty.call(item, 'name')
+    )
+  );
+}
+
 function getObjectTextValue(item: TextObject): string | null {
   if (typeof item.content === 'string') {
     return item.content.trim();
@@ -26,7 +40,8 @@ function getObjectTextValue(item: TextObject): string | null {
  * Filters out empty strings and empty objects from an array of strings or objects
  */
 export function cleanArray<T extends string | TextObject>(
-  items: T[] | undefined
+  items: T[] | undefined,
+  options: CleanArrayOptions = {}
 ): T[] {
   if (!items || !Array.isArray(items)) {
     return [];
@@ -47,8 +62,13 @@ export function cleanArray<T extends string | TextObject>(
       const keys = Object.keys(item);
       if (keys.length === 0) return false;
 
+      // Preserve editor-created placeholders so users can add a blank sub-item
+      // and then type into it without normalization removing it immediately.
+      if (options.preservePlaceholders && isEditorPlaceholder(item as TextObject)) {
+        return true;
+      }
+
       // These list items are expected to render from either `content` or `name`.
-      // Keep only objects with a non-empty display value.
       return (getObjectTextValue(item as TextObject)?.length ?? 0) > 0;
     }
     
@@ -59,36 +79,49 @@ export function cleanArray<T extends string | TextObject>(
 /**
  * Clean highlights array - removes empty strings and invalid objects
  */
-export function cleanHighlights(highlights: (string | Highlight)[] | undefined): (string | Highlight)[] {
-  return cleanArray(highlights);
+export function cleanHighlights(
+  highlights: (string | Highlight)[] | undefined,
+  options: CleanArrayOptions = {}
+): (string | Highlight)[] {
+  return cleanArray(highlights, options);
 }
 
 /**
  * Clean keywords array - removes empty strings and invalid objects
  */
-export function cleanKeywords(keywords: (string | Keyword)[] | undefined): (string | Keyword)[] {
-  return cleanArray(keywords);
+export function cleanKeywords(
+  keywords: (string | Keyword)[] | undefined,
+  options: CleanArrayOptions = {}
+): (string | Keyword)[] {
+  return cleanArray(keywords, options);
 }
 
 /**
  * Clean courses array - removes empty strings and invalid objects
  */
-export function cleanCourses(courses: (string | Course)[] | undefined): (string | Course)[] {
-  return cleanArray(courses);
+export function cleanCourses(
+  courses: (string | Course)[] | undefined,
+  options: CleanArrayOptions = {}
+): (string | Course)[] {
+  return cleanArray(courses, options);
 }
 
 /**
  * Clean roles array - removes empty strings and invalid objects
  */
-export function cleanRoles(roles: (string | Role)[] | undefined): (string | Role)[] {
-  return cleanArray(roles);
+export function cleanRoles(
+  roles: (string | Role)[] | undefined,
+  options: CleanArrayOptions = {}
+): (string | Role)[] {
+  return cleanArray(roles, options);
 }
 
 /**
  * Converts any problematic data (empty strings, empty objects) to proper format
  */
 export function sanitizeArrayItem<T extends string | TextObject>(
-  item: unknown
+  item: unknown,
+  options: CleanArrayOptions = {}
 ): T | null {
   // Handle null/undefined
   if (item == null) return null;
@@ -104,6 +137,10 @@ export function sanitizeArrayItem<T extends string | TextObject>(
     // Check for empty object
     const keys = Object.keys(item);
     if (keys.length === 0) return null;
+
+    if (options.preservePlaceholders && isEditorPlaceholder(item as TextObject)) {
+      return item as T;
+    }
 
     if ((getObjectTextValue(item as TextObject)?.length ?? 0) === 0) {
       return null;

@@ -1,6 +1,10 @@
 import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary } from '@/types/resume';
 import { cleanHighlights, cleanKeywords, cleanCourses, cleanRoles } from './arrayHelpers';
 
+type NormalizeResumeOptions = {
+  preserveDraftItems?: boolean;
+};
+
 /**
  * Default section visibility configuration
  */
@@ -22,29 +26,40 @@ const DEFAULT_SECTION_VISIBILITY: SectionVisibility = {
 /**
  * Ensures all array items have a 'visible' property, defaults to true if missing
  */
-function ensureItemsHaveVisibility<T extends { visible?: boolean }>(items: T[]): T[] {
+function ensureItemsHaveVisibility<T extends { visible?: boolean }>(
+  items: T[],
+  options: NormalizeResumeOptions = {}
+): T[] {
   return items.map(item => {
     // Clean up nested arrays if they exist
     const cleaned = { ...item } as Record<string, unknown>;
     
     // Clean highlights array if present
     if ('highlights' in cleaned && Array.isArray(cleaned.highlights)) {
-      cleaned.highlights = cleanHighlights(cleaned.highlights);
+      cleaned.highlights = cleanHighlights(cleaned.highlights, {
+        preservePlaceholders: options.preserveDraftItems,
+      });
     }
     
     // Clean keywords array if present
     if ('keywords' in cleaned && Array.isArray(cleaned.keywords)) {
-      cleaned.keywords = cleanKeywords(cleaned.keywords);
+      cleaned.keywords = cleanKeywords(cleaned.keywords, {
+        preservePlaceholders: options.preserveDraftItems,
+      });
     }
     
     // Clean courses array if present
     if ('courses' in cleaned && Array.isArray(cleaned.courses)) {
-      cleaned.courses = cleanCourses(cleaned.courses);
+      cleaned.courses = cleanCourses(cleaned.courses, {
+        preservePlaceholders: options.preserveDraftItems,
+      });
     }
     
     // Clean roles array if present
     if ('roles' in cleaned && Array.isArray(cleaned.roles)) {
-      cleaned.roles = cleanRoles(cleaned.roles);
+      cleaned.roles = cleanRoles(cleaned.roles, {
+        preservePlaceholders: options.preserveDraftItems,
+      });
     }
     
     return {
@@ -155,7 +170,7 @@ function ensureBasicsExist(data: UnknownRecord): ResumeData {
  * Normalizes resume data to ensure all required properties exist and are properly typed
  * This is the central function that should be called whenever data is loaded from any source
  */
-export function normalizeResumeData(data: unknown): ResumeData {
+export function normalizeResumeData(data: unknown, options: NormalizeResumeOptions = {}): ResumeData {
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid resume data: expected object');
   }
@@ -170,23 +185,27 @@ export function normalizeResumeData(data: unknown): ResumeData {
   // Normalize all arrays to ensure visibility properties
   const normalizedData: ResumeData = {
     ...(normalized as object as ResumeData),
-    work: ensureItemsHaveVisibility(normalized.work) as WorkExperience[],
-    education: ensureItemsHaveVisibility(normalized.education) as Education[],
-    skills: ensureItemsHaveVisibility(normalized.skills).map(skill => ({
+    work: ensureItemsHaveVisibility(normalized.work, options) as WorkExperience[],
+    education: ensureItemsHaveVisibility(normalized.education, options) as Education[],
+    skills: ensureItemsHaveVisibility(normalized.skills, options).map(skill => ({
       ...skill,
-      keywords: cleanKeywords(skill.keywords)
+      keywords: cleanKeywords(skill.keywords, {
+        preservePlaceholders: options.preserveDraftItems,
+      })
     })) as Skill[],
-    projects: ensureItemsHaveVisibility(normalized.projects) as Project[],
-    awards: ensureItemsHaveVisibility(normalized.awards) as Award[],
-    certificates: ensureItemsHaveVisibility(normalized.certificates) as Certificate[],
-    publications: ensureItemsHaveVisibility(normalized.publications) as Publication[],
-    languages: ensureItemsHaveVisibility(normalized.languages) as Language[],
-    interests: ensureItemsHaveVisibility(normalized.interests).map(interest => ({
+    projects: ensureItemsHaveVisibility(normalized.projects, options) as Project[],
+    awards: ensureItemsHaveVisibility(normalized.awards, options) as Award[],
+    certificates: ensureItemsHaveVisibility(normalized.certificates, options) as Certificate[],
+    publications: ensureItemsHaveVisibility(normalized.publications, options) as Publication[],
+    languages: ensureItemsHaveVisibility(normalized.languages, options) as Language[],
+    interests: ensureItemsHaveVisibility(normalized.interests, options).map(interest => ({
       ...interest,
-      keywords: cleanKeywords(interest.keywords)
+      keywords: cleanKeywords(interest.keywords, {
+        preservePlaceholders: options.preserveDraftItems,
+      })
     })) as Interest[],
-    references: ensureItemsHaveVisibility(normalized.references) as Reference[],
-    volunteer: ensureItemsHaveVisibility(normalized.volunteer) as Volunteer[],
+    references: ensureItemsHaveVisibility(normalized.references, options) as Reference[],
+    volunteer: ensureItemsHaveVisibility(normalized.volunteer, options) as Volunteer[],
     
     // Ensure sectionVisibility exists with all required properties
     sectionVisibility: {

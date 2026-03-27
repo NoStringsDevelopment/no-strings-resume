@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, within, cleanup } from '@testing-library/react';
 import { describe, it, expect, test } from 'vitest';
-import { ResumeProvider } from '@/context/ResumeContext';
+import { ResumeProvider, useResume } from '@/context/ResumeContext';
 import BasicEditor from './BasicEditor';
 import WorkEditor from './WorkEditor';
 import EducationEditor from './EducationEditor';
@@ -11,13 +11,30 @@ import AwardsEditor from './AwardsEditor';
 import LanguagesEditor from './LanguagesEditor';
 import AdditionalSectionsEditor from './AdditionalSectionsEditor';
 
+const ResumeProviderStateProbe = () => {
+  const { state } = useResume();
+  return (
+    <div
+      data-testid="resume-provider-ready"
+      data-history-index={String(state.currentHistoryIndex)}
+    />
+  );
+};
+
 // Helper to render component with provider
 const renderWithProvider = (component: React.ReactElement) => {
   return render(
     <ResumeProvider>
+      <ResumeProviderStateProbe />
       {component}
     </ResumeProvider>
   );
+};
+
+const waitForAdditionalSectionsEditorToHydrate = async () => {
+  await waitFor(() => {
+    expect(screen.getByTestId('resume-provider-ready')).toHaveAttribute('data-history-index', '0');
+  });
 };
 
 // Helper to check if text is properly capitalized (first letter uppercase)
@@ -550,6 +567,7 @@ describe('Editor Visibility Toggles and Capitalization', () => {
     describe('Volunteer Highlight Visibility', () => {
       test('should have visibility toggles for volunteer highlights', async () => {
         renderWithProvider(<AdditionalSectionsEditor />);
+        await waitForAdditionalSectionsEditorToHydrate();
         
         // Add volunteer experience
         const addButton = screen.getByTestId('add-volunteer-button');
@@ -566,12 +584,9 @@ describe('Editor Visibility Toggles and Capitalization', () => {
         });
       });
 
-      // TODO: REGRESSION - This test is currently failing because volunteer add functionality appears broken
-      // When clicking the add volunteer button, no volunteer section appears in the DOM
-      // Only the certificates section is rendered, suggesting the volunteer add action is not working
-      // This needs investigation and fixing before re-enabling this test
-      test.skip('should toggle volunteer highlight visibility - REGRESSION DETECTED', async () => {
+      test('should toggle volunteer highlight visibility', async () => {
         renderWithProvider(<AdditionalSectionsEditor />);
+        await waitForAdditionalSectionsEditorToHydrate();
         
         // Add volunteer experience first
         const addButton = screen.getByTestId('add-volunteer-button');
