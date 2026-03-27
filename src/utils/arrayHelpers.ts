@@ -4,11 +4,29 @@
 
 import { Highlight, Keyword, Course, Role } from '@/types/resume';
 
+type TextObject = {
+  content?: string;
+  name?: string;
+  visible?: boolean;
+};
+
+function getObjectTextValue(item: TextObject): string | null {
+  if (typeof item.content === 'string') {
+    return item.content.trim();
+  }
+
+  if (typeof item.name === 'string') {
+    return item.name.trim();
+  }
+
+  return null;
+}
+
 /**
  * Filters out empty strings and empty objects from an array of strings or objects
  */
-export function cleanArray<T extends string | { name: string; visible?: boolean }>(
-  items: (T | string)[] | undefined
+export function cleanArray<T extends string | TextObject>(
+  items: T[] | undefined
 ): T[] {
   if (!items || !Array.isArray(items)) {
     return [];
@@ -26,21 +44,12 @@ export function cleanArray<T extends string | { name: string; visible?: boolean 
     
     // Handle object items
     if (typeof item === 'object') {
-      // Check if it's an empty object
       const keys = Object.keys(item);
       if (keys.length === 0) return false;
-      
-      // Check if it has a name property and it's not empty
-      if ('name' in item) {
-        const name = (item as { name: string }).name;
-        return typeof name === 'string' && name.trim().length > 0;
-      }
-      
-      // For other objects, keep them if they have any non-empty properties
-      return keys.some(key => {
-        const value = (item as Record<string, unknown>)[key];
-        return value != null && value !== '' && value !== false;
-      });
+
+      // These list items are expected to render from either `content` or `name`.
+      // Keep only objects with a non-empty display value.
+      return (getObjectTextValue(item as TextObject)?.length ?? 0) > 0;
     }
     
     return false;
@@ -78,7 +87,7 @@ export function cleanRoles(roles: (string | Role)[] | undefined): (string | Role
 /**
  * Converts any problematic data (empty strings, empty objects) to proper format
  */
-export function sanitizeArrayItem<T extends string | { name: string; visible?: boolean }>(
+export function sanitizeArrayItem<T extends string | TextObject>(
   item: unknown
 ): T | null {
   // Handle null/undefined
@@ -95,15 +104,11 @@ export function sanitizeArrayItem<T extends string | { name: string; visible?: b
     // Check for empty object
     const keys = Object.keys(item);
     if (keys.length === 0) return null;
-    
-    // If it has a name property, ensure it's not empty
-    if ('name' in item) {
-      const name = item.name;
-      if (typeof name !== 'string' || name.trim().length === 0) {
-        return null;
-      }
+
+    if ((getObjectTextValue(item as TextObject)?.length ?? 0) === 0) {
+      return null;
     }
-    
+
     return item as T;
   }
   

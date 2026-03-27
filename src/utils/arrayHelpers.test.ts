@@ -45,6 +45,22 @@ describe('arrayHelpers', () => {
       ]);
     });
 
+    it('should remove objects without a usable display value', () => {
+      const input = [
+        { visible: true },
+        { content: '', visible: true },
+        { content: 'Valid highlight', visible: false },
+        { name: 'Valid keyword', visible: true }
+      ];
+
+      const result = cleanArray(input);
+
+      expect(result).toEqual([
+        { content: 'Valid highlight', visible: false },
+        { name: 'Valid keyword', visible: true }
+      ]);
+    });
+
     it('should handle null and undefined', () => {
       const input = ['valid', null, undefined, 'another'];
       const result = cleanArray(input);
@@ -62,14 +78,14 @@ describe('arrayHelpers', () => {
       const input = [
         'Valid highlight',
         '',
-        { name: 'Object highlight', visible: true },
+        { content: 'Object highlight', visible: true },
         {},
-        { name: '' }
+        { content: '' }
       ];
       const result = cleanHighlights(input);
       expect(result).toEqual([
         'Valid highlight',
-        { name: 'Object highlight', visible: true }
+        { content: 'Object highlight', visible: true }
       ]);
     });
   });
@@ -112,8 +128,18 @@ describe('arrayHelpers', () => {
       expect(sanitizeArrayItem({ name: '  ' })).toBeNull();
     });
 
+    it('should return null for highlight objects with empty content', () => {
+      expect(sanitizeArrayItem({ content: '' })).toBeNull();
+      expect(sanitizeArrayItem({ content: '  ', visible: true })).toBeNull();
+    });
+
     it('should return object for valid objects', () => {
       const obj = { name: 'valid', visible: true };
+      expect(sanitizeArrayItem(obj)).toEqual(obj);
+    });
+
+    it('should return object for valid highlight objects', () => {
+      const obj = { content: 'valid highlight', visible: false };
       expect(sanitizeArrayItem(obj)).toEqual(obj);
     });
 

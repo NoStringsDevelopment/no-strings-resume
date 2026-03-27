@@ -59,8 +59,8 @@ describe('dataHelpers - array cleaning', () => {
           highlights: [
             'Did something',
             {},
-            { name: '', visible: true },
-            { name: 'Valid highlight', visible: true },
+            { content: '', visible: true },
+            { content: 'Valid highlight', visible: true },
             ''
           ]
         }
@@ -71,7 +71,57 @@ describe('dataHelpers - array cleaning', () => {
     
     expect(result.work[0].highlights).toEqual([
       'Did something',
-      { name: 'Valid highlight', visible: true }
+      { content: 'Valid highlight', visible: true }
+    ]);
+  });
+
+  it('should remove empty highlight objects created by editors', () => {
+    const input = {
+      basics: {
+        name: 'Test User',
+        label: 'Developer',
+        email: 'test@example.com',
+        phone: '123-456-7890',
+        url: 'https://example.com',
+        summary: 'Test summary',
+        location: {
+          address: '',
+          postalCode: '',
+          city: '',
+          countryCode: '',
+          region: ''
+        }
+      },
+      work: [
+        {
+          name: 'Test Company',
+          position: 'Developer',
+          highlights: [
+            { content: '', visible: true },
+            { content: 'Kept hidden highlight', visible: false },
+            { visible: true }
+          ]
+        }
+      ],
+      projects: [
+        {
+          name: 'Test Project',
+          description: 'Test description',
+          highlights: [
+            { content: '', visible: true },
+            { content: 'Useful project highlight', visible: true }
+          ]
+        }
+      ]
+    };
+
+    const result = normalizeResumeData(input);
+
+    expect(result.work[0].highlights).toEqual([
+      { content: 'Kept hidden highlight', visible: false }
+    ]);
+    expect(result.projects[0].highlights).toEqual([
+      { content: 'Useful project highlight', visible: true }
     ]);
   });
 
