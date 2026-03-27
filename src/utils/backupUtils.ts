@@ -2,7 +2,6 @@ import { ResumeData } from '@/types/resume';
 import { 
   ExtendedResumeData, 
   Extensions,
-  getDefaultExtensions,
   validateExtendedResumeData,
   isExtendedResumeFormat,
   ItemVisibility,
@@ -217,6 +216,11 @@ export function convertToExtendedFormat(resumeData: ResumeData): ExtendedResumeD
     },
     
     nonConforming: resumeData.nonConformingData,
+
+    summaries: resumeData.summaries,
+    activeSummaryId: resumeData.activeSummaryId,
+    icon: resumeData.icon,
+    photo: resumeData.photo,
     
     app: {
       lastSaved: now,
@@ -357,7 +361,11 @@ export function convertFromExtendedFormat(extendedData: ExtendedResumeData): Res
     
     meta: extendedData.meta,
     sectionVisibility: { ...visibility.sections },
-    nonConformingData: extensions.nonConforming
+    nonConformingData: extensions.nonConforming,
+    summaries: extensions.summaries,
+    activeSummaryId: extensions.activeSummaryId,
+    icon: extensions.icon,
+    photo: extensions.photo
   };
 }
 
@@ -368,7 +376,7 @@ export function exportAsBackup(resumeData: ResumeData) {
   const extendedData = convertToExtendedFormat(resumeData);
   const jsonContent = JSON.stringify(extendedData, null, 2);
   const filename = generateExportFilename(resumeData, 'json', 'backup', true);
-  downloadFile(jsonContent, filename, 'application/json');
+  downloadFile(jsonContent, filename, 'application/json;charset=utf-8');
 }
 
 /**

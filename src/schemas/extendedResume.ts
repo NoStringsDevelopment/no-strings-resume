@@ -1,14 +1,15 @@
 // Extended Resume Schema with clean separation between standard JSON Resume and extensions
 // This schema preserves JSON Resume v1.2.1 compatibility while adding app-specific extensions
 
-export const EXTENDED_RESUME_SCHEMA_VERSION = "1.1.0";
-export const SUPPORTED_SCHEMA_VERSIONS = ["1.0.0", "1.1.0"];
+export const EXTENDED_RESUME_SCHEMA_VERSION = "1.2.0";
+export const SUPPORTED_SCHEMA_VERSIONS = ["1.0.0", "1.1.0", "1.2.0"];
 
 // Standard JSON Resume Schema (unchanged, for reference)
 import { 
   ResumeData as JsonResumeData,
   SectionVisibility,
-  NonConformingData 
+  NonConformingData,
+  IconSettings
 } from '@/types/resume';
 
 /**
@@ -30,10 +31,11 @@ import {
  * 
  * EXAMPLE MIGRATIONS:
  * v1.0.0 -> v1.1.0: Add new optional field (backwards compatible)
- * v1.1.0 -> v2.0.0: Change data structure (need migration function)
+ * v1.2.0 -> v2.0.0: Change data structure (need migration function)
  * 
  * CHANGELOG:
  * v1.1.0: Added summaries collection for multiple named summaries
+ * v1.2.0: Added icon/photo persistence for backup roundtrips
  */
 
 /**
@@ -96,6 +98,10 @@ export interface Extensions {
   
   // Current active summary ID for display
   activeSummaryId?: string;
+
+  // Uploaded media that the app renders outside standard JSON Resume
+  icon?: IconSettings;
+  photo?: IconSettings;
   
   // Future extensions can be added here without breaking changes
   // theme?: ThemeExtensions;

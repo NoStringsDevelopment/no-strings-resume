@@ -235,6 +235,25 @@ describe('backupUtils', () => {
         rawText: "some raw data",
         parsingErrors: ["Minor parsing issue"],
         originalData: { someField: "someValue" }
+      },
+      summaries: [
+        {
+          id: "dartmouth",
+          target: "Dartmouth",
+          summary: "Research software engineer focused on open neuroscience.",
+          createdAt: "2026-03-27T10:00:00.000Z"
+        }
+      ],
+      activeSummaryId: "dartmouth",
+      icon: {
+        data: "data:image/png;base64,icon-data",
+        position: { top: 20, right: 20 },
+        size: 60
+      },
+      photo: {
+        data: "data:image/png;base64,photo-data",
+        position: { top: 20, right: 100 },
+        size: 72
       }
     };
   });
@@ -280,6 +299,10 @@ describe('backupUtils', () => {
       expect(result.$extensions.backup.format).toBe("extended");
       expect(result.$extensions.backup.preservesVisibility).toBe(true);
       expect(result.$extensions.nonConforming).toEqual(mockResumeData.nonConformingData);
+      expect(result.$extensions.summaries).toEqual(mockResumeData.summaries);
+      expect(result.$extensions.activeSummaryId).toBe(mockResumeData.activeSummaryId);
+      expect(result.$extensions.icon).toEqual(mockResumeData.icon);
+      expect(result.$extensions.photo).toEqual(mockResumeData.photo);
     });
 
     it('should handle empty arrays gracefully', () => {
@@ -328,6 +351,10 @@ describe('backupUtils', () => {
       
       // Check non-conforming data
       expect(result.nonConformingData).toEqual(mockResumeData.nonConformingData);
+      expect(result.summaries).toEqual(mockResumeData.summaries);
+      expect(result.activeSummaryId).toBe(mockResumeData.activeSummaryId);
+      expect(result.icon).toEqual(mockResumeData.icon);
+      expect(result.photo).toEqual(mockResumeData.photo);
     });
 
     it('should use defaults when visibility data is missing', () => {
@@ -361,6 +388,51 @@ describe('backupUtils', () => {
       expect(restoredData.basics.profiles[1].visible).toBe(false);
       expect(restoredData.work[1].visible).toBe(false);
       expect(restoredData.skills[1].visible).toBe(false);
+      expect(restoredData.icon).toEqual(mockResumeData.icon);
+      expect(restoredData.photo).toEqual(mockResumeData.photo);
+      expect(restoredData.summaries).toEqual(mockResumeData.summaries);
+      expect(restoredData.activeSummaryId).toBe(mockResumeData.activeSummaryId);
+    });
+
+    it('should preserve unicode content exactly through backup serialization and restore', () => {
+      const unicodeResumeData: ResumeData = {
+        ...mockResumeData,
+        basics: {
+          ...mockResumeData.basics,
+          name: "Zoë Łukasz",
+          label: "Neuroinformatics κ-engineer",
+          summary: "Résumé café — naïve? όχι; 😀"
+        },
+        work: [
+          {
+            ...mockResumeData.work[0],
+            summary: "Built BIDS workflows for Müller labs and São Paulo datasets",
+            highlights: [
+              { content: "Improved ΔF/F handling in calcium imaging", visible: true },
+              { content: "Released datasets with déjà vu-free metadata", visible: true }
+            ]
+          }
+        ]
+      };
+
+      const extendedData = convertToExtendedFormat(unicodeResumeData);
+      const jsonString = JSON.stringify(extendedData, null, 2);
+
+      expect(jsonString).toContain("Zoë Łukasz");
+      expect(jsonString).toContain("Résumé café");
+      expect(jsonString).toContain("ΔF/F");
+
+      const result = importFromBackup(jsonString);
+
+      expect(result.isValid).toBe(true);
+      expect(result.resumeData?.basics.name).toBe("Zoë Łukasz");
+      expect(result.resumeData?.basics.label).toBe("Neuroinformatics κ-engineer");
+      expect(result.resumeData?.basics.summary).toBe("Résumé café — naïve? όχι; 😀");
+      expect(result.resumeData?.work[0].summary).toBe("Built BIDS workflows for Müller labs and São Paulo datasets");
+      expect(result.resumeData?.work[0].highlights[0]).toEqual({
+        content: "Improved ΔF/F handling in calcium imaging",
+        visible: true
+      });
     });
   });
 
@@ -373,8 +445,8 @@ describe('backupUtils', () => {
       expect(mockDownloadFile).toHaveBeenCalledOnce();
       const [content, filename, mimeType] = mockDownloadFile.mock.calls[0];
       
-      expect(filename).toMatch(/^[\w-]+-resume-backup-\d{4}-\d{2}-\d{2}-\d{6}\.json$/);
-      expect(mimeType).toBe('application/json');
+      expect(filename).toMatch(/^[\w-]+-backup-\d{4}-\d{2}-\d{2}-\d{6}\.json$/);
+      expect(mimeType).toBe('application/json;charset=utf-8');
       
       // Verify content is valid JSON and extended format
       const parsedContent = JSON.parse(content);
