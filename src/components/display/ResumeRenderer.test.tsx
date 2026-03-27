@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { ResumeRenderer } from './ResumeRenderer';
-import { ResumeData, Theme } from '@/types/resume';
+import { ResumeData, Theme, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 
 const mockTheme: Theme = {
   id: 'test',
@@ -52,6 +52,7 @@ const mockResumeData: ResumeData = {
       { network: 'LinkedIn', username: 'johndoe', url: 'https://linkedin.com/in/johndoe', visible: true }
     ]
   },
+  basicsVisibility: { ...DEFAULT_BASICS_VISIBILITY },
   work: [
     {
       name: 'Tech Corp',
@@ -120,6 +121,29 @@ describe('ResumeRenderer', () => {
     expect(screen.getByTestId('resume-email')).toHaveTextContent('john@example.com');
     expect(screen.getByTestId('resume-phone')).toHaveTextContent('555-1234');
     expect(screen.getByTestId('resume-summary')).toHaveTextContent('Experienced software engineer');
+  });
+
+  it('respects basics field visibility in the header', () => {
+    render(
+      <ResumeRenderer
+        resumeData={{
+          ...mockResumeData,
+          basicsVisibility: {
+            ...DEFAULT_BASICS_VISIBILITY,
+            phone: false,
+            url: false,
+            summary: false,
+          },
+        }}
+        theme={mockTheme}
+      />
+    );
+
+    expect(screen.getByTestId('resume-email')).toHaveTextContent('john@example.com');
+    expect(screen.getByTestId('resume-location')).toHaveTextContent('San Francisco, CA');
+    expect(screen.queryByTestId('resume-phone')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('resume-url')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('resume-summary')).not.toBeInTheDocument();
   });
 
   it('renders work experience section', () => {

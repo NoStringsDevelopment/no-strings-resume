@@ -1,4 +1,4 @@
-import { ResumeData, Theme } from '@/types/resume';
+import { ResumeData, Theme, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 import { downloadBlob, downloadFile, exportResumeAsJson } from '@/utils/importExport';
 import { buildResumeExportContent } from '@/utils/resumeExportContent';
 import { 
@@ -89,6 +89,7 @@ export function generateExportFilename(
 
 // Convert JSON Resume to HR-Open format
 export function convertToHROpen(resumeData: ResumeData): Record<string, unknown> {
+  const basicsVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...resumeData.basicsVisibility };
   return {
     type: "http://schema.hropenstandards.org/4.4/recruiting/json/ler-rs/LER-RSType.json",
     person: {
@@ -98,21 +99,21 @@ export function convertToHROpen(resumeData: ResumeData): Record<string, unknown>
         family: resumeData.basics.name.split(' ').slice(1).join(' ') || ''
       },
       communication: {
-        email: resumeData.basics.email,
-        phone: resumeData.basics.phone,
-        web: resumeData.basics.url
+        email: basicsVisibility.email ? resumeData.basics.email : undefined,
+        phone: basicsVisibility.phone ? resumeData.basics.phone : undefined,
+        web: basicsVisibility.url ? resumeData.basics.url : undefined
       },
       location: {
         address: {
-          line: resumeData.basics.location.address,
-          city: resumeData.basics.location.city,
-          postalCode: resumeData.basics.location.postalCode,
-          countrySubDivisions: resumeData.basics.location.region,
-          country: resumeData.basics.location.countryCode
+          line: basicsVisibility.location ? resumeData.basics.location.address : undefined,
+          city: basicsVisibility.location ? resumeData.basics.location.city : undefined,
+          postalCode: basicsVisibility.location ? resumeData.basics.location.postalCode : undefined,
+          countrySubDivisions: basicsVisibility.location ? resumeData.basics.location.region : undefined,
+          country: basicsVisibility.location ? resumeData.basics.location.countryCode : undefined
         }
       }
     },
-    narratives: resumeData.basics.summary ? [{
+    narratives: basicsVisibility.summary && resumeData.basics.summary ? [{
       type: "summary",
       content: resumeData.basics.summary
     }] : [],
@@ -624,26 +625,31 @@ export function exportAsHTML(resumeData: ResumeData, theme: Theme) {
 function generateHTMLContent(resumeData: ResumeData): string {
   let html = '';
   const { sectionVisibility } = resumeData;
+  const basicsVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...resumeData.basicsVisibility };
+  const locationText = [resumeData.basics.location.city, resumeData.basics.location.region || resumeData.basics.location.countryCode]
+    .filter(Boolean)
+    .join(', ');
 
   if (sectionVisibility.basics) {
+    const contactItems = [
+      basicsVisibility.email && resumeData.basics.email ? `<span>${resumeData.basics.email}</span>` : '',
+      basicsVisibility.phone && resumeData.basics.phone ? `<span>${resumeData.basics.phone}</span>` : '',
+      basicsVisibility.url && resumeData.basics.url ? `<span>${resumeData.basics.url}</span>` : '',
+      basicsVisibility.location && locationText ? `<span>${locationText}</span>` : ''
+    ].filter(Boolean);
+
     html += `
       <header>
         <h1>${resumeData.basics.name}</h1>
-        ${resumeData.basics.label ? `<h2>${resumeData.basics.label}</h2>` : ''}
-        <div class="contact-info">
-          ${resumeData.basics.email ? `<span>📧 ${resumeData.basics.email}</span>` : ''}
-          ${resumeData.basics.phone ? `<span>📞 ${resumeData.basics.phone}</span>` : ''}
-          ${resumeData.basics.url ? `<span>🌐 ${resumeData.basics.url}</span>` : ''}
-          ${(resumeData.basics.location.city || resumeData.basics.location.region) ? 
-            `<span>📍 ${[resumeData.basics.location.city, resumeData.basics.location.region].filter(Boolean).join(', ')}</span>` : ''}
-        </div>
+        ${basicsVisibility.label && resumeData.basics.label ? `<h2>${resumeData.basics.label}</h2>` : ''}
+        ${contactItems.length > 0 ? `<div class="contact-info">${contactItems.join(' • ')}</div>` : ''}
         ${resumeData.basics.profiles.filter(p => p.visible !== false).length > 0 ? 
           `<div class="contact-info">${resumeData.basics.profiles.filter(p => p.visible !== false).map(profile => 
             `<span>${profile.network}: ${profile.username || profile.url}</span>`
           ).join(' • ')}</div>` : ''}
       </header>
       
-      ${resumeData.basics.summary ? `
+      ${basicsVisibility.summary && resumeData.basics.summary ? `
         <div class="summary-section">
           <h3>Summary</h3>
           <p>${resumeData.basics.summary}</p>

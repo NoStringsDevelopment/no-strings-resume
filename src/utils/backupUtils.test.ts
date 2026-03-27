@@ -231,6 +231,14 @@ describe('backupUtils', () => {
         interests: true,
         references: true
       },
+      basicsVisibility: {
+        label: true,
+        email: true,
+        phone: false,
+        url: false,
+        location: true,
+        summary: true
+      },
       nonConformingData: {
         rawText: "some raw data",
         parsingErrors: ["Minor parsing issue"],
@@ -278,6 +286,7 @@ describe('backupUtils', () => {
 
       // Check that visibility data is extracted to extensions
       expect(result.$extensions.visibility.sections).toEqual(mockResumeData.sectionVisibility);
+      expect(result.$extensions.visibility.fields?.basics).toEqual(mockResumeData.basicsVisibility);
       expect(result.$extensions.visibility.items.profiles).toEqual([true, false]);
       expect(result.$extensions.visibility.items.work).toEqual([true, false]);
       expect(result.$extensions.visibility.subItems.work?.[0]?.highlights).toEqual([true, false, true]);
@@ -335,6 +344,7 @@ describe('backupUtils', () => {
       expect(result.basics.profiles[1].visible).toBe(false);
       expect(result.work[0].visible).toBe(true);
       expect(result.work[1].visible).toBe(false);
+      expect(result.basicsVisibility).toEqual(mockResumeData.basicsVisibility);
       
       // Check highlights visibility - the app supports both string and object formats
       // When visible, can be either string or object

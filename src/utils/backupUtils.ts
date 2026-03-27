@@ -1,4 +1,4 @@
-import { ResumeData } from '@/types/resume';
+import { ResumeData, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 import { 
   ExtendedResumeData, 
   Extensions,
@@ -202,6 +202,12 @@ export function convertToExtendedFormat(resumeData: ResumeData): ExtendedResumeD
     
     visibility: {
       sections: { ...resumeData.sectionVisibility },
+      fields: {
+        basics: {
+          ...DEFAULT_BASICS_VISIBILITY,
+          ...resumeData.basicsVisibility
+        }
+      },
       items: itemVisibility,
       subItems: subItemVisibility
     },
@@ -366,6 +372,10 @@ export function convertFromExtendedFormat(extendedData: ExtendedResumeData): Res
     
     meta: extendedData.meta,
     sectionVisibility: { ...visibility.sections },
+    basicsVisibility: {
+      ...DEFAULT_BASICS_VISIBILITY,
+      ...(visibility.fields?.basics || {})
+    },
     nonConformingData: extensions.nonConforming,
     summaries: extensions.summaries,
     activeSummaryId: extensions.activeSummaryId,

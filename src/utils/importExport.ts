@@ -1,5 +1,5 @@
 
-import { ResumeData, NonConformingData, InvalidField } from '@/types/resume';
+import { ResumeData, NonConformingData, InvalidField, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 import { convertHROpenToJsonResume, HROpenResume } from '@/schemas/hrOpen';
 
 export interface ImportResult {
@@ -268,7 +268,8 @@ export function importResumeData(jsonString: string): ImportResult {
         references: true,
         volunteer: true,
         ...parsed.sectionVisibility
-      }
+      },
+      basicsVisibility: { ...DEFAULT_BASICS_VISIBILITY }
     };
 
     // If a basics.image is provided, auto-map it to the photo field so it can render in our UI.
@@ -345,6 +346,7 @@ export function importResumeData(jsonString: string): ImportResult {
         references: true,
         volunteer: true
       },
+      basicsVisibility: { ...DEFAULT_BASICS_VISIBILITY },
       nonConformingData: {
         rawText: jsonString,
         parsingErrors: [errorMessage],

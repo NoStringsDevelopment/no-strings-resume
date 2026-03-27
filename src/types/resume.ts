@@ -16,6 +16,9 @@ export interface ResumeData {
   
   // Extension: section visibility toggles
   sectionVisibility: SectionVisibility;
+
+  // Extension: field-level visibility for non-array basics fields
+  basicsVisibility?: BasicsFieldVisibility;
   
   // Extension: non-conforming data that needs manual review
   nonConformingData?: NonConformingData;
@@ -93,6 +96,24 @@ export interface Basics {
   location: Location;
   profiles: Profile[];
 }
+
+export interface BasicsFieldVisibility {
+  label: boolean;
+  email: boolean;
+  phone: boolean;
+  url: boolean;
+  location: boolean;
+  summary: boolean;
+}
+
+export const DEFAULT_BASICS_VISIBILITY: BasicsFieldVisibility = {
+  label: true,
+  email: true,
+  phone: true,
+  url: true,
+  location: true,
+  summary: true,
+};
 
 export interface Location {
   address: string;

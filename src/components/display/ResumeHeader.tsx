@@ -1,14 +1,27 @@
 
 import React from 'react';
-import { Basics } from '@/types/resume';
+import { Basics, BasicsFieldVisibility, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 
 interface ResumeHeaderProps {
   basics: Basics;
+  basicsVisibility?: BasicsFieldVisibility;
   isVisible: boolean;
 }
 
-export const ResumeHeader: React.FC<ResumeHeaderProps> = ({ basics, isVisible }) => {
+export const ResumeHeader: React.FC<ResumeHeaderProps> = ({ basics, basicsVisibility, isVisible }) => {
   if (!isVisible) return null;
+
+  const fieldVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...basicsVisibility };
+  const locationText = [basics.location.city, basics.location.region || basics.location.countryCode]
+    .filter(Boolean)
+    .join(', ');
+  const contactItems = [
+    fieldVisibility.email && basics.email ? { key: 'email', testId: 'resume-email', value: basics.email } : null,
+    fieldVisibility.phone && basics.phone ? { key: 'phone', testId: 'resume-phone', value: basics.phone } : null,
+    fieldVisibility.url && basics.url ? { key: 'url', testId: 'resume-url', value: basics.url } : null,
+    fieldVisibility.location && locationText ? { key: 'location', testId: 'resume-location', value: locationText } : null,
+  ].filter((item): item is { key: string; testId: string; value: string } => Boolean(item));
+  const visibleProfiles = basics.profiles.filter(profile => profile.visible !== false);
 
   return (
     <header className="p-8 border-b-2" style={{ borderColor: 'var(--color-primary)' }}>
@@ -19,7 +32,7 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({ basics, isVisible })
       >
         {basics.name}
       </h1>
-      {basics.label && (
+      {fieldVisibility.label && basics.label && (
         <h2 
           className="text-xl mb-4" 
           style={{ color: 'var(--color-secondary)' }}
@@ -30,23 +43,19 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({ basics, isVisible })
       )}
       
       {/* Contact Information */}
-      <div className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-        {basics.email && (
-          <span data-testid="resume-email">📧 {basics.email}</span>
-        )}
-        {basics.phone && (
-          <span data-testid="resume-phone">{basics.email && ' • '}📞 {basics.phone}</span>
-        )}
-        {basics.url && (
-          <span data-testid="resume-url">{(basics.email || basics.phone) && ' • '}🌐 {basics.url}</span>
-        )}
-        {(basics.location.city || basics.location.region) && (
-          <span data-testid="resume-location">{(basics.email || basics.phone || basics.url) && ' • '}📍 {[basics.location.city, basics.location.region].filter(Boolean).join(', ')}</span>
-        )}
-      </div>
+      {contactItems.length > 0 && (
+        <div className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+          {contactItems.map((item, index) => (
+            <React.Fragment key={item.key}>
+              {index > 0 && <span aria-hidden="true"> • </span>}
+              <span data-testid={item.testId}>{item.value}</span>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
 
       {/* Social Profiles */}
-      {basics.profiles.some(p => p.visible !== false) && (
+      {visibleProfiles.length > 0 && (
         <div 
           className="text-sm mb-4 pb-4" 
           style={{ 
@@ -54,15 +63,14 @@ export const ResumeHeader: React.FC<ResumeHeaderProps> = ({ basics, isVisible })
             borderBottom: '1px solid var(--color-border)'
           }}
         >
-          {basics.profiles
-            .filter(profile => profile.visible !== false)
+          {visibleProfiles
             .map(profile => `${profile.network}: ${profile.username || profile.url}`)
             .join(' • ')}
         </div>
       )}
 
       {/* Summary */}
-      {basics.summary && (
+      {fieldVisibility.summary && basics.summary && (
         <p 
           className="mt-4 text-base leading-relaxed" 
           style={{ color: 'var(--color-text)' }}

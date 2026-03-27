@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect, ReactNode, useContext } from 'react';
-import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings, BasicsFieldVisibility } from '@/types/resume';
 import { getDefaultResumeData } from '@/utils/defaultData';
 import { normalizeResumeData as baseNormalizeResumeData, normalizeStoredData } from '@/utils/dataHelpers';
 import { deduplicateSummaries } from '@/utils/dataHelpers';
@@ -74,6 +74,7 @@ type ResumeAction =
   | { type: 'REMOVE_AWARD'; payload: number }
   // Section visibility actions
   | { type: 'UPDATE_SECTION_VISIBILITY'; payload: Partial<SectionVisibility> }
+  | { type: 'UPDATE_BASICS_VISIBILITY'; payload: Partial<BasicsFieldVisibility> }
   // Icon actions
   | { type: 'UPDATE_ICON'; payload: IconSettings | undefined }
   // Photo actions
@@ -761,6 +762,19 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
       const updatedData = {
         ...state.resumeData,
         sectionVisibility: { ...state.resumeData.sectionVisibility, ...action.payload }
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'UPDATE_BASICS_VISIBILITY': {
+      const updatedData = {
+        ...state.resumeData,
+        basicsVisibility: { ...state.resumeData.basicsVisibility, ...action.payload }
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);

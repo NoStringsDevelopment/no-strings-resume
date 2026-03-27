@@ -9,7 +9,9 @@ import {
   ResumeData as JsonResumeData,
   SectionVisibility,
   NonConformingData,
-  IconSettings
+  IconSettings,
+  BasicsFieldVisibility,
+  DEFAULT_BASICS_VISIBILITY
 } from '@/types/resume';
 
 /**
@@ -115,12 +117,19 @@ export interface Extensions {
 export interface VisibilityExtensions {
   // Section-level visibility (show/hide entire sections)
   sections: SectionVisibility;
+
+  // Field-level visibility for non-array sections
+  fields?: FieldVisibility;
   
   // Item-level visibility (show/hide individual entries within sections)
   items: ItemVisibility;
   
   // Sub-item visibility (highlights, keywords, courses, etc.)
   subItems: SubItemVisibility;
+}
+
+export interface FieldVisibility {
+  basics?: BasicsFieldVisibility;
 }
 
 /**
@@ -243,6 +252,9 @@ export function getDefaultExtensions(): Extensions {
         languages: true,
         interests: true,
         references: true
+      },
+      fields: {
+        basics: { ...DEFAULT_BASICS_VISIBILITY }
       },
       items: {},
       subItems: {}

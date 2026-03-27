@@ -33,6 +33,14 @@ const resumeData: ResumeData = {
       },
     ],
   },
+  basicsVisibility: {
+    label: true,
+    email: true,
+    phone: true,
+    url: true,
+    location: true,
+    summary: true,
+  },
   work: [
     {
       name: 'Visible Co',
@@ -188,5 +196,22 @@ describe('buildResumeExportContent', () => {
     expect(content.sections.find((section) => section.title === 'Work Experience')).toBeUndefined();
     expect(content.sections.find((section) => section.title === 'Interests')).toBeUndefined();
     expect(content.sections.find((section) => section.title === 'Projects')).toBeUndefined();
+  });
+
+  it('respects basics field visibility in the export header', () => {
+    const content = buildResumeExportContent({
+      ...resumeData,
+      basicsVisibility: {
+        label: true,
+        email: true,
+        phone: false,
+        url: false,
+        location: true,
+        summary: false,
+      },
+    });
+
+    expect(content.header?.contacts).toEqual(['alex@example.com', 'Chicago, IL']);
+    expect(content.header?.summary).toBeUndefined();
   });
 });

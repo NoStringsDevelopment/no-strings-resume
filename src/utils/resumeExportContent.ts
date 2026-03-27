@@ -1,4 +1,4 @@
-import { ResumeData } from '@/types/resume';
+import { ResumeData, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 import {
   getCourseName,
   getHighlightContent,
@@ -80,22 +80,27 @@ function createSection(title: string, entries: ExportResumeEntry[]): ExportResum
 export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDocument {
   const { sectionVisibility } = resumeData;
   const sections: ExportResumeSection[] = [];
+  const basicsVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...resumeData.basicsVisibility };
+  const locationText = joinWithSeparator(
+    [resumeData.basics.location.city, resumeData.basics.location.region || resumeData.basics.location.countryCode],
+    ', ',
+  );
 
   const header = sectionVisibility.basics
     ? {
         name: resumeData.basics.name.trim() || 'Resume',
-        label: resumeData.basics.label.trim() || undefined,
+        label: basicsVisibility.label ? resumeData.basics.label.trim() || undefined : undefined,
         contacts: nonEmpty([
-          resumeData.basics.email,
-          resumeData.basics.phone,
-          resumeData.basics.url,
-          joinWithSeparator([resumeData.basics.location.city, resumeData.basics.location.region], ', '),
+          basicsVisibility.email ? resumeData.basics.email : undefined,
+          basicsVisibility.phone ? resumeData.basics.phone : undefined,
+          basicsVisibility.url ? resumeData.basics.url : undefined,
+          basicsVisibility.location ? locationText : undefined,
         ]),
         profiles: resumeData.basics.profiles
           .filter((profile) => profile.visible !== false)
           .map((profile) => joinWithSeparator([profile.network, profile.username || profile.url], ': '))
           .filter((value): value is string => Boolean(value)),
-        summary: resumeData.basics.summary.trim() || undefined,
+        summary: basicsVisibility.summary ? resumeData.basics.summary.trim() || undefined : undefined,
       }
     : null;
 

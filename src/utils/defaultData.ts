@@ -1,5 +1,5 @@
 
-import { ResumeData } from '../types/resume';
+import { ResumeData, DEFAULT_BASICS_VISIBILITY } from '../types/resume';
 
 export function getDefaultResumeData(): ResumeData {
   return {
@@ -173,6 +173,7 @@ export function getDefaultResumeData(): ResumeData {
       interests: true,
       references: true,
       volunteer: true
-    }
+    },
+    basicsVisibility: { ...DEFAULT_BASICS_VISIBILITY }
   };
 }
