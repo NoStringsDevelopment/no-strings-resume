@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { ItemOrderButtons } from "@/components/editor/ItemOrderButtons";
 import { Skill, Keyword } from "@/types/resume";
 import { normalizeKeyword, getKeywordName, isKeywordVisible } from "@/utils/visibilityHelpers";
 
@@ -18,8 +19,7 @@ export default function SkillsEditor() {
       keywords: [{ name: '', visible: true }],
       visible: true
     };
-    const updatedSkills = [...skills, newSkill];
-    dispatch({ type: 'UPDATE_SKILLS', payload: updatedSkills });
+    dispatch({ type: 'ADD_SKILL', payload: newSkill });
   };
 
   const updateSkill = (index: number, field: string, value: string | (string | Keyword)[] | boolean) => {
@@ -32,6 +32,17 @@ export default function SkillsEditor() {
   const removeSkill = (index: number) => {
     const updatedSkills = skills.filter((_, i) => i !== index);
     dispatch({ type: 'UPDATE_SKILLS', payload: updatedSkills });
+  };
+
+  const moveSkill = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'skills',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
   };
 
   const addKeyword = (skillIndex: number) => {
@@ -113,6 +124,14 @@ export default function SkillsEditor() {
                 >
                   {skill.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
+                <ItemOrderButtons
+                  canMoveUp={index > 0}
+                  canMoveDown={index < skills.length - 1}
+                  onMoveUp={() => moveSkill(index, 'up')}
+                  onMoveDown={() => moveSkill(index, 'down')}
+                  moveUpTestId={`skill-${index}-move-up-button`}
+                  moveDownTestId={`skill-${index}-move-down-button`}
+                />
                 <span>skill #{index + 1}</span>
               </div>
               <Button

@@ -1,5 +1,5 @@
 
-import { ResumeData, NonConformingData, InvalidField, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
+import { ResumeData, NonConformingData, InvalidField, DEFAULT_BASICS_VISIBILITY, DEFAULT_SECTION_PAGE_BREAKS } from '@/types/resume';
 import { convertHROpenToJsonResume, HROpenResume } from '@/schemas/hrOpen';
 
 export interface ImportResult {
@@ -269,6 +269,10 @@ export function importResumeData(jsonString: string): ImportResult {
         volunteer: true,
         ...parsed.sectionVisibility
       },
+      sectionPageBreaks: {
+        ...DEFAULT_SECTION_PAGE_BREAKS,
+        ...parsed.sectionPageBreaks
+      },
       basicsVisibility: { ...DEFAULT_BASICS_VISIBILITY }
     };
 
@@ -346,6 +350,7 @@ export function importResumeData(jsonString: string): ImportResult {
         references: true,
         volunteer: true
       },
+      sectionPageBreaks: { ...DEFAULT_SECTION_PAGE_BREAKS },
       basicsVisibility: { ...DEFAULT_BASICS_VISIBILITY },
       nonConformingData: {
         rawText: jsonString,

@@ -1,4 +1,4 @@
-import { ResumeData, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
+import { ResumeData, DEFAULT_BASICS_VISIBILITY, DEFAULT_SECTION_PAGE_BREAKS } from '@/types/resume';
 import { 
   ExtendedResumeData, 
   Extensions,
@@ -227,6 +227,10 @@ export function convertToExtendedFormat(resumeData: ResumeData): ExtendedResumeD
     activeSummaryId: resumeData.activeSummaryId,
     icon: resumeData.icon,
     photo: resumeData.photo,
+    pageBreaks: {
+      ...DEFAULT_SECTION_PAGE_BREAKS,
+      ...resumeData.sectionPageBreaks
+    },
     
     app: {
       lastSaved: now,
@@ -375,6 +379,10 @@ export function convertFromExtendedFormat(extendedData: ExtendedResumeData): Res
     basicsVisibility: {
       ...DEFAULT_BASICS_VISIBILITY,
       ...(visibility.fields?.basics || {})
+    },
+    sectionPageBreaks: {
+      ...DEFAULT_SECTION_PAGE_BREAKS,
+      ...extensions.pageBreaks
     },
     nonConformingData: extensions.nonConforming,
     summaries: extensions.summaries,

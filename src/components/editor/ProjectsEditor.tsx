@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { ItemOrderButtons } from "@/components/editor/ItemOrderButtons";
 import { useResume } from "@/context/ResumeContext";
 import { Project, Highlight, Keyword, Role } from "@/types/resume";
 import { 
@@ -48,6 +49,17 @@ const ProjectsEditor = () => {
 
   const removeProject = (index: number) => {
     dispatch({ type: 'REMOVE_PROJECT', payload: index });
+  };
+
+  const moveProject = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'projects',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
   };
 
   // Highlight functions
@@ -207,6 +219,14 @@ const ProjectsEditor = () => {
                 >
                   {project.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
+                <ItemOrderButtons
+                  canMoveUp={index > 0}
+                  canMoveDown={index < state.resumeData.projects.length - 1}
+                  onMoveUp={() => moveProject(index, 'up')}
+                  onMoveDown={() => moveProject(index, 'down')}
+                  moveUpTestId={`project-${index}-move-up-button`}
+                  moveDownTestId={`project-${index}-move-down-button`}
+                />
                 <Button
                   variant="ghost"
                   size="sm"

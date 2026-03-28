@@ -253,6 +253,20 @@ const baseResumeData: ResumeData = {
     interests: true,
     references: true,
   },
+  sectionPageBreaks: {
+    basics: false,
+    work: false,
+    volunteer: false,
+    education: false,
+    skills: false,
+    projects: false,
+    awards: false,
+    certificates: false,
+    publications: false,
+    languages: false,
+    interests: false,
+    references: false,
+  },
 };
 
 const originalCreateElement = document.createElement;
@@ -438,6 +452,39 @@ describe('PDF export', () => {
       align: 'justify',
     });
   });
+
+  it('adds a manual page break before configured sections', async () => {
+    await exportAsPDF({
+      ...baseResumeData,
+      volunteer: [],
+      education: [],
+      projects: [],
+      awards: [],
+      certificates: [],
+      publications: [],
+      languages: [],
+      interests: [],
+      references: [],
+      sectionVisibility: {
+        ...baseResumeData.sectionVisibility,
+        volunteer: false,
+        education: false,
+        projects: false,
+        awards: false,
+        certificates: false,
+        publications: false,
+        languages: false,
+        interests: false,
+        references: false,
+      },
+      sectionPageBreaks: {
+        ...baseResumeData.sectionPageBreaks,
+        skills: true,
+      },
+    }, baseTheme);
+
+    expect(mockAddPage).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('DOCX export', () => {
@@ -512,5 +559,18 @@ describe('DOCX export', () => {
     expect(documentXml).toContain('<wp:wrapSquare');
     expect((relationshipsXml.match(/relationships\/image/g) ?? []).length).toBe(2);
     expect(relationshipsXml).toContain('Target="media/');
+  });
+
+  it('adds DOCX page break instructions for configured sections', async () => {
+    await exportAsDOCX({
+      ...baseResumeData,
+      sectionPageBreaks: {
+        ...baseResumeData.sectionPageBreaks,
+        projects: true,
+      },
+    }, baseTheme);
+
+    const xml = await getGeneratedDocxXml();
+    expect(xml).toContain('<w:pageBreakBefore/>');
   });
 });

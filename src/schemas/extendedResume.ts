@@ -2,7 +2,7 @@
 // This schema preserves JSON Resume v1.2.1 compatibility while adding app-specific extensions
 
 export const EXTENDED_RESUME_SCHEMA_VERSION = "1.2.0";
-export const SUPPORTED_SCHEMA_VERSIONS = ["1.0.0", "1.1.0", "1.2.0"];
+export const SUPPORTED_SCHEMA_VERSIONS = ["1.0.0", "1.1.0", "1.2.0", "1.3.0"];
 
 // Standard JSON Resume Schema (unchanged, for reference)
 import { 
@@ -11,7 +11,9 @@ import {
   NonConformingData,
   IconSettings,
   BasicsFieldVisibility,
-  DEFAULT_BASICS_VISIBILITY
+  DEFAULT_BASICS_VISIBILITY,
+  SectionPageBreaks,
+  DEFAULT_SECTION_PAGE_BREAKS
 } from '@/types/resume';
 
 /**
@@ -38,6 +40,7 @@ import {
  * CHANGELOG:
  * v1.1.0: Added summaries collection for multiple named summaries
  * v1.2.0: Added icon/photo persistence for backup roundtrips
+ * v1.3.0: Added section-level page break preferences for export layouts
  */
 
 /**
@@ -104,6 +107,9 @@ export interface Extensions {
   // Uploaded media that the app renders outside standard JSON Resume
   icon?: IconSettings;
   photo?: IconSettings;
+
+  // Manual export layout preferences
+  pageBreaks?: SectionPageBreaks;
   
   // Future extensions can be added here without breaking changes
   // theme?: ThemeExtensions;
@@ -275,7 +281,8 @@ export function getDefaultExtensions(): Extensions {
     },
     
     summaries: [],
-    activeSummaryId: undefined
+    activeSummaryId: undefined,
+    pageBreaks: { ...DEFAULT_SECTION_PAGE_BREAKS }
   };
 }
 

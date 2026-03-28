@@ -155,6 +155,18 @@ describe('ResumeRenderer', () => {
     expect(screen.getByText('Tech Corp')).toBeInTheDocument();
   });
 
+  it('renders clickable contact and section links', () => {
+    render(<ResumeRenderer resumeData={mockResumeData} theme={mockTheme} />);
+
+    expect(screen.getByRole('link', { name: 'john@example.com' })).toHaveAttribute('href', 'mailto:john@example.com');
+    expect(screen.getByRole('link', { name: '555-1234' })).toHaveAttribute('href', 'tel:5551234');
+    expect(screen.getByRole('link', { name: 'https://johndoe.com' })).toHaveAttribute('href', 'https://johndoe.com');
+    expect(screen.getByRole('link', { name: 'LinkedIn: johndoe' })).toHaveAttribute('href', 'https://linkedin.com/in/johndoe');
+    expect(screen.getByRole('link', { name: 'Tech Corp' })).toHaveAttribute('href', 'https://techcorp.com');
+    expect(screen.getByRole('link', { name: 'University of California' })).toHaveAttribute('href', 'https://uc.edu');
+    expect(screen.queryByRole('link', { name: 'San Francisco, CA' })).not.toBeInTheDocument();
+  });
+
   it('renders education section', () => {
     render(<ResumeRenderer resumeData={mockResumeData} theme={mockTheme} />);
 

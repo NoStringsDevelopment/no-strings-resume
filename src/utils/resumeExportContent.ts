@@ -1,4 +1,4 @@
-import { ResumeData, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
+import { ResumeData, DEFAULT_BASICS_VISIBILITY, DEFAULT_SECTION_PAGE_BREAKS } from '@/types/resume';
 import {
   getCourseName,
   getHighlightContent,
@@ -30,6 +30,7 @@ export interface ExportResumeEntry {
 export interface ExportResumeSection {
   title: string;
   entries: ExportResumeEntry[];
+  pageBreakBefore?: boolean;
 }
 
 export interface ExportResumeDocument {
@@ -69,18 +70,19 @@ function createEntry(overrides: Partial<ExportResumeEntry> & { title: string }):
   };
 }
 
-function createSection(title: string, entries: ExportResumeEntry[]): ExportResumeSection | null {
+function createSection(title: string, entries: ExportResumeEntry[], pageBreakBefore: boolean = false): ExportResumeSection | null {
   if (entries.length === 0) {
     return null;
   }
 
-  return { title, entries };
+  return { title, entries, pageBreakBefore };
 }
 
 export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDocument {
   const { sectionVisibility } = resumeData;
   const sections: ExportResumeSection[] = [];
   const basicsVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...resumeData.basicsVisibility };
+  const sectionPageBreaks = { ...DEFAULT_SECTION_PAGE_BREAKS, ...resumeData.sectionPageBreaks };
   const locationText = joinWithSeparator(
     [resumeData.basics.location.city, resumeData.basics.location.region || resumeData.basics.location.countryCode],
     ', ',
@@ -117,6 +119,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           bullets: getVisibleHighlights(work.highlights).map((highlight) => getHighlightContent(highlight)),
         }),
       ),
+    sectionPageBreaks.work,
   );
   if (workSection) sections.push(workSection);
 
@@ -133,6 +136,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           bullets: getVisibleHighlights(volunteer.highlights).map((highlight) => getHighlightContent(highlight)),
         }),
       ),
+    sectionPageBreaks.volunteer,
   );
   if (volunteerSection) sections.push(volunteerSection);
 
@@ -153,6 +157,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           ],
         });
       }),
+    sectionPageBreaks.education,
   );
   if (educationSection) sections.push(educationSection);
 
@@ -170,6 +175,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           ],
         }),
       ),
+    sectionPageBreaks.skills,
   );
   if (skillsSection) sections.push(skillsSection);
 
@@ -193,6 +199,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           bullets: getVisibleHighlights(project.highlights).map((highlight) => getHighlightContent(highlight)),
         });
       }),
+    sectionPageBreaks.projects,
   );
   if (projectsSection) sections.push(projectsSection);
 
@@ -208,6 +215,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           summary: award.summary,
         }),
       ),
+    sectionPageBreaks.awards,
   );
   if (awardsSection) sections.push(awardsSection);
 
@@ -223,6 +231,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           details: [certificate.url || undefined],
         }),
       ),
+    sectionPageBreaks.certificates,
   );
   if (certificatesSection) sections.push(certificatesSection);
 
@@ -238,6 +247,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           summary: publication.summary,
         }),
       ),
+    sectionPageBreaks.publications,
   );
   if (publicationsSection) sections.push(publicationsSection);
 
@@ -250,6 +260,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           title: joinWithSeparator([language.language, language.fluency ? `(${language.fluency})` : undefined], ' ') || language.language,
         }),
       ),
+    sectionPageBreaks.languages,
   );
   if (languagesSection) sections.push(languagesSection);
 
@@ -267,6 +278,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           ],
         }),
       ),
+    sectionPageBreaks.interests,
   );
   if (interestsSection) sections.push(interestsSection);
 
@@ -280,6 +292,7 @@ export function buildResumeExportContent(resumeData: ResumeData): ExportResumeDo
           summary: reference.reference,
         }),
       ),
+    sectionPageBreaks.references,
   );
   if (referencesSection) sections.push(referencesSection);
 

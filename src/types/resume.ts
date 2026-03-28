@@ -19,6 +19,9 @@ export interface ResumeData {
 
   // Extension: field-level visibility for non-array basics fields
   basicsVisibility?: BasicsFieldVisibility;
+
+  // Extension: manual page break preferences for export formats
+  sectionPageBreaks?: SectionPageBreaks;
   
   // Extension: non-conforming data that needs manual review
   nonConformingData?: NonConformingData;
@@ -250,6 +253,36 @@ export interface SectionVisibility {
   interests: boolean;
   references: boolean;
 }
+
+export interface SectionPageBreaks {
+  basics: boolean;
+  work: boolean;
+  volunteer: boolean;
+  education: boolean;
+  skills: boolean;
+  projects: boolean;
+  awards: boolean;
+  certificates: boolean;
+  publications: boolean;
+  languages: boolean;
+  interests: boolean;
+  references: boolean;
+}
+
+export const DEFAULT_SECTION_PAGE_BREAKS: SectionPageBreaks = {
+  basics: false,
+  work: false,
+  volunteer: false,
+  education: false,
+  skills: false,
+  projects: false,
+  awards: false,
+  certificates: false,
+  publications: false,
+  languages: false,
+  interests: false,
+  references: false,
+};
 
 // Theme types
 export interface ThemeColors {

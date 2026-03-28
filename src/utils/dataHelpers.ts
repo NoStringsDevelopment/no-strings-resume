@@ -1,4 +1,4 @@
-import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, DEFAULT_BASICS_VISIBILITY, DEFAULT_SECTION_PAGE_BREAKS } from '@/types/resume';
 import { cleanHighlights, cleanKeywords, cleanCourses, cleanRoles } from './arrayHelpers';
 
 type NormalizeResumeOptions = {
@@ -211,6 +211,11 @@ export function normalizeResumeData(data: unknown, options: NormalizeResumeOptio
     sectionVisibility: {
       ...DEFAULT_SECTION_VISIBILITY,
       ...((data as Partial<ResumeData>).sectionVisibility || {})
+    },
+
+    sectionPageBreaks: {
+      ...DEFAULT_SECTION_PAGE_BREAKS,
+      ...((data as Partial<ResumeData>).sectionPageBreaks || {})
     },
 
     basicsVisibility: {

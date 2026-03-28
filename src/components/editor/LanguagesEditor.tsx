@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { ItemOrderButtons } from "@/components/editor/ItemOrderButtons";
 import { useResume } from "@/context/ResumeContext";
 import { Language } from "@/types/resume";
 
@@ -37,6 +38,17 @@ const LanguagesEditor = () => {
 
   const removeLanguage = (index: number) => {
     dispatch({ type: 'REMOVE_LANGUAGE', payload: index });
+  };
+
+  const moveLanguage = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'languages',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
   };
 
   const sectionVisible = state.resumeData.sectionVisibility?.languages ?? true;
@@ -85,6 +97,14 @@ const LanguagesEditor = () => {
                 >
                   {language.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
+                <ItemOrderButtons
+                  canMoveUp={index > 0}
+                  canMoveDown={index < state.resumeData.languages.length - 1}
+                  onMoveUp={() => moveLanguage(index, 'up')}
+                  onMoveDown={() => moveLanguage(index, 'down')}
+                  moveUpTestId={`language-${index}-move-up-button`}
+                  moveDownTestId={`language-${index}-move-down-button`}
+                />
                 <Button
                   variant="ghost"
                   size="sm"

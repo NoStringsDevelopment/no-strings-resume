@@ -81,7 +81,14 @@ describe('ThemeContext', () => {
 
     expect(screen.getByTestId('current-theme-id')).toHaveTextContent('custom');
     expect(screen.getByTestId('current-theme-name')).toHaveTextContent('Custom Theme');
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('nostrings-resume-theme', 'custom');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'nostrings-resume-theme',
+      expect.stringContaining('"id":"custom"'),
+    );
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'nostrings-resume-custom-themes',
+      expect.stringContaining('"id":"custom"'),
+    );
   });
 
   it('throws error when used outside provider', () => {

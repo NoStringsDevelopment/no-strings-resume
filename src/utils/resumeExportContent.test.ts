@@ -144,6 +144,20 @@ const resumeData: ResumeData = {
     interests: true,
     references: true,
   },
+  sectionPageBreaks: {
+    basics: false,
+    work: true,
+    volunteer: false,
+    education: false,
+    skills: false,
+    projects: true,
+    awards: false,
+    certificates: false,
+    publications: false,
+    languages: false,
+    interests: false,
+    references: false,
+  },
 };
 
 describe('buildResumeExportContent', () => {
@@ -213,5 +227,13 @@ describe('buildResumeExportContent', () => {
 
     expect(content.header?.contacts).toEqual(['alex@example.com', 'Chicago, IL']);
     expect(content.header?.summary).toBeUndefined();
+  });
+
+  it('marks sections configured to start on a new page', () => {
+    const content = buildResumeExportContent(resumeData);
+
+    expect(content.sections.find((section) => section.title === 'Work Experience')?.pageBreakBefore).toBe(true);
+    expect(content.sections.find((section) => section.title === 'Projects')?.pageBreakBefore).toBe(true);
+    expect(content.sections.find((section) => section.title === 'Education')?.pageBreakBefore).toBe(false);
   });
 });

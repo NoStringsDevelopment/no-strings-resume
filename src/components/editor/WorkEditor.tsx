@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { ItemOrderButtons } from "@/components/editor/ItemOrderButtons";
 import { WorkExperience, Highlight } from "@/types/resume";
 import { normalizeHighlight, getHighlightContent, isHighlightVisible } from "@/utils/visibilityHelpers";
 
@@ -37,6 +38,17 @@ export default function WorkEditor() {
 
   const removeWorkExperience = (index: number) => {
     dispatch({ type: 'REMOVE_WORK_EXPERIENCE', payload: index });
+  };
+
+  const moveWorkExperience = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'work',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
   };
 
   const addHighlight = (workIndex: number) => {
@@ -118,6 +130,14 @@ export default function WorkEditor() {
                 >
                   {experience.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
+                <ItemOrderButtons
+                  canMoveUp={index > 0}
+                  canMoveDown={index < work.length - 1}
+                  onMoveUp={() => moveWorkExperience(index, 'up')}
+                  onMoveDown={() => moveWorkExperience(index, 'down')}
+                  moveUpTestId={`work-${index}-move-up-button`}
+                  moveDownTestId={`work-${index}-move-down-button`}
+                />
                 <span>work #{index + 1}</span>
               </div>
               <Button

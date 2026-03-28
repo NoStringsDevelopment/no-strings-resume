@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { ItemOrderButtons } from "@/components/editor/ItemOrderButtons";
 import { useResume } from "@/context/ResumeContext";
 import { Award } from "@/types/resume";
 
@@ -31,6 +32,17 @@ const AwardsEditor = () => {
 
   const removeAward = (index: number) => {
     dispatch({ type: 'REMOVE_AWARD', payload: index });
+  };
+
+  const moveAward = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'awards',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
   };
 
   const sectionVisible = state.resumeData.sectionVisibility?.awards ?? true;
@@ -79,6 +91,14 @@ const AwardsEditor = () => {
                 >
                   {award.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </Button>
+                <ItemOrderButtons
+                  canMoveUp={index > 0}
+                  canMoveDown={index < state.resumeData.awards.length - 1}
+                  onMoveUp={() => moveAward(index, 'up')}
+                  onMoveDown={() => moveAward(index, 'down')}
+                  moveUpTestId={`award-${index}-move-up-button`}
+                  moveDownTestId={`award-${index}-move-down-button`}
+                />
                 <Button
                   variant="ghost"
                   size="sm"
