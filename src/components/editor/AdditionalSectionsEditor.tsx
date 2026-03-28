@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Eye, EyeOff, Settings } from "lucide-react";
+import { ItemOrderButtons } from "@/components/editor/ItemOrderButtons";
 import { useResume } from "@/context/ResumeContext";
 import { Certificate, Publication, Volunteer, Interest, Reference, Highlight, Keyword } from "@/types/resume";
 import NonConformingDataViewer from "@/components/NonConformingDataViewer";
@@ -34,6 +35,17 @@ const AdditionalSectionsEditor = () => {
 
   const removeCertificate = (index: number) => {
     dispatch({ type: 'REMOVE_CERTIFICATE', payload: index });
+  };
+
+  const moveCertificate = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'certificates',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
   };
 
   // Certificate section visibility
@@ -69,6 +81,17 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_PUBLICATION', payload: index });
   };
 
+  const movePublication = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'publications',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
+  };
+
   // Publication section visibility
   const publicationsSectionVisible = state.resumeData.sectionVisibility?.publications ?? true;
   const togglePublicationsSectionVisibility = () => {
@@ -102,6 +125,17 @@ const AdditionalSectionsEditor = () => {
 
   const removeVolunteer = (index: number) => {
     dispatch({ type: 'REMOVE_VOLUNTEER', payload: index });
+  };
+
+  const moveVolunteer = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'volunteer',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
   };
 
   // Volunteer section visibility
@@ -170,6 +204,17 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_INTEREST', payload: index });
   };
 
+  const moveInterest = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'interests',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
+  };
+
   // Interest section visibility
   const interestsSectionVisible = state.resumeData.sectionVisibility?.interests ?? true;
   const toggleInterestsSectionVisibility = () => {
@@ -236,6 +281,17 @@ const AdditionalSectionsEditor = () => {
     dispatch({ type: 'REMOVE_REFERENCE', payload: index });
   };
 
+  const moveReference = (index: number, direction: 'up' | 'down') => {
+    dispatch({
+      type: 'REORDER_SECTION_ITEMS',
+      payload: {
+        section: 'references',
+        fromIndex: index,
+        toIndex: direction === 'up' ? index - 1 : index + 1,
+      },
+    });
+  };
+
   // Reference section visibility
   const referencesSectionVisible = state.resumeData.sectionVisibility?.references ?? true;
   const toggleReferencesSectionVisibility = () => {
@@ -287,6 +343,14 @@ const AdditionalSectionsEditor = () => {
                   >
                     {certificate.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
+                  <ItemOrderButtons
+                    canMoveUp={index > 0}
+                    canMoveDown={index < state.resumeData.certificates.length - 1}
+                    onMoveUp={() => moveCertificate(index, 'up')}
+                    onMoveDown={() => moveCertificate(index, 'down')}
+                    moveUpTestId={`certificate-${index}-move-up-button`}
+                    moveDownTestId={`certificate-${index}-move-down-button`}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -394,6 +458,14 @@ const AdditionalSectionsEditor = () => {
                   >
                     {publication.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
+                  <ItemOrderButtons
+                    canMoveUp={index > 0}
+                    canMoveDown={index < state.resumeData.publications.length - 1}
+                    onMoveUp={() => movePublication(index, 'up')}
+                    onMoveDown={() => movePublication(index, 'down')}
+                    moveUpTestId={`publication-${index}-move-up-button`}
+                    moveDownTestId={`publication-${index}-move-down-button`}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -511,6 +583,14 @@ const AdditionalSectionsEditor = () => {
                   >
                     {volunteer.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
+                  <ItemOrderButtons
+                    canMoveUp={index > 0}
+                    canMoveDown={index < state.resumeData.volunteer.length - 1}
+                    onMoveUp={() => moveVolunteer(index, 'up')}
+                    onMoveDown={() => moveVolunteer(index, 'down')}
+                    moveUpTestId={`volunteer-${index}-move-up-button`}
+                    moveDownTestId={`volunteer-${index}-move-down-button`}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -686,6 +766,14 @@ const AdditionalSectionsEditor = () => {
                   >
                     {interest.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
+                  <ItemOrderButtons
+                    canMoveUp={index > 0}
+                    canMoveDown={index < state.resumeData.interests.length - 1}
+                    onMoveUp={() => moveInterest(index, 'up')}
+                    onMoveDown={() => moveInterest(index, 'down')}
+                    moveUpTestId={`interest-${index}-move-up-button`}
+                    moveDownTestId={`interest-${index}-move-down-button`}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -810,6 +898,14 @@ const AdditionalSectionsEditor = () => {
                   >
                     {reference.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </Button>
+                  <ItemOrderButtons
+                    canMoveUp={index > 0}
+                    canMoveDown={index < state.resumeData.references.length - 1}
+                    onMoveUp={() => moveReference(index, 'up')}
+                    onMoveDown={() => moveReference(index, 'down')}
+                    moveUpTestId={`reference-${index}-move-up-button`}
+                    moveDownTestId={`reference-${index}-move-down-button`}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"

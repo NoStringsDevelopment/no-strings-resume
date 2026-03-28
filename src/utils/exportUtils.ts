@@ -1,6 +1,7 @@
 import { ResumeData, Theme, DEFAULT_BASICS_VISIBILITY } from '@/types/resume';
 import { downloadBlob, downloadFile, exportResumeAsJson } from '@/utils/importExport';
 import { buildResumeExportContent } from '@/utils/resumeExportContent';
+import { buildEmailHref, buildPhoneHref, buildUrlHref, escapeHtml, isExternalHref } from '@/utils/linkUtils';
 import { 
   getVisibleHighlights, 
   getHighlightContent, 
@@ -592,6 +593,7 @@ export async function exportAsDOCX(resumeData: ResumeData, theme: Theme) {
   exportContent.sections.forEach((section) => {
     children.push(
       new Paragraph({
+        pageBreakBefore: section.pageBreakBefore,
         spacing: { before: 220, after: 120 },
         keepNext: true,
         border: {
@@ -886,6 +888,18 @@ export function exportAsHTML(resumeData: ResumeData, theme: Theme) {
 }
 
 function generateHTMLContent(resumeData: ResumeData): string {
+  const buildHtmlLink = (text: string, href: string | null): string => {
+    const escapedText = escapeHtml(text);
+
+    if (!href) {
+      return `<span>${escapedText}</span>`;
+    }
+
+    const escapedHref = escapeHtml(href);
+    const externalAttributes = isExternalHref(href) ? ' target="_blank" rel="noreferrer"' : '';
+    return `<a href="${escapedHref}"${externalAttributes}>${escapedText}</a>`;
+  };
+
   let html = '';
   const { sectionVisibility } = resumeData;
   const basicsVisibility = { ...DEFAULT_BASICS_VISIBILITY, ...resumeData.basicsVisibility };
@@ -895,27 +909,27 @@ function generateHTMLContent(resumeData: ResumeData): string {
 
   if (sectionVisibility.basics) {
     const contactItems = [
-      basicsVisibility.email && resumeData.basics.email ? `<span>${resumeData.basics.email}</span>` : '',
-      basicsVisibility.phone && resumeData.basics.phone ? `<span>${resumeData.basics.phone}</span>` : '',
-      basicsVisibility.url && resumeData.basics.url ? `<span>${resumeData.basics.url}</span>` : '',
-      basicsVisibility.location && locationText ? `<span>${locationText}</span>` : ''
+      basicsVisibility.email && resumeData.basics.email ? buildHtmlLink(resumeData.basics.email, buildEmailHref(resumeData.basics.email)) : '',
+      basicsVisibility.phone && resumeData.basics.phone ? buildHtmlLink(resumeData.basics.phone, buildPhoneHref(resumeData.basics.phone)) : '',
+      basicsVisibility.url && resumeData.basics.url ? buildHtmlLink(resumeData.basics.url, buildUrlHref(resumeData.basics.url)) : '',
+      basicsVisibility.location && locationText ? `<span>${escapeHtml(locationText)}</span>` : ''
     ].filter(Boolean);
 
     html += `
       <header>
-        <h1>${resumeData.basics.name}</h1>
-        ${basicsVisibility.label && resumeData.basics.label ? `<h2>${resumeData.basics.label}</h2>` : ''}
+        <h1>${escapeHtml(resumeData.basics.name)}</h1>
+        ${basicsVisibility.label && resumeData.basics.label ? `<h2>${escapeHtml(resumeData.basics.label)}</h2>` : ''}
         ${contactItems.length > 0 ? `<div class="contact-info">${contactItems.join(' • ')}</div>` : ''}
         ${resumeData.basics.profiles.filter(p => p.visible !== false).length > 0 ? 
           `<div class="contact-info">${resumeData.basics.profiles.filter(p => p.visible !== false).map(profile => 
-            `<span>${profile.network}: ${profile.username || profile.url}</span>`
+            buildHtmlLink(`${profile.network}: ${profile.username || profile.url}`, buildUrlHref(profile.url))
           ).join(' • ')}</div>` : ''}
       </header>
       
       ${basicsVisibility.summary && resumeData.basics.summary ? `
         <div class="summary-section">
           <h3>Summary</h3>
-          <p>${resumeData.basics.summary}</p>
+          <p>${escapeHtml(resumeData.basics.summary)}</p>
         </div>
       ` : ''}
     `;
@@ -932,12 +946,12 @@ function generateHTMLContent(resumeData: ResumeData): string {
             <div class="item-header">
               <div>
                 <div class="position">${work.position}</div>
-                <div class="company">${work.name}</div>
+                <div class="company">${buildHtmlLink(work.name, buildUrlHref(work.url))}</div>
               </div>
-              <span class="date">${work.startDate} - ${work.endDate || 'Present'}</span>
+              <span class="date">${escapeHtml(work.startDate)} - ${escapeHtml(work.endDate || 'Present')}</span>
             </div>
-            ${work.summary ? `<p>${work.summary}</p>` : ''}
-            ${visibleHighlights.length > 0 ? `<ul>${visibleHighlights.map(h => `<li>${getHighlightContent(h)}</li>`).join('')}</ul>` : ''}
+            ${work.summary ? `<p>${escapeHtml(work.summary)}</p>` : ''}
+            ${visibleHighlights.length > 0 ? `<ul>${visibleHighlights.map(h => `<li>${escapeHtml(getHighlightContent(h))}</li>`).join('')}</ul>` : ''}
           </div>
         `;
       });
@@ -954,13 +968,13 @@ function generateHTMLContent(resumeData: ResumeData): string {
           <div class="item">
             <div class="item-header">
               <div>
-                <div class="position">${edu.studyType}${edu.area ? ` in ${edu.area}` : ''}</div>
-                <div class="company">${edu.institution}</div>
+                <div class="position">${escapeHtml(`${edu.studyType}${edu.area ? ` in ${edu.area}` : ''}`)}</div>
+                <div class="company">${buildHtmlLink(edu.institution, buildUrlHref(edu.url))}</div>
               </div>
-              <span class="date">${edu.startDate} - ${edu.endDate || 'Present'}</span>
+              <span class="date">${escapeHtml(edu.startDate)} - ${escapeHtml(edu.endDate || 'Present')}</span>
             </div>
-            ${edu.score ? `<p>Score: ${edu.score}</p>` : ''}
-            ${visibleCourses.length > 0 ? `<p><strong>Relevant Courses:</strong> ${visibleCourses.map(c => getCourseName(c)).join(', ')}</p>` : ''}
+            ${edu.score ? `<p>Score: ${escapeHtml(edu.score)}</p>` : ''}
+            ${visibleCourses.length > 0 ? `<p><strong>Relevant Courses:</strong> ${visibleCourses.map(c => escapeHtml(getCourseName(c))).join(', ')}</p>` : ''}
           </div>
         `;
       });
@@ -975,8 +989,8 @@ function generateHTMLContent(resumeData: ResumeData): string {
         const visibleKeywords = getVisibleKeywords(skill.keywords);
         html += `
           <div class="skill-item">
-            <h4>${skill.name}${skill.level ? ` (${skill.level})` : ''}</h4>
-            ${visibleKeywords.length > 0 ? `<div class="skill-keywords">${visibleKeywords.map(keyword => getKeywordName(keyword)).join(', ')}</div>` : ''}
+            <h4>${escapeHtml(`${skill.name}${skill.level ? ` (${skill.level})` : ''}`)}</h4>
+            ${visibleKeywords.length > 0 ? `<div class="skill-keywords">${visibleKeywords.map(keyword => escapeHtml(getKeywordName(keyword))).join(', ')}</div>` : ''}
           </div>
         `;
       });
@@ -995,11 +1009,11 @@ function generateHTMLContent(resumeData: ResumeData): string {
         
         html += `
           <div class="item">
-            <h4 style="margin: 0 0 0.5em 0; font-size: 1.1em;">${project.name}</h4>
-            <p>${project.description}</p>
-            ${visibleHighlights.length > 0 ? `<ul>${visibleHighlights.map(h => `<li>${getHighlightContent(h)}</li>`).join('')}</ul>` : ''}
-            ${visibleKeywords.length > 0 ? `<p class="skill-keywords">Technologies: ${visibleKeywords.map(keyword => getKeywordName(keyword)).join(', ')}</p>` : ''}
-            ${visibleRoles.length > 0 ? `<p class="skill-keywords">Roles: ${visibleRoles.map(role => getRoleName(role)).join(', ')}</p>` : ''}
+            <h4 style="margin: 0 0 0.5em 0; font-size: 1.1em;">${buildHtmlLink(project.name, buildUrlHref(project.url))}</h4>
+            <p>${escapeHtml(project.description)}</p>
+            ${visibleHighlights.length > 0 ? `<ul>${visibleHighlights.map(h => `<li>${escapeHtml(getHighlightContent(h))}</li>`).join('')}</ul>` : ''}
+            ${visibleKeywords.length > 0 ? `<p class="skill-keywords">Technologies: ${visibleKeywords.map(keyword => escapeHtml(getKeywordName(keyword))).join(', ')}</p>` : ''}
+            ${visibleRoles.length > 0 ? `<p class="skill-keywords">Roles: ${visibleRoles.map(role => escapeHtml(getRoleName(role))).join(', ')}</p>` : ''}
           </div>
         `;
       });
@@ -1015,12 +1029,12 @@ function generateHTMLContent(resumeData: ResumeData): string {
           <div class="item">
             <div class="item-header">
               <div>
-                <div class="position">${award.title}</div>
-                <div class="company">${award.awarder}</div>
+                <div class="position">${escapeHtml(award.title)}</div>
+                <div class="company">${escapeHtml(award.awarder)}</div>
               </div>
-              <span class="date">${award.date}</span>
+              <span class="date">${escapeHtml(award.date)}</span>
             </div>
-            ${award.summary ? `<p>${award.summary}</p>` : ''}
+            ${award.summary ? `<p>${escapeHtml(award.summary)}</p>` : ''}
           </div>
         `;
       });
@@ -1182,6 +1196,7 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   const primaryColor = `#${exportTheme.primary}`;
   const borderColor = `#${exportTheme.border}`;
   let yPosition = margin;
+  let currentPage = 1;
   const topVisualLayout = await renderPdfTopVisuals(pdf as unknown as {
     internal: { pageSize: { getWidth: () => number } };
     addImage: (...args: unknown[]) => void;
@@ -1194,10 +1209,15 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
     return text;
   };
 
+  const addNewPage = () => {
+    pdf.addPage();
+    currentPage += 1;
+    yPosition = margin;
+  };
+
   const ensureSpace = (requiredHeight: number) => {
     if (yPosition + requiredHeight > pageHeight - margin) {
-      pdf.addPage();
-      yPosition = margin;
+      addNewPage();
     }
   };
 
@@ -1221,7 +1241,7 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
     const fontSize = options?.fontSize ?? 11;
     const indent = options?.indent ?? margin;
     const preferredWidth = options?.width ?? pageWidth - indent - margin;
-    const width = !options?.ignoreTopVisualWrap && topVisualLayout.bottom > 0 && yPosition < topVisualLayout.bottom
+    const width = currentPage === 1 && !options?.ignoreTopVisualWrap && topVisualLayout.bottom > 0 && yPosition < topVisualLayout.bottom
       ? Math.max(30, Math.min(preferredWidth, topVisualLayout.left - PDF_TEXT_WRAP_GAP_MM - indent))
       : preferredWidth;
     const spacingAfter = options?.spacingAfter ?? 1;
@@ -1370,6 +1390,9 @@ export async function exportAsPDF(resumeData: ResumeData, theme: Theme) {
   }
 
   exportContent.sections.forEach((section) => {
+    if (section.pageBreakBefore && currentPage >= 1) {
+      addNewPage();
+    }
     addSectionHeader(section.title);
     section.entries.forEach(renderEntry);
   });

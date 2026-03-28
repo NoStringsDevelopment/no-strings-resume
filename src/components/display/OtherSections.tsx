@@ -2,6 +2,7 @@ import React from 'react';
 import { Project, Volunteer, Award, Certificate, Publication, Language, Interest, Reference } from '@/types/resume';
 import { formatDate } from '@/utils/formatters';
 import { SectionRenderer } from './SectionRenderer';
+import { ResumeInlineLink } from './ResumeInlineLink';
 import { 
   getVisibleHighlights, 
   getVisibleKeywords, 
@@ -63,7 +64,9 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
               return (
                 <div key={index} data-testid={`resume-project-${index}`}>
                   <h4 className="text-lg font-semibold" style={{ color: 'var(--color-secondary)' }}>
-                    {project.name}
+                    <ResumeInlineLink value={project.url} testId={`resume-project-${index}-name-link`} className="underline-offset-2 hover:underline">
+                      {project.name}
+                    </ResumeInlineLink>
                   </h4>
                   <p style={{ color: 'var(--color-text)' }}>{project.description}</p>
                   
@@ -113,7 +116,9 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
                         {vol.position}
                       </h4>
                       <p className="font-medium" style={{ color: 'var(--color-accent)' }}>
-                        {vol.organization}
+                        <ResumeInlineLink value={vol.url} testId={`resume-volunteer-${index}-organization-link`} className="underline-offset-2 hover:underline">
+                          {vol.organization}
+                        </ResumeInlineLink>
                       </p>
                     </div>
                     <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -186,7 +191,9 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
-                      {cert.name}
+                      <ResumeInlineLink value={cert.url} testId={`resume-certificate-${index}-name-link`} className="underline-offset-2 hover:underline">
+                        {cert.name}
+                      </ResumeInlineLink>
                     </h4>
                     <p style={{ color: 'var(--color-accent)' }}>{cert.issuer}</p>
                   </div>
@@ -214,7 +221,9 @@ export const OtherSections: React.FC<OtherSectionsProps> = ({
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-semibold" style={{ color: 'var(--color-secondary)' }}>
-                      {pub.name}
+                      <ResumeInlineLink value={pub.url} testId={`resume-publication-${index}-name-link`} className="underline-offset-2 hover:underline">
+                        {pub.name}
+                      </ResumeInlineLink>
                     </h4>
                     <p style={{ color: 'var(--color-accent)' }}>{pub.publisher}</p>
                   </div>

@@ -1,5 +1,5 @@
 
-import { ResumeData, DEFAULT_BASICS_VISIBILITY } from '../types/resume';
+import { ResumeData, DEFAULT_BASICS_VISIBILITY, DEFAULT_SECTION_PAGE_BREAKS } from '../types/resume';
 
 export function getDefaultResumeData(): ResumeData {
   return {
@@ -174,6 +174,7 @@ export function getDefaultResumeData(): ResumeData {
       references: true,
       volunteer: true
     },
+    sectionPageBreaks: { ...DEFAULT_SECTION_PAGE_BREAKS },
     basicsVisibility: { ...DEFAULT_BASICS_VISIBILITY }
   };
 }

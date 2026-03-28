@@ -1,12 +1,12 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ThemeCustomizer } from './ThemeCustomizer';
-import { expectComponentVisible } from '@/utils/testUtils';
+import * as importExportUtils from '@/utils/importExport';
 
 // Mock the useTheme hook
 const mockSetTheme = vi.fn();
+const mockToast = vi.fn();
 const mockThemeState = {
   currentTheme: {
     id: 'test',
@@ -70,6 +70,20 @@ vi.mock('@/context/ThemeContext', () => ({
     setTheme: mockSetTheme
   })
 }));
+
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({
+    toast: mockToast,
+  }),
+}));
+
+vi.mock('@/utils/importExport', async () => {
+  const actual = await vi.importActual<typeof import('@/utils/importExport')>('@/utils/importExport');
+  return {
+    ...actual,
+    downloadFile: vi.fn(),
+  };
+});
 
 // Mock the useResume hook
 vi.mock('@/context/ResumeContext', () => ({
@@ -219,5 +233,67 @@ describe('ThemeCustomizer', () => {
     render(<ThemeCustomizer />);
     
     expect(screen.getByText('Reset to Default Theme')).toBeInTheDocument();
+  });
+
+  it('exports the current theme as JSON', () => {
+    render(<ThemeCustomizer />);
+
+    fireEvent.click(screen.getByTestId('export-theme-button'));
+
+    expect(vi.mocked(importExportUtils.downloadFile)).toHaveBeenCalledWith(
+      expect.stringContaining('"id": "test"'),
+      'test-theme-theme.json',
+      'application/json',
+    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Theme exported',
+    }));
+  });
+
+  it('imports a theme file and applies it', async () => {
+    render(<ThemeCustomizer />);
+
+    const importedTheme = {
+      id: 'portfolio-slate',
+      name: 'Portfolio Slate',
+      colors: {
+        primary: '#101828',
+        secondary: '#475467',
+        accent: '#0ea5e9',
+        text: '#111827',
+        textSecondary: '#6b7280',
+        background: '#ffffff',
+        border: '#e5e7eb',
+      },
+      typography: {
+        fontFamily: 'Georgia',
+        fontSize: 15,
+        lineHeight: 1.6,
+      },
+      fonts: {
+        heading: 'Georgia',
+        body: 'Georgia',
+      },
+      spacing: {
+        section: '2rem',
+        item: '1rem',
+      },
+    };
+
+    const file = new File([JSON.stringify(importedTheme)], 'theme.json', { type: 'application/json' });
+    Object.defineProperty(file, 'text', {
+      value: () => Promise.resolve(JSON.stringify(importedTheme)),
+    });
+    fireEvent.change(screen.getByTestId('theme-file-input'), { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(mockSetTheme).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'portfolio-slate',
+        name: 'Portfolio Slate',
+      }));
+    });
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Theme imported',
+    }));
   });
 });

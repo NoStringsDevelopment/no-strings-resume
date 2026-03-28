@@ -3,6 +3,7 @@ import { WorkExperience } from '@/types/resume';
 import { formatDate } from '@/utils/formatters';
 import { SectionRenderer } from './SectionRenderer';
 import { getVisibleHighlights, getHighlightContent } from '@/utils/visibilityHelpers';
+import { ResumeInlineLink } from './ResumeInlineLink';
 
 interface WorkSectionProps {
   work: WorkExperience[];
@@ -31,7 +32,9 @@ export const WorkSection: React.FC<WorkSectionProps> = ({ work, isVisible }) => 
                     {work.position}
                   </h4>
                   <p className="text-base font-medium" style={{ color: 'var(--color-accent)' }}>
-                    {work.name}
+                    <ResumeInlineLink value={work.url} testId={`resume-work-${index}-company-link`} className="underline-offset-2 hover:underline">
+                      {work.name}
+                    </ResumeInlineLink>
                   </p>
                 </div>
                 <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>

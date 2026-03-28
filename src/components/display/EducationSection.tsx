@@ -3,6 +3,7 @@ import { Education } from '@/types/resume';
 import { formatDate } from '@/utils/formatters';
 import { SectionRenderer } from './SectionRenderer';
 import { getVisibleCourses, getCourseName } from '@/utils/visibilityHelpers';
+import { ResumeInlineLink } from './ResumeInlineLink';
 
 interface EducationSectionProps {
   education: Education[];
@@ -31,7 +32,9 @@ export const EducationSection: React.FC<EducationSectionProps> = ({ education, i
                     {edu.studyType} {edu.area && `in ${edu.area}`}
                   </h4>
                   <p className="font-medium" style={{ color: 'var(--color-accent)' }}>
-                    {edu.institution}
+                    <ResumeInlineLink value={edu.url} testId={`resume-education-${index}-institution-link`} className="underline-offset-2 hover:underline">
+                      {edu.institution}
+                    </ResumeInlineLink>
                   </p>
                 </div>
                 <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>

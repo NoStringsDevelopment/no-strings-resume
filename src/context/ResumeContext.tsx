@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect, ReactNode, useContext } from 'react';
-import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings, BasicsFieldVisibility } from '@/types/resume';
+import { ResumeData, WorkExperience, Education, Skill, Project, Award, Language, Certificate, Publication, Volunteer, Interest, Reference, Basics, SectionVisibility, NamedSummary, IconSettings, BasicsFieldVisibility, SectionPageBreaks } from '@/types/resume';
 import { getDefaultResumeData } from '@/utils/defaultData';
 import { normalizeResumeData as baseNormalizeResumeData, normalizeStoredData } from '@/utils/dataHelpers';
 import { deduplicateSummaries } from '@/utils/dataHelpers';
@@ -11,6 +11,19 @@ interface ResumeState {
   historyIndex: number; // Added for backward compatibility
   isLoading: boolean;
 }
+
+type ReorderableSectionKey =
+  | 'work'
+  | 'volunteer'
+  | 'education'
+  | 'skills'
+  | 'projects'
+  | 'awards'
+  | 'certificates'
+  | 'publications'
+  | 'languages'
+  | 'interests'
+  | 'references';
 
 type ResumeAction =
   | { type: 'UPDATE_RESUME'; payload: ResumeData }
@@ -75,6 +88,8 @@ type ResumeAction =
   // Section visibility actions
   | { type: 'UPDATE_SECTION_VISIBILITY'; payload: Partial<SectionVisibility> }
   | { type: 'UPDATE_BASICS_VISIBILITY'; payload: Partial<BasicsFieldVisibility> }
+  | { type: 'UPDATE_SECTION_PAGE_BREAKS'; payload: Partial<SectionPageBreaks> }
+  | { type: 'REORDER_SECTION_ITEMS'; payload: { section: ReorderableSectionKey; fromIndex: number; toIndex: number } }
   // Icon actions
   | { type: 'UPDATE_ICON'; payload: IconSettings | undefined }
   // Photo actions
@@ -99,6 +114,32 @@ const normalizeResumeData = (data: unknown) =>
 
 const normalizeLoadedResumeData = (data: unknown) =>
   baseNormalizeResumeData(data);
+
+function prependItem<T>(items: T[], item: T): T[] {
+  return [item, ...items];
+}
+
+function reorderItems<T>(items: T[], fromIndex: number, toIndex: number): T[] {
+  if (
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= items.length ||
+    toIndex >= items.length ||
+    fromIndex === toIndex
+  ) {
+    return items;
+  }
+
+  const reordered = [...items];
+  const [movedItem] = reordered.splice(fromIndex, 1);
+
+  if (movedItem === undefined) {
+    return items;
+  }
+
+  reordered.splice(toIndex, 0, movedItem);
+  return reordered;
+}
 
 const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState => {
   switch (action.type) {
@@ -271,7 +312,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_EDUCATION': {
       const updatedData = {
         ...state.resumeData,
-        education: [...state.resumeData.education, action.payload]
+        education: prependItem(state.resumeData.education, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -297,7 +338,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_PROJECT': {
       const updatedData = {
         ...state.resumeData,
-        projects: [...state.resumeData.projects, action.payload]
+        projects: prependItem(state.resumeData.projects, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -323,7 +364,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_WORK_EXPERIENCE': {
       const updatedData = {
         ...state.resumeData,
-        work: [...state.resumeData.work, action.payload]
+        work: prependItem(state.resumeData.work, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -349,7 +390,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_CERTIFICATE': {
       const updatedData = {
         ...state.resumeData,
-        certificates: [...state.resumeData.certificates, action.payload]
+        certificates: prependItem(state.resumeData.certificates, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -375,7 +416,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_PUBLICATION': {
       const updatedData = {
         ...state.resumeData,
-        publications: [...state.resumeData.publications, action.payload]
+        publications: prependItem(state.resumeData.publications, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -401,7 +442,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_VOLUNTEER': {
       const updatedData = {
         ...state.resumeData,
-        volunteer: [...state.resumeData.volunteer, action.payload]
+        volunteer: prependItem(state.resumeData.volunteer, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -427,7 +468,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_INTEREST': {
       const updatedData = {
         ...state.resumeData,
-        interests: [...state.resumeData.interests, action.payload]
+        interests: prependItem(state.resumeData.interests, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -453,7 +494,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_REFERENCE': {
       const updatedData = {
         ...state.resumeData,
-        references: [...state.resumeData.references, action.payload]
+        references: prependItem(state.resumeData.references, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -479,7 +520,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_LANGUAGE': {
       const updatedData = {
         ...state.resumeData,
-        languages: [...state.resumeData.languages, action.payload]
+        languages: prependItem(state.resumeData.languages, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -505,7 +546,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_AWARD': {
       const updatedData = {
         ...state.resumeData,
-        awards: [...state.resumeData.awards, action.payload]
+        awards: prependItem(state.resumeData.awards, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -570,7 +611,7 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
     case 'ADD_SKILL': {
       const updatedData = {
         ...state.resumeData,
-        skills: [...state.resumeData.skills, action.payload]
+        skills: prependItem(state.resumeData.skills, action.payload)
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);
@@ -762,6 +803,39 @@ const resumeReducer = (state: ResumeState, action: ResumeAction): ResumeState =>
       const updatedData = {
         ...state.resumeData,
         sectionVisibility: { ...state.resumeData.sectionVisibility, ...action.payload }
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'UPDATE_SECTION_PAGE_BREAKS': {
+      const updatedData = {
+        ...state.resumeData,
+        sectionPageBreaks: { ...state.resumeData.sectionPageBreaks, ...action.payload }
+      };
+      const normalizedData = normalizeResumeData(updatedData);
+      const historyUpdate = addToHistory(state, normalizedData);
+      return {
+        ...state,
+        resumeData: normalizedData,
+        ...historyUpdate
+      };
+    }
+    case 'REORDER_SECTION_ITEMS': {
+      const currentItems = state.resumeData[action.payload.section] as Array<unknown>;
+      const reorderedItems = reorderItems(currentItems, action.payload.fromIndex, action.payload.toIndex);
+
+      if (reorderedItems === currentItems) {
+        return state;
+      }
+
+      const updatedData = {
+        ...state.resumeData,
+        [action.payload.section]: reorderedItems
       };
       const normalizedData = normalizeResumeData(updatedData);
       const historyUpdate = addToHistory(state, normalizedData);

@@ -42,6 +42,52 @@ const TestComponent = ({ onStateChange }: { onStateChange?: (state: TestResumeSt
   );
 };
 
+const DispatchTestComponent = () => {
+  const { state, dispatch } = useResume();
+
+  return (
+    <div>
+      <button
+        data-testid="add-work-button"
+        onClick={() =>
+          dispatch({
+            type: 'ADD_WORK_EXPERIENCE',
+            payload: {
+              name: 'Newest Co',
+              position: 'Lead Engineer',
+              url: '',
+              startDate: '',
+              endDate: '',
+              summary: '',
+              highlights: [],
+              visible: true,
+            },
+          })
+        }
+      >
+        Add Work
+      </button>
+      <button
+        data-testid="move-work-button"
+        onClick={() =>
+          dispatch({
+            type: 'REORDER_SECTION_ITEMS',
+            payload: {
+              section: 'work',
+              fromIndex: 1,
+              toIndex: 0,
+            },
+          })
+        }
+      >
+        Move Work
+      </button>
+      <div data-testid="first-work-name">{state.resumeData.work[0]?.name ?? ''}</div>
+      <div data-testid="second-work-name">{state.resumeData.work[1]?.name ?? ''}</div>
+    </div>
+  );
+};
+
 const renderWithProvider = (children: ReactNode) => {
   return render(
     <ResumeProvider>
@@ -252,5 +298,42 @@ describe('ResumeContext Integration', () => {
     expect(capturedState.resumeData.basics.profiles[1].visible).toBe(true);
     expect(capturedState.resumeData.work[0].visible).toBe(false);
     expect(capturedState.resumeData.work[1].visible).toBe(true);
+  });
+
+  it('adds new list items to the top of the section', async () => {
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({
+      basics: { name: 'Test User' },
+      work: [
+        { name: 'Existing Co', position: 'Engineer', highlights: [] },
+      ],
+    }));
+
+    const { getByTestId } = renderWithProvider(<DispatchTestComponent />);
+
+    await act(async () => {
+      getByTestId('add-work-button').click();
+    });
+
+    expect(getByTestId('first-work-name')).toHaveTextContent('Newest Co');
+    expect(getByTestId('second-work-name')).toHaveTextContent('Existing Co');
+  });
+
+  it('reorders section items when requested', async () => {
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({
+      basics: { name: 'Test User' },
+      work: [
+        { name: 'First Co', position: 'Engineer', highlights: [] },
+        { name: 'Second Co', position: 'Staff Engineer', highlights: [] },
+      ],
+    }));
+
+    const { getByTestId } = renderWithProvider(<DispatchTestComponent />);
+
+    await act(async () => {
+      getByTestId('move-work-button').click();
+    });
+
+    expect(getByTestId('first-work-name')).toHaveTextContent('Second Co');
+    expect(getByTestId('second-work-name')).toHaveTextContent('First Co');
   });
 });

@@ -6,8 +6,11 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/context/ThemeContext";
 import { useResume } from "@/context/ResumeContext";
+import { useToast } from "@/hooks/use-toast";
 import { Theme, ThemeColors, ThemeTypography } from "@/types/resume";
-import { useCallback } from "react";
+import { downloadFile } from "@/utils/importExport";
+import { generateThemeFilename, parseImportedTheme, serializeTheme } from "@/utils/themeUtils";
+import { useCallback, useRef } from "react";
 
 interface ColorPickerProps {
   color: string;
@@ -33,6 +36,8 @@ const ColorPicker = ({ color, onChange, label }: ColorPickerProps) => (
 export const ThemeCustomizer = () => {
   const { themeState, setTheme } = useTheme();
   const { state, dispatch } = useResume();
+  const { toast } = useToast();
+  const themeFileInputRef = useRef<HTMLInputElement>(null);
 
   const updateTheme = useCallback((updates: Partial<Theme>) => {
     const updatedTheme = { ...themeState.currentTheme, ...updates };
@@ -63,6 +68,44 @@ export const ThemeCustomizer = () => {
       setTheme(defaultTheme);
     }
   }, [themeState.availableThemes, setTheme]);
+
+  const exportCurrentTheme = useCallback(() => {
+    downloadFile(
+      serializeTheme(themeState.currentTheme),
+      generateThemeFilename(themeState.currentTheme),
+      'application/json',
+    );
+    toast({
+      title: "Theme exported",
+      description: "Your current theme has been downloaded as JSON.",
+    });
+  }, [themeState.currentTheme, toast]);
+
+  const importTheme = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      const importedTheme = parseImportedTheme(content);
+      setTheme(importedTheme);
+      toast({
+        title: "Theme imported",
+        description: `Loaded ${importedTheme.name}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Theme import failed",
+        description: error instanceof Error ? error.message : "Could not parse the theme file.",
+        variant: "destructive",
+      });
+    } finally {
+      event.target.value = '';
+    }
+  }, [setTheme, toast]);
 
   return (
     <div className="space-y-6">
@@ -415,6 +458,28 @@ export const ThemeCustomizer = () => {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Theme Files</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 sm:flex-row">
+          <Button variant="outline" onClick={exportCurrentTheme} data-testid="export-theme-button">
+            Export Current Theme
+          </Button>
+          <Button variant="outline" onClick={() => themeFileInputRef.current?.click()} data-testid="import-theme-button">
+            Import Theme JSON
+          </Button>
+          <input
+            ref={themeFileInputRef}
+            type="file"
+            accept=".json,application/json"
+            onChange={importTheme}
+            className="hidden"
+            data-testid="theme-file-input"
+          />
         </CardContent>
       </Card>
 
